@@ -118,6 +118,7 @@ Generic helpers that should not know about Wotagoods-specific features.
 - `drag-scroll.js`: reusable pointer drag scrolling.
 - `icons.js`: icon creation.
 - `motion.js`: CSS timing parsing and reduced-motion helpers.
+- `select-menu.js`: app-styled listbox behavior with pointer and keyboard support.
 - `ui-components.js`: reusable view components and neutral required markers.
 
 ### `src/styles/`

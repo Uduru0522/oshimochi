@@ -7,6 +7,7 @@ import {
 import { createActionButton } from "../../shared/action-button.js";
 import { createElement } from "../../shared/dom.js";
 import { createIcon } from "../../shared/icons.js";
+import { createSelectMenu } from "../../shared/select-menu.js";
 import {
   MAX_UI_MOTION_MS,
   getAnimationDurationMs,
@@ -58,10 +59,8 @@ export function createItemSortPanel({ onApply }) {
     className: "item-entry-close"
   });
   const form = createElement("form", { className: "item-sort-form" });
-  const fieldLabel = createElement("label", { className: "item-sort-field" });
-  const fieldSelect = createElement("select", {
-    attributes: { "aria-label": "Sort field" }
-  });
+  const fieldLabel = createElement("div", { className: "item-sort-field" });
+  const fieldSelect = createSelectMenu({ ariaLabel: "Sort field" });
   const directionGroup = createElement("fieldset", { className: "item-sort-direction" });
   const directionLegend = createElement("legend", { textContent: "Direction" });
   const ascendingLabel = createElement("label");
@@ -89,7 +88,7 @@ export function createItemSortPanel({ onApply }) {
   button.disabled = true;
   button.append(createIcon("sort"), buttonLabel);
   closeButton.append(createIcon("close"));
-  fieldLabel.append(createElement("strong", { textContent: "Sort by" }), fieldSelect);
+  fieldLabel.append(createElement("strong", { textContent: "Sort by" }), fieldSelect.element);
   ascendingLabel.append(ascendingInput, createElement("span", { textContent: "Ascending" }));
   descendingLabel.append(descendingInput, createElement("span", { textContent: "Descending" }));
   directionGroup.append(directionLegend, ascendingLabel, descendingLabel);
@@ -101,22 +100,19 @@ export function createItemSortPanel({ onApply }) {
   dialog.append(header, form);
 
   function renderOptions() {
-    fieldSelect.replaceChildren(
-      createElement("option", { attributes: { value: UPDATED_AT_VALUE }, textContent: "Last updated" }),
-      createElement("option", { attributes: { value: CREATED_AT_VALUE }, textContent: "Date created" })
-    );
-    fields.filter(isSortableField).forEach((field) => {
-      fieldSelect.append(createElement("option", {
-        attributes: { value: `field:${field.id}` },
-        textContent: field.displayName
-      }));
-    });
+    fieldSelect.setOptions([
+      { value: UPDATED_AT_VALUE, label: "Last updated" },
+      { value: CREATED_AT_VALUE, label: "Date created" },
+      ...fields.filter(isSortableField).map((field) => ({
+        value: `field:${field.id}`,
+        label: field.displayName
+      }))
+    ]);
   }
 
   function updateButton() {
     const currentValue = serializeSort(activeSort);
-    const selectedOption = [...fieldSelect.options].find(({ value }) => value === currentValue);
-    const label = selectedOption?.textContent ?? "Sort";
+    const label = fieldSelect.getLabel(currentValue) || "Sort";
     button.dataset.active = String(!isDefaultSort(activeSort));
     button.title = `Sort items: ${label}, ${activeSort.direction}`;
     button.setAttribute("aria-label", button.title);
@@ -124,9 +120,7 @@ export function createItemSortPanel({ onApply }) {
 
   function renderDraft(sort = activeSort) {
     const value = serializeSort(sort);
-    fieldSelect.value = [...fieldSelect.options].some((option) => option.value === value)
-      ? value
-      : UPDATED_AT_VALUE;
+    fieldSelect.value = value;
     ascendingInput.checked = sort.direction === ITEM_SORT_DIRECTIONS.ASCENDING;
     descendingInput.checked = !ascendingInput.checked;
   }
@@ -159,6 +153,7 @@ export function createItemSortPanel({ onApply }) {
     if (isClosing || !dialog.open) {
       return;
     }
+    fieldSelect.close();
     pendingCloseAction = afterClose;
     if (prefersReducedMotion()) {
       dialog.close();
@@ -207,6 +202,7 @@ export function createItemSortPanel({ onApply }) {
       globalThis.clearTimeout(closeTimer);
       pendingCloseAction = null;
       dialog.removeEventListener("animationend", handleAnimationEnd);
+      fieldSelect.destroy();
       if (dialog.open) {
         dialog.close();
       }
