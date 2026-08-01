@@ -322,6 +322,39 @@ test("DebugStorage keeps image assets linked to their item", async () => {
   assert.equal((await storage.listItems("figures"))[0].imageAssetId, asset.id);
 });
 
+test("DebugStorage replaces an edited item and image without retaining the old asset", async () => {
+  const storage = createDebugStorage();
+  await storage.initialize();
+  const [existingItem] = await storage.listItems("tapestries");
+  const replacementData = new Blob(["replacement"], { type: "image/jpeg" });
+  const replacementAsset = {
+    id: "replacement-asset",
+    data: replacementData,
+    mediaType: "image/jpeg",
+    width: 560,
+    height: 792,
+    byteSize: replacementData.size,
+    createdAt: "2026-07-21T00:00:00.000Z",
+    updatedAt: "2026-07-21T00:00:00.000Z"
+  };
+  const updatedItem = {
+    ...existingItem,
+    name: "Updated debug item",
+    imageAssetId: replacementAsset.id,
+    updatedAt: "2026-07-21T00:00:00.000Z"
+  };
+
+  await storage.updateItem({
+    asset: replacementAsset,
+    item: updatedItem,
+    previousImageAssetId: existingItem.imageAssetId
+  });
+
+  assert.equal((await storage.listItems("tapestries"))[0].name, "Updated debug item");
+  assert.equal(await storage.getAsset(existingItem.imageAssetId), null);
+  assert.equal((await storage.getAsset(replacementAsset.id)).data.size, replacementData.size);
+});
+
 test("DebugStorage reset clears all temporary domain records", async () => {
   const storage = createDebugStorage();
 
