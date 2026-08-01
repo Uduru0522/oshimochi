@@ -1,3 +1,5 @@
+import { getItemFieldValue } from "./item-field-value.js";
+
 const TEXT_TYPES = new Set(["long_text", "text"]);
 
 export const ITEM_FILTER_OPERATORS = Object.freeze({
@@ -83,26 +85,6 @@ export function parseItemSearchQuery(query) {
   }
 
   return tokens;
-}
-
-export function getItemFieldValue(item, field) {
-  if (!field.isBuiltIn) {
-    return item.customValues[field.id];
-  }
-
-  if (field.key === "id") {
-    return item.id;
-  }
-
-  if (field.key === "name") {
-    return item.name;
-  }
-
-  if (field.key === "image") {
-    return item.imageAssetId;
-  }
-
-  return undefined;
 }
 
 function getHumanReadableValue(value, field) {
