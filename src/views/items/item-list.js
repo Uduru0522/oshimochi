@@ -144,6 +144,7 @@ export function createItemList(
   let sourceOrder = new Map(sourceItems.map((item, index) => [item.id, index]));
   const rows = new Map();
   const rowAnimations = new Map();
+  const rowMoveAnimations = new Map();
   let desiredIds = new Set(items.map(({ id }) => id));
   let destroyed = false;
   let emptyState = null;
@@ -185,6 +186,68 @@ export function createItemList(
     }
     rowAnimations.delete(itemId);
     transition.animation.cancel();
+  }
+
+  function cancelRowMoveAnimation(itemId) {
+    rowMoveAnimations.get(itemId)?.cancel();
+    rowMoveAnimations.delete(itemId);
+  }
+
+  function reorderRows(nextItems) {
+    const nextIds = nextItems.map(({ id }) => id);
+    const currentIds = [...element.children]
+      .map((child) => child.dataset?.itemId)
+      .filter((itemId) => desiredIds.has(itemId));
+
+    if (
+      nextIds.length === currentIds.length &&
+      nextIds.every((itemId, index) => itemId === currentIds[index])
+    ) {
+      return;
+    }
+
+    const previousPositions = new Map(nextIds.flatMap((itemId) => {
+      const row = rows.get(itemId);
+      return row ? [[itemId, row.element.getBoundingClientRect()]] : [];
+    }));
+
+    nextIds.forEach((itemId) => {
+      const row = rows.get(itemId);
+      if (row) {
+        element.append(row.element);
+      }
+    });
+
+    if (prefersReducedMotion()) {
+      return;
+    }
+
+    nextIds.forEach((itemId) => {
+      const row = rows.get(itemId);
+      const previousPosition = previousPositions.get(itemId);
+      if (!row || !previousPosition || typeof row.element.animate !== "function") {
+        return;
+      }
+
+      const nextPosition = row.element.getBoundingClientRect();
+      const offsetY = previousPosition.top - nextPosition.top;
+      if (Math.abs(offsetY) < 1) {
+        return;
+      }
+
+      cancelRowMoveAnimation(itemId);
+      const animation = row.element.animate(
+        [{ transform: `translateY(${offsetY}px)` }, { transform: "translateY(0)" }],
+        getRowAnimationOptions(row.element)
+      );
+      rowMoveAnimations.set(itemId, animation);
+      animation.finished.then(() => {
+        if (rowMoveAnimations.get(itemId) === animation) {
+          rowMoveAnimations.delete(itemId);
+          animation.cancel();
+        }
+      }, () => {});
+    });
   }
 
   function finishRemovingRow(itemId, animation) {
@@ -282,6 +345,7 @@ export function createItemList(
       }
     });
     nextItems.forEach(addOrRestoreRow);
+    reorderRows(nextItems);
     warningFrame = globalThis.requestAnimationFrame(updateWarnings);
     showEmptyStateWhenSettled();
   }
@@ -304,6 +368,8 @@ export function createItemList(
       destroyed = true;
       rowAnimations.forEach(({ animation }) => animation.cancel());
       rowAnimations.clear();
+      rowMoveAnimations.forEach((animation) => animation.cancel());
+      rowMoveAnimations.clear();
       rows.forEach(({ destroy }) => destroy());
       rows.clear();
       resizeObserver?.disconnect();

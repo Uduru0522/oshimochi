@@ -32,6 +32,13 @@ const ICON_PATHS = {
     "M7 12h10",
     "M10 19h4"
   ],
+  sort: [
+    "M8 6h12",
+    "M8 12h9",
+    "M8 18h6",
+    "M4 4v16",
+    "M2 18l2 2 2-2"
+  ],
   goodsType: [
     "M5 7h14",
     "M7 7v12h10V7",

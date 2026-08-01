@@ -1,8 +1,10 @@
 import { filterItems } from "../../application/items/filter-items.js";
+import { DEFAULT_ITEM_SORT, sortItems } from "../../application/items/sort-items.js";
 import { createContentTransition } from "../../shared/content-transition.js";
 import { createElement } from "../../shared/dom.js";
 import { createItemFilterPanel } from "./item-filter-panel.js";
 import { createItemList } from "./item-list.js";
+import { createItemSortPanel } from "./item-sort-panel.js";
 
 function createMessage(className, textContent) {
   return {
@@ -15,6 +17,7 @@ export function createItemBrowser({ goodsTypeId, itemManagement }) {
   const element = createElement("div", { className: "item-browser" });
   const transition = createContentTransition(element, { animateInitial: true });
   let activeFilter = { query: "", rules: [] };
+  let activeSort = DEFAULT_ITEM_SORT;
   let activePresentation = null;
   let destroyed = false;
   let fields = [];
@@ -23,6 +26,12 @@ export function createItemBrowser({ goodsTypeId, itemManagement }) {
   const filterPanel = createItemFilterPanel({
     onApply(filter) {
       activeFilter = filter;
+      renderItems({ incremental: true });
+    }
+  });
+  const sortPanel = createItemSortPanel({
+    onApply(sort) {
+      activeSort = sort;
       renderItems({ incremental: true });
     }
   });
@@ -46,10 +55,11 @@ export function createItemBrowser({ goodsTypeId, itemManagement }) {
   }
 
   function renderItems({ incremental = false } = {}) {
-    const visibleItems = filterItems(items, fields, activeFilter);
+    const sortedItems = sortItems(items, fields, activeSort);
+    const visibleItems = filterItems(sortedItems, fields, activeFilter);
 
     if (incremental && typeof activePresentation?.update === "function") {
-      activePresentation.update(visibleItems, items);
+      activePresentation.update(visibleItems, sortedItems);
       return;
     }
 
@@ -57,7 +67,7 @@ export function createItemBrowser({ goodsTypeId, itemManagement }) {
       createItemList(visibleItems, fields, {
         getAsset: itemManagement.getAsset,
         onClearFilters: clearFilters,
-        sourceItems: items
+        sourceItems: sortedItems
       })
     );
   }
@@ -92,6 +102,7 @@ export function createItemBrowser({ goodsTypeId, itemManagement }) {
       };
       filterPanel.setFilter(activeFilter);
       filterPanel.setData(fields, items);
+      sortPanel.setData(fields);
       renderItems();
     } catch (error) {
       if (requestedVersion !== loadVersion) {
@@ -125,6 +136,8 @@ export function createItemBrowser({ goodsTypeId, itemManagement }) {
     element,
     filterButton: filterPanel.button,
     filterDialog: filterPanel.dialog,
+    sortButton: sortPanel.button,
+    sortDialog: sortPanel.dialog,
     refresh,
     destroy() {
       destroyed = true;
@@ -133,6 +146,7 @@ export function createItemBrowser({ goodsTypeId, itemManagement }) {
       activePresentation?.destroy();
       activePresentation = null;
       filterPanel.destroy();
+      sortPanel.destroy();
     }
   };
 }

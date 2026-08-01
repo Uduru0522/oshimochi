@@ -26,8 +26,8 @@ export function renderItemsView({ goodsType }, { itemManagement, mutationControl
     createElement("span", { textContent: "Add item" })
   );
   addButton.addEventListener("click", itemEntry.open);
-  viewActions.append(browser.filterButton, addButton);
-  article.append(browser.element, browser.filterDialog, itemEntry.dialog);
+  viewActions.append(browser.filterButton, browser.sortButton, addButton);
+  article.append(browser.element, browser.filterDialog, browser.sortDialog, itemEntry.dialog);
   browser.refresh();
   return {
     content: article,

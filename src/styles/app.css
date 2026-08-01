@@ -662,7 +662,8 @@ textarea {
   transform: translateX(4px);
 }
 
-.workspace[data-view-scrolled] .topbar-actions .items-filter-action > span:not(.items-filter-badge) {
+.workspace[data-view-scrolled] .topbar-actions .items-filter-action > span:not(.items-filter-badge),
+.workspace[data-view-scrolled] .topbar-actions .items-sort-action > span {
   max-width: 0;
   opacity: 0;
   transform: translateX(4px);
@@ -888,6 +889,43 @@ textarea {
     transform var(--motion-fast) ease;
 }
 
+.items-sort-action {
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  gap: 7px;
+  overflow: hidden;
+  transition:
+    background-color var(--motion-fast) ease,
+    border-color var(--motion-fast) ease,
+    color var(--motion-fast) ease,
+    gap var(--motion-fast) ease,
+    opacity var(--motion-fast) ease,
+    padding var(--motion-fast) ease,
+    transform var(--motion-fast) ease;
+}
+
+.items-sort-action > span {
+  max-width: 64px;
+  overflow: hidden;
+  opacity: 1;
+  white-space: nowrap;
+  transition:
+    max-width var(--motion-fast) ease,
+    opacity var(--motion-fast) ease,
+    transform var(--motion-fast) ease;
+}
+
+.items-sort-action .nav-svg {
+  width: 17px;
+  height: 17px;
+}
+
+.items-sort-action[data-active="true"] {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
 .items-filter-action > span:not(.items-filter-badge) {
   max-width: 64px;
   overflow: hidden;
@@ -1003,6 +1041,129 @@ textarea {
 
 .item-filter-dialog[data-closing="true"]::backdrop {
   animation: backdrop-exit var(--motion-fast) ease-in both;
+}
+
+.item-sort-dialog {
+  width: min(380px, calc(100% - 32px));
+  margin: 24px 24px auto auto;
+  padding: 0;
+  overflow: hidden;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  box-shadow: 0 24px 64px rgba(5, 12, 15, 0.28);
+  animation: dialog-enter var(--motion-fast) ease-out both;
+}
+
+.item-sort-dialog[open] {
+  display: grid;
+}
+
+.item-sort-dialog[data-closing="true"] {
+  animation: dialog-exit var(--motion-fast) ease-in both;
+  pointer-events: none;
+}
+
+.item-sort-dialog::backdrop {
+  background: rgba(5, 12, 15, 0.48);
+  animation: backdrop-enter var(--motion-fast) ease-out both;
+}
+
+.item-sort-dialog[data-closing="true"]::backdrop {
+  animation: backdrop-exit var(--motion-fast) ease-in both;
+}
+
+.item-sort-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--line);
+}
+
+.item-sort-header h3 {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.3;
+}
+
+.item-sort-form {
+  display: grid;
+  gap: 18px;
+  padding: 18px;
+}
+
+.item-sort-field {
+  display: grid;
+  gap: 8px;
+}
+
+.item-sort-direction {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+}
+
+.item-sort-direction legend {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.item-sort-direction label {
+  min-width: 0;
+  cursor: pointer;
+}
+
+.item-sort-direction input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.item-sort-direction span {
+  display: grid;
+  min-height: 38px;
+  padding: 6px 10px;
+  place-items: center;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  transition:
+    background-color var(--motion-fast) ease,
+    color var(--motion-fast) ease;
+}
+
+.item-sort-direction input:checked + span {
+  color: var(--text);
+  background: var(--accent-soft);
+}
+
+.item-sort-direction input:focus-visible + span {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: -3px;
+}
+
+.item-sort-footer,
+.item-sort-footer-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.item-sort-footer {
+  justify-content: space-between;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
 }
 
 .item-filter-header {
@@ -3196,6 +3357,20 @@ textarea {
     gap: 0;
   }
 
+  .items-sort-action {
+    width: 38px;
+    min-width: 38px;
+    padding-right: 9px;
+    padding-left: 9px;
+    justify-content: center;
+    gap: 0;
+  }
+
+  .items-sort-action > span {
+    max-width: 0;
+    opacity: 0;
+  }
+
   .items-filter-action > span:not(.items-filter-badge) {
     max-width: 0;
     opacity: 0;
@@ -3205,6 +3380,12 @@ textarea {
     width: calc(100% - 24px);
     max-width: 560px;
     max-height: calc(100dvh - 24px);
+    margin: 12px auto auto;
+  }
+
+  .item-sort-dialog {
+    width: calc(100% - 24px);
+    max-width: 440px;
     margin: 12px auto auto;
   }
 
