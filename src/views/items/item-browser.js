@@ -13,7 +13,7 @@ function createMessage(className, textContent) {
   };
 }
 
-export function createItemBrowser({ goodsTypeId, itemManagement, onEditItem }) {
+export function createItemBrowser({ goodsTypeId, itemManagement, onDeleteItem, onEditItem }) {
   const element = createElement("div", { className: "item-browser" });
   const transition = createContentTransition(element, { animateInitial: true });
   let activeFilter = { query: "", rules: [] };
@@ -67,6 +67,7 @@ export function createItemBrowser({ goodsTypeId, itemManagement, onEditItem }) {
       createItemList(visibleItems, fields, {
         getAsset: itemManagement.getAsset,
         onClearFilters: clearFilters,
+        onDeleteItem,
         onEditItem,
         sourceItems: sortedItems
       })
@@ -141,6 +142,15 @@ export function createItemBrowser({ goodsTypeId, itemManagement, onEditItem }) {
     renderItems({ incremental: true });
   }
 
+  function removeItem(deletedItem) {
+    if (destroyed) {
+      return;
+    }
+    items = items.filter(({ id }) => id !== deletedItem.id);
+    filterPanel.setData(fields, items);
+    renderItems({ incremental: true });
+  }
+
   return {
     addItems,
     element,
@@ -148,6 +158,7 @@ export function createItemBrowser({ goodsTypeId, itemManagement, onEditItem }) {
     filterDialog: filterPanel.dialog,
     sortButton: sortPanel.button,
     sortDialog: sortPanel.dialog,
+    removeItem,
     updateItem,
     refresh,
     destroy() {

@@ -56,7 +56,7 @@ function createFieldValues(fieldValues) {
   return values;
 }
 
-function createItemListRow(item, fields, getAsset, onEditItem) {
+function createItemListRow(item, fields, getAsset, onDeleteItem, onEditItem) {
   const element = createElement("article", {
     attributes: { role: "listitem" },
     className: "item-list-row",
@@ -85,6 +85,14 @@ function createItemListRow(item, fields, getAsset, onEditItem) {
       },
       className: "item-list-edit"
     });
+    const deleteButton = createElement("button", {
+      attributes: {
+        "aria-label": `Delete ${nextItem.name}`,
+        title: "Delete item",
+        type: "button"
+      },
+      className: "item-list-delete"
+    });
     thumbnail = createItemThumbnail(nextItem, getAsset);
     updateWarning = null;
 
@@ -100,7 +108,9 @@ function createItemListRow(item, fields, getAsset, onEditItem) {
     }
     editButton.append(createIcon("edit"));
     editButton.addEventListener("click", () => onEditItem(nextItem));
-    controls.append(editButton);
+    deleteButton.append(createIcon("delete"));
+    deleteButton.addEventListener("click", () => onDeleteItem(nextItem));
+    controls.append(editButton, deleteButton);
     element.replaceChildren(thumbnail.element, copy, controls);
   }
 
@@ -169,7 +179,13 @@ function animateRow(element, direction) {
 export function createItemList(
   items,
   fields,
-  { getAsset, onClearFilters = () => {}, onEditItem = () => {}, sourceItems = items }
+  {
+    getAsset,
+    onClearFilters = () => {},
+    onDeleteItem = () => {},
+    onEditItem = () => {},
+    sourceItems = items
+  }
 ) {
   const element = createElement("div", {
     attributes: { "aria-label": "Collection items", role: "list" },
@@ -351,7 +367,7 @@ export function createItemList(
       return;
     }
 
-    const row = createItemListRow(item, fields, getAsset, onEditItem);
+    const row = createItemListRow(item, fields, getAsset, onDeleteItem, onEditItem);
     rows.set(item.id, row);
     element.insertBefore(row.element, findInsertionReference(item.id));
     const animation = animateRow(row.element, "enter");
@@ -388,7 +404,7 @@ export function createItemList(
   }
 
   items.forEach((item) => {
-    const row = createItemListRow(item, fields, getAsset, onEditItem);
+    const row = createItemListRow(item, fields, getAsset, onDeleteItem, onEditItem);
     rows.set(item.id, row);
     element.append(row.element);
   });

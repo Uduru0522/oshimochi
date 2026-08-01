@@ -3,6 +3,7 @@ import { createIcon } from "../../shared/icons.js";
 import { createItemBrowser } from "./item-browser.js";
 import { createItemEntryDialog } from "./item-entry-dialog.js";
 import { createItemEditDialog } from "./item-edit-dialog.js";
+import { createItemDeleteDialog } from "./item-delete-dialog.js";
 
 export function renderItemsView({ goodsType }, { itemManagement, mutationController }) {
   const article = createElement("article", { className: "items-view" });
@@ -12,9 +13,11 @@ export function renderItemsView({ goodsType }, { itemManagement, mutationControl
   });
   const viewActions = createElement("div", { className: "item-view-actions" });
   let itemEditor = null;
+  let itemDelete = null;
   const browser = createItemBrowser({
     goodsTypeId: goodsType.id,
     itemManagement,
+    onDeleteItem: (item) => itemDelete?.open(item),
     onEditItem: (item) => itemEditor?.open(item)
   });
   const itemEntry = createItemEntryDialog({
@@ -29,6 +32,11 @@ export function renderItemsView({ goodsType }, { itemManagement, mutationControl
     mutationController,
     onUpdated: browser.updateItem
   });
+  itemDelete = createItemDeleteDialog({
+    itemManagement,
+    mutationController,
+    onDeleted: browser.removeItem
+  });
 
   addButton.append(
     createIcon("add"),
@@ -41,7 +49,8 @@ export function renderItemsView({ goodsType }, { itemManagement, mutationControl
     browser.filterDialog,
     browser.sortDialog,
     itemEntry.dialog,
-    itemEditor.dialog
+    itemEditor.dialog,
+    itemDelete.dialog
   );
   browser.refresh();
   return {
@@ -50,6 +59,7 @@ export function renderItemsView({ goodsType }, { itemManagement, mutationControl
       browser.destroy();
       itemEntry.destroy();
       itemEditor.destroy();
+      itemDelete.destroy();
     },
     topbarAction: viewActions
   };
