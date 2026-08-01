@@ -10,6 +10,7 @@ import { createItemDisplayValue } from "./item-display-value.js";
 import { createItemEmptyState } from "./item-empty-state.js";
 import { createMissingFieldsWarning } from "./item-missing-warning.js";
 import { createItemThumbnail } from "./item-thumbnail.js";
+import { createKeyedLayoutMotion } from "./keyed-layout-motion.js";
 
 const ROW_MOTION_FALLBACK_MS = 140;
 
@@ -168,7 +169,7 @@ export function createItemList(
   let sourceOrder = new Map(sourceItems.map((item, index) => [item.id, index]));
   const rows = new Map();
   const rowAnimations = new Map();
-  const rowMoveAnimations = new Map();
+  const layoutMotion = createKeyedLayoutMotion((itemId) => rows.get(itemId)?.element);
   let desiredIds = new Set(items.map(({ id }) => id));
   let destroyed = false;
   let emptyState = null;
@@ -214,11 +215,6 @@ export function createItemList(
     transition.animation.cancel();
   }
 
-  function cancelRowMoveAnimation(itemId) {
-    rowMoveAnimations.get(itemId)?.cancel();
-    rowMoveAnimations.delete(itemId);
-  }
-
   function reorderRows(nextItems) {
     const nextIds = nextItems.map(({ id }) => id);
     const currentIds = [...element.children]
@@ -232,10 +228,7 @@ export function createItemList(
       return;
     }
 
-    const previousPositions = new Map(nextIds.flatMap((itemId) => {
-      const row = rows.get(itemId);
-      return row ? [[itemId, row.element.getBoundingClientRect()]] : [];
-    }));
+    const previousPositions = layoutMotion.capture(nextIds);
 
     nextIds.forEach((itemId) => {
       const row = rows.get(itemId);
@@ -244,36 +237,7 @@ export function createItemList(
       }
     });
 
-    if (prefersReducedMotion()) {
-      return;
-    }
-
-    nextIds.forEach((itemId) => {
-      const row = rows.get(itemId);
-      const previousPosition = previousPositions.get(itemId);
-      if (!row || !previousPosition || typeof row.element.animate !== "function") {
-        return;
-      }
-
-      const nextPosition = row.element.getBoundingClientRect();
-      const offsetY = previousPosition.top - nextPosition.top;
-      if (Math.abs(offsetY) < 1) {
-        return;
-      }
-
-      cancelRowMoveAnimation(itemId);
-      const animation = row.element.animate(
-        [{ transform: `translateY(${offsetY}px)` }, { transform: "translateY(0)" }],
-        getRowAnimationOptions(row.element)
-      );
-      rowMoveAnimations.set(itemId, animation);
-      animation.finished.then(() => {
-        if (rowMoveAnimations.get(itemId) === animation) {
-          rowMoveAnimations.delete(itemId);
-          animation.cancel();
-        }
-      }, () => {});
-    });
+    layoutMotion.animate(previousPositions, nextIds);
   }
 
   function finishRemovingRow(itemId, animation) {
@@ -397,8 +361,7 @@ export function createItemList(
       destroyed = true;
       rowAnimations.forEach(({ animation }) => animation.cancel());
       rowAnimations.clear();
-      rowMoveAnimations.forEach((animation) => animation.cancel());
-      rowMoveAnimations.clear();
+      layoutMotion.destroy();
       rows.forEach(({ destroy }) => destroy());
       rows.clear();
       resizeObserver?.disconnect();

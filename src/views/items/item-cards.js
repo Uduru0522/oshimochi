@@ -10,6 +10,7 @@ import { createItemEmptyState } from "./item-empty-state.js";
 import { getItemDisplayData } from "./item-display-model.js";
 import { formatMissingFields } from "./item-missing-warning.js";
 import { createItemThumbnail } from "./item-thumbnail.js";
+import { createKeyedLayoutMotion } from "./keyed-layout-motion.js";
 
 const CARD_MOTION_FALLBACK_MS = 140;
 const VISIBLE_FIELD_COUNT = 3;
@@ -29,8 +30,8 @@ function animateCard(element, direction) {
   if (prefersReducedMotion() || typeof element.animate !== "function") {
     return null;
   }
-  const visible = { opacity: 1, transform: "scale(1)" };
-  const hidden = { opacity: 0, transform: "scale(0.96)" };
+  const visible = { opacity: 1, scale: 1 };
+  const hidden = { opacity: 0, scale: 0.96 };
   return element.animate(
     direction === "enter" ? [hidden, visible] : [visible, hidden],
     getCardAnimationOptions(element)
@@ -155,6 +156,7 @@ export function createItemCards(
   });
   const cards = new Map();
   const animations = new Map();
+  const layoutMotion = createKeyedLayoutMotion((itemId) => cards.get(itemId)?.element);
   let desiredItems = items;
   let desiredIds = new Set(items.map(({ id }) => id));
   let destroyed = false;
@@ -184,10 +186,16 @@ export function createItemCards(
   }
 
   function reorderCards(nextItems) {
-    const positions = new Map(nextItems.flatMap((item) => {
-      const card = cards.get(item.id);
-      return card ? [[item.id, card.element.getBoundingClientRect()]] : [];
-    }));
+    const nextIds = nextItems.map(({ id }) => id);
+    const currentIds = [...element.children]
+      .map((child) => child.dataset?.itemId)
+      .filter((itemId) => desiredIds.has(itemId));
+    if (
+      nextIds.length === currentIds.length &&
+      nextIds.every((itemId, index) => itemId === currentIds[index])
+    ) {
+      return;
+    }
 
     nextItems.forEach((item) => {
       const card = cards.get(item.id);
@@ -195,29 +203,18 @@ export function createItemCards(
         element.append(card.element);
       }
     });
-    if (prefersReducedMotion()) {
-      return;
-    }
-    nextItems.forEach((item) => {
-      const card = cards.get(item.id);
-      const previous = positions.get(item.id);
-      if (!card || !previous || typeof card.element.animate !== "function") {
-        return;
-      }
-      const next = card.element.getBoundingClientRect();
-      const offsetX = previous.left - next.left;
-      const offsetY = previous.top - next.top;
-      if (Math.abs(offsetX) < 1 && Math.abs(offsetY) < 1) {
-        return;
-      }
-      card.element.animate(
-        [
-          { transform: `translate(${offsetX}px, ${offsetY}px)` },
-          { transform: "translate(0, 0)" }
-        ],
-        getCardAnimationOptions(card.element)
-      );
-    });
+  }
+
+  function findInsertionReference(itemId) {
+    const itemIndex = desiredItems.findIndex(({ id }) => id === itemId);
+    return desiredItems
+      .slice(itemIndex + 1)
+      .map(({ id }) => cards.get(id)?.element)
+      .find(Boolean) ?? null;
+  }
+
+  function animateReflow(previousPositions, itemIds) {
+    layoutMotion.animate(previousPositions, itemIds.filter((itemId) => cards.has(itemId)));
   }
 
   function removeCard(itemId) {
@@ -228,10 +225,12 @@ export function createItemCards(
     cancelAnimation(itemId);
     const animation = animateCard(card.element, "exit");
     if (!animation) {
+      const remainingIds = desiredItems.map(({ id }) => id);
+      const previousPositions = layoutMotion.capture(remainingIds);
       card.destroy();
       card.element.remove();
       cards.delete(itemId);
-      reorderCards(desiredItems);
+      animateReflow(previousPositions, remainingIds);
       showEmptyState();
       return;
     }
@@ -244,12 +243,14 @@ export function createItemCards(
       ) {
         return;
       }
+      const remainingIds = desiredItems.map(({ id }) => id);
+      const previousPositions = layoutMotion.capture(remainingIds);
       animations.delete(itemId);
       card.destroy();
       card.element.remove();
       cards.delete(itemId);
       animation.cancel();
-      reorderCards(desiredItems);
+      animateReflow(previousPositions, remainingIds);
       showEmptyState();
     }, () => {});
   }
@@ -277,7 +278,7 @@ export function createItemCards(
     }
     const card = createItemCard(item, fields, getAsset, onDeleteItem, onEditItem);
     cards.set(item.id, card);
-    element.append(card.element);
+    element.insertBefore(card.element, findInsertionReference(item.id));
     const animation = animateCard(card.element, "enter");
     if (animation) {
       animations.set(item.id, { animation, direction: "enter" });
@@ -297,6 +298,10 @@ export function createItemCards(
     desiredItems = nextItems;
     desiredIds = new Set(nextItems.map(({ id }) => id));
     sourceItemCount = nextSourceItems.length;
+    const existingIds = nextItems
+      .map(({ id }) => id)
+      .filter((itemId) => cards.has(itemId));
+    const previousPositions = layoutMotion.capture(existingIds);
     if (desiredIds.size > 0) {
       removeEmptyState();
     }
@@ -307,6 +312,7 @@ export function createItemCards(
     });
     nextItems.forEach(addOrRestoreCard);
     reorderCards(nextItems);
+    animateReflow(previousPositions, existingIds);
     showEmptyState();
   }
 
@@ -324,6 +330,7 @@ export function createItemCards(
       destroyed = true;
       animations.forEach(({ animation }) => animation.cancel());
       animations.clear();
+      layoutMotion.destroy();
       cards.forEach((card) => card.destroy());
       cards.clear();
       removeEmptyState();
