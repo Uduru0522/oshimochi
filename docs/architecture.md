@@ -156,9 +156,11 @@ Owns view definitions and view rendering.
   and dialogs. `item-browser.js` owns asynchronous
   loading, applied query state, and the active presentation. List/card mode lives
   at this same boundary, while `item-list.js` and `item-cards.js` independently
-  reconcile keyed records from one filtered and sorted item set. Filter and sort
-  dialogs remain separate from their pure
-  application evaluators. Display-model, typed-value, thumbnail, and warning
+  reconcile keyed records from one filtered and sorted item set. Their shared
+  keyed-layout helper measures stable entries before DOM ordering changes, then
+  animates those entries from their previous positions without moving new entries
+  away from their final insertion points. Filter and sort dialogs remain separate
+  from their pure application evaluators. Display-model, typed-value, thumbnail, and warning
   helpers are presentation-neutral. Add and edit dialogs own separate draft
   lifecycles while sharing the entry form, crop editor, and review rendering. The
   delete dialog owns explicit confirmation and delegates the actual soft-delete

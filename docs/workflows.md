@@ -154,7 +154,9 @@ Status: implemented.
 3. Only the presentation renderer changes with a short content transition.
 
 List remains the default compact management view. Cards prioritize the complete
-processed image and item name, show up to three custom fields, and indicate when
+processed image and item name. Their square image stage contains either supported
+90-degree crop orientation without clipping, so portrait and landscape assets use
+the same card geometry. Cards show up to three custom fields and indicate when
 additional fields are available. Both presentations expose edit and delete actions
 and use keyed updates after item mutations.
 
