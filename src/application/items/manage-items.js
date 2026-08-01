@@ -34,6 +34,30 @@ export function createItemManagementOperations({
     return storage.listFieldDefinitions(goodsTypeId);
   }
 
+  async function softDeleteItem(item) {
+    const existingItem = parseItemRecord(item);
+    if (existingItem.isDeleted) {
+      throw new TypeError("This item is already deleted.");
+    }
+
+    const goodsTypes = await storage.listGoodsTypes();
+    if (!goodsTypes.some(({ id }) => id === existingItem.goodsTypeId)) {
+      throw new TypeError("The selected goods type is not active.");
+    }
+
+    const timestamp = now();
+    const deletedItem = parseItemRecord({
+      ...existingItem,
+      deletedAt: timestamp,
+      isDeleted: true,
+      updatedAt: timestamp
+    });
+    const change = { asset: null, item: deletedItem, previousImageAssetId: null };
+
+    await storage.updateItem(change);
+    return structuredClone(deletedItem);
+  }
+
   async function createItem({ goodsTypeId, name, customValues = {}, image = null }) {
     const fields = await getEntryFields(goodsTypeId);
 
@@ -101,6 +125,7 @@ export function createItemManagementOperations({
     getAsset: (assetId) => storage.getAsset(assetId),
     getEntryFields,
     listItems: (goodsTypeId) => storage.listItems(goodsTypeId),
+    softDeleteItem,
     updateItem
   };
 }

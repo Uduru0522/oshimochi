@@ -268,3 +268,38 @@ test("item updates replace images through one storage request", async () => {
   assert.equal(result.previousImageAssetId, "asset-1");
   assert.deepEqual(writes, [result]);
 });
+
+test("item soft deletion retains data and marks deletion timestamps atomically", async () => {
+  const writes = [];
+  const existingItem = createItemRecord({
+    id: "item-1",
+    goodsTypeId: "figures",
+    name: "Original",
+    imageAssetId: "asset-1",
+    customValues: { notes: "Keep this" }
+  }, { now: () => FIXED_TIME });
+  const operations = createItemManagementOperations({
+    storage: {
+      async createItem() {},
+      async getAsset() { return null; },
+      async listFieldDefinitions() { return []; },
+      async listGoodsTypes() { return [{ id: "figures" }]; },
+      async listItems() { return [existingItem]; },
+      async updateItem(change) { writes.push(change); }
+    },
+    now: () => "2026-07-21T00:00:00.000Z"
+  });
+
+  const deletedItem = await operations.softDeleteItem(existingItem);
+
+  assert.equal(deletedItem.isDeleted, true);
+  assert.equal(deletedItem.deletedAt, "2026-07-21T00:00:00.000Z");
+  assert.equal(deletedItem.updatedAt, "2026-07-21T00:00:00.000Z");
+  assert.equal(deletedItem.imageAssetId, existingItem.imageAssetId);
+  assert.deepEqual(deletedItem.customValues, existingItem.customValues);
+  assert.deepEqual(writes, [{
+    asset: null,
+    item: deletedItem,
+    previousImageAssetId: null
+  }]);
+});
