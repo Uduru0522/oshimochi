@@ -1,0 +1,62 @@
+import { createElement } from "../../shared/dom.js";
+import { createIcon } from "../../shared/icons.js";
+
+export const ITEM_PRESENTATIONS = Object.freeze({
+  cards: "cards",
+  list: "list"
+});
+
+const PRESENTATION_OPTIONS = Object.freeze([
+  { icon: "list", label: "List view", value: ITEM_PRESENTATIONS.list },
+  { icon: "grid", label: "Card view", value: ITEM_PRESENTATIONS.cards }
+]);
+
+export function createItemPresentationControl({
+  initialValue = ITEM_PRESENTATIONS.list,
+  onChange
+}) {
+  const element = createElement("div", {
+    attributes: { "aria-label": "Item presentation", role: "group" },
+    className: "item-presentation-control"
+  });
+  const buttons = new Map();
+  let value = initialValue;
+
+  function updateSelection() {
+    buttons.forEach((button, optionValue) => {
+      button.setAttribute("aria-pressed", String(optionValue === value));
+    });
+  }
+
+  PRESENTATION_OPTIONS.forEach((option) => {
+    const button = createElement("button", {
+      attributes: {
+        "aria-label": option.label,
+        title: option.label,
+        type: "button"
+      },
+      className: "item-presentation-option"
+    });
+    button.append(createIcon(option.icon));
+    button.addEventListener("click", () => {
+      if (value === option.value) {
+        return;
+      }
+      value = option.value;
+      updateSelection();
+      onChange(value);
+    });
+    buttons.set(option.value, button);
+    element.append(button);
+  });
+  updateSelection();
+
+  return {
+    element,
+    setDisabled(disabled) {
+      buttons.forEach((button) => {
+        button.disabled = disabled;
+      });
+    }
+  };
+}

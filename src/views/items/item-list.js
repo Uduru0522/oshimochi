@@ -1,4 +1,3 @@
-import { createActionButton } from "../../shared/action-button.js";
 import { createElement } from "../../shared/dom.js";
 import { createIcon } from "../../shared/icons.js";
 import {
@@ -8,36 +7,11 @@ import {
 } from "../../shared/motion.js";
 import { getItemDisplayData } from "./item-display-model.js";
 import { createItemDisplayValue } from "./item-display-value.js";
+import { createItemEmptyState } from "./item-empty-state.js";
 import { createMissingFieldsWarning } from "./item-missing-warning.js";
 import { createItemThumbnail } from "./item-thumbnail.js";
 
 const ROW_MOTION_FALLBACK_MS = 140;
-
-function createEmptyState() {
-  const element = createElement("section", {
-    className: "items-empty-state item-list-empty"
-  });
-  element.append(
-    createElement("h4", { textContent: "No items to display" }),
-    createElement("p", { textContent: "Items saved to this collection will appear here." })
-  );
-  return { destroy() {}, element };
-}
-
-function createFilteredEmptyState(onClearFilters) {
-  const element = createElement("section", {
-    className: "items-empty-state item-list-empty item-list-filter-empty"
-  });
-  const clearButton = createActionButton("Clear filters", { className: "secondary-action" });
-
-  clearButton.addEventListener("click", onClearFilters);
-  element.append(
-    createElement("h4", { textContent: "No matching items" }),
-    createElement("p", { textContent: "Adjust or clear the active filters." }),
-    clearButton
-  );
-  return element;
-}
 
 function createFieldValues(fieldValues) {
   const values = createElement("dl", { className: "item-list-values" });
@@ -217,9 +191,11 @@ export function createItemList(
     if (destroyed || desiredIds.size > 0 || rowAnimations.size > 0 || emptyState) {
       return;
     }
-    emptyState = sourceItemCount === 0
-      ? createEmptyState().element
-      : createFilteredEmptyState(onClearFilters);
+    emptyState = createItemEmptyState({
+      hasSourceItems: sourceItemCount > 0,
+      onClearFilters
+    });
+    emptyState.classList.add("item-list-empty");
     element.append(emptyState);
     if (!prefersReducedMotion() && typeof emptyState.animate === "function") {
       emptyState.animate(

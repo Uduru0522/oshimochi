@@ -1,7 +1,11 @@
 import { createElement } from "../../shared/dom.js";
 
-export function createItemThumbnail(item, getAsset) {
-  const element = createElement("div", { className: "item-list-thumbnail" });
+export function createItemThumbnail(
+  item,
+  getAsset,
+  { className = "item-list-thumbnail" } = {}
+) {
+  const element = createElement("div", { className });
   let disposed = false;
   let imageUrl = "";
 

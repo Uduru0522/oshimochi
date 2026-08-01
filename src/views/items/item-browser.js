@@ -2,8 +2,13 @@ import { filterItems } from "../../application/items/filter-items.js";
 import { DEFAULT_ITEM_SORT, sortItems } from "../../application/items/sort-items.js";
 import { createContentTransition } from "../../shared/content-transition.js";
 import { createElement } from "../../shared/dom.js";
+import { createItemCards } from "./item-cards.js";
 import { createItemFilterPanel } from "./item-filter-panel.js";
 import { createItemList } from "./item-list.js";
+import {
+  ITEM_PRESENTATIONS,
+  createItemPresentationControl
+} from "./item-presentation-control.js";
 import { createItemSortPanel } from "./item-sort-panel.js";
 
 function createMessage(className, textContent) {
@@ -17,6 +22,7 @@ export function createItemBrowser({ goodsTypeId, itemManagement, onDeleteItem, o
   const element = createElement("div", { className: "item-browser" });
   const transition = createContentTransition(element, { animateInitial: true });
   let activeFilter = { query: "", rules: [] };
+  let activeMode = ITEM_PRESENTATIONS.list;
   let activeSort = DEFAULT_ITEM_SORT;
   let activePresentation = null;
   let destroyed = false;
@@ -35,6 +41,14 @@ export function createItemBrowser({ goodsTypeId, itemManagement, onDeleteItem, o
       renderItems({ incremental: true });
     }
   });
+  const presentationControl = createItemPresentationControl({
+    initialValue: activeMode,
+    onChange(mode) {
+      activeMode = mode;
+      renderItems();
+    }
+  });
+  presentationControl.setDisabled(true);
 
   function replacePresentation(createPresentation) {
     transition.replace(() => {
@@ -63,15 +77,18 @@ export function createItemBrowser({ goodsTypeId, itemManagement, onDeleteItem, o
       return;
     }
 
-    replacePresentation(() =>
-      createItemList(visibleItems, fields, {
+    replacePresentation(() => {
+      const createPresentation = activeMode === ITEM_PRESENTATIONS.cards
+        ? createItemCards
+        : createItemList;
+      return createPresentation(visibleItems, fields, {
         getAsset: itemManagement.getAsset,
         onClearFilters: clearFilters,
         onDeleteItem,
         onEditItem,
         sourceItems: sortedItems
-      })
-    );
+      });
+    });
   }
 
   async function refresh() {
@@ -105,6 +122,7 @@ export function createItemBrowser({ goodsTypeId, itemManagement, onDeleteItem, o
       filterPanel.setFilter(activeFilter);
       filterPanel.setData(fields, items);
       sortPanel.setData(fields);
+      presentationControl.setDisabled(false);
       renderItems();
     } catch (error) {
       if (requestedVersion !== loadVersion) {
@@ -156,6 +174,7 @@ export function createItemBrowser({ goodsTypeId, itemManagement, onDeleteItem, o
     element,
     filterButton: filterPanel.button,
     filterDialog: filterPanel.dialog,
+    presentationControl: presentationControl.element,
     sortButton: sortPanel.button,
     sortDialog: sortPanel.dialog,
     removeItem,
