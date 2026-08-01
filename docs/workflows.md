@@ -128,6 +128,24 @@ Filtering is an in-memory application operation over records already loaded by
 the item browser. It is deliberately independent from list markup so the planned
 card presentation can consume the same result set.
 
+## Sort Items
+
+Status: implemented for the list presentation.
+
+1. User opens **Sort** from the collection title bar.
+2. User chooses last update, creation date, item name, or a supported custom field.
+3. User chooses ascending or descending order and applies the staged selection.
+4. Existing rows move into their new positions without being recreated.
+
+Recently updated is the default order. Missing custom values always remain at
+the end in either direction. Text uses case-insensitive natural ordering, while
+numbers and dates retain their native order. Two-option and selection-list
+fields sort by the labels visible to the user rather than their stored values.
+
+Sorting runs after records are loaded and before filtering is evaluated. Both
+operations are independent from list markup, allowing a later card presentation
+to consume the same ordered result set.
+
 ## Manage Fields
 
 Status: implemented.

@@ -68,13 +68,13 @@ order. It describes direction, not a release-date commitment.
 
 - [x] keep the current compact list as the primary item view
 - [x] filter items by built-in and custom field values
-- [ ] sort items by name, creation time, update time, and supported custom values
+- [x] sort items by name, creation time, update time, and supported custom values
 - [ ] edit items through the existing modal workflow
 - [ ] soft-delete items with explicit confirmation
 - [ ] add a cards view only after list management is complete
 
-The next implementation target is sorting. Filtering remains presentation-neutral
-so the later cards view can consume the same filtered and sorted item set.
+The next implementation target is item editing. Filtering and sorting remain
+presentation-neutral so the later cards view can consume the same prepared item set.
 
 ## Later Milestones
 

@@ -24,16 +24,16 @@ Implemented:
 - generated item-entry forms with image cropping, review, and atomic local persistence
 - collection item listing with thumbnails and custom values
 - typed item filtering with general search and field-specific rules
-- keyed list updates for filtering and newly registered items
+- typed item sorting across metadata, names, and supported custom values
+- keyed list updates for filtering, sorting, and newly registered items
 - runtime navigation refresh after database changes
 - offline app-shell caching
 - automated static and unit checks
 - GitHub Pages deployment
 
-Item sorting, editing, and soft deletion are the next application features. A
-card presentation follows the completed list-management workflow; backup
-transfer comes afterward. Their contracts are documented but not yet
-implemented.
+Item editing and soft deletion are the next application features. A card
+presentation follows the completed list-management workflow; backup transfer
+comes afterward. Their contracts are documented but not yet implemented.
 
 ## Run Locally
 
