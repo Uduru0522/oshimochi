@@ -1751,6 +1751,45 @@ textarea {
   align-self: center;
 }
 
+.item-list-controls {
+  display: flex;
+  flex: 0 0 auto;
+  align-self: flex-start;
+}
+
+.item-list-edit {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  place-items: center;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  transition:
+    background-color var(--motion-fast) ease,
+    border-color var(--motion-fast) ease,
+    color var(--motion-fast) ease;
+}
+
+.item-list-edit:hover {
+  color: var(--text);
+  background: var(--accent-tint);
+  border-color: var(--line);
+}
+
+.item-list-edit:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.item-list-edit .nav-svg {
+  width: 17px;
+  height: 17px;
+}
+
 .item-list-copy h4 {
   display: flex;
   align-items: center;
@@ -2206,6 +2245,22 @@ textarea {
   min-width: 150px;
 }
 
+.item-image-existing {
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+}
+
+.item-image-existing img {
+  width: auto;
+  max-width: min(520px, 100%);
+  height: 240px;
+  object-fit: contain;
+  background: var(--surface-muted);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
 .item-crop-stage {
   position: relative;
   width: min(520px, 100%);
@@ -2366,6 +2421,17 @@ textarea {
   .item-list-values {
     grid-template-columns: minmax(100px, 35%) minmax(0, 1fr);
     gap: 2px 12px;
+  }
+
+  .item-list-controls {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+  }
+
+  .item-list-row {
+    position: relative;
+    padding-right: 48px;
   }
 }
 

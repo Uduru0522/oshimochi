@@ -13,7 +13,7 @@ function releaseProcessedImage(draft) {
   draft.processedImageUrl = "";
 }
 
-export function clearItemImageDraft(draft) {
+function clearReplacementImage(draft) {
   releaseProcessedImage(draft);
 
   if (draft.imageSource?.previewUrl) {
@@ -23,9 +23,17 @@ export function clearItemImageDraft(draft) {
   draft.imageSource = null;
 }
 
+export function clearItemImageDraft(draft) {
+  clearReplacementImage(draft);
+  if (draft.existingImageUrl) {
+    URL.revokeObjectURL(draft.existingImageUrl);
+  }
+  draft.existingImageAssetId = null;
+  draft.existingImageUrl = "";
+}
+
 export async function prepareItemImage(draft) {
   if (!draft.imageSource) {
-    releaseProcessedImage(draft);
     return null;
   }
 
@@ -69,7 +77,7 @@ export function createItemImageField({ draft, field }) {
     cropEditor = null;
     content.replaceChildren();
 
-    if (!draft.imageSource) {
+    if (!draft.imageSource && !draft.existingImageUrl) {
       const chooseButton = createActionButton("Choose image", {
         className: "item-image-choose secondary-action"
       });
@@ -78,12 +86,28 @@ export function createItemImageField({ draft, field }) {
       return;
     }
 
+    if (!draft.imageSource) {
+      const existing = createElement("div", { className: "item-image-existing" });
+      const replaceButton = createActionButton("Replace image", {
+        className: "secondary-action"
+      });
+      replaceButton.addEventListener("click", () => input.click());
+      existing.append(
+        createElement("img", {
+          attributes: { alt: "Current item image", src: draft.existingImageUrl }
+        }),
+        replaceButton
+      );
+      content.append(existing);
+      return;
+    }
+
     cropEditor = createItemCropEditor({
       source: draft.imageSource,
       onChange: () => releaseProcessedImage(draft),
       onRemove: () => {
         selectionVersion += 1;
-        clearItemImageDraft(draft);
+        clearReplacementImage(draft);
         input.value = "";
         render();
       }
@@ -119,7 +143,7 @@ export function createItemImageField({ draft, field }) {
       return;
     }
 
-    clearItemImageDraft(draft);
+    clearReplacementImage(draft);
     draft.imageSource = {
       cropScale: 1,
       file,
@@ -142,7 +166,7 @@ export function createItemImageField({ draft, field }) {
       cropEditor = null;
     },
     validate() {
-      if (draft.imageSource) {
+      if (draft.imageSource || draft.existingImageAssetId) {
         feedback.textContent = "";
         return true;
       }

@@ -41,10 +41,11 @@ export function createItemEntryReview({
     createElement("h4", { textContent: "Review item" }),
     createElement("p", { textContent: "Confirm the values before saving them locally." })
   );
-  if (draft.processedImageUrl) {
+  const imageUrl = draft.processedImageUrl || draft.existingImageUrl;
+  if (imageUrl) {
     element.append(
       createElement("img", {
-        attributes: { alt: "Processed item image", src: draft.processedImageUrl },
+        attributes: { alt: "Item image", src: imageUrl },
         className: "item-review-image"
       })
     );

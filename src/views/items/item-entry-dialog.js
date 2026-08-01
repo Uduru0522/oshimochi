@@ -15,6 +15,8 @@ import { describeItemSaveError } from "./item-save-error.js";
 function createDraft() {
   return {
     customValues: {},
+    existingImageAssetId: null,
+    existingImageUrl: "",
     image: null,
     imageSource: null,
     name: "",

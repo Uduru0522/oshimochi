@@ -1,5 +1,6 @@
 import { createActionButton } from "../../shared/action-button.js";
 import { createElement } from "../../shared/dom.js";
+import { createIcon } from "../../shared/icons.js";
 import {
   MAX_UI_MOTION_MS,
   getCustomPropertyDurationMs,
@@ -55,40 +56,73 @@ function createFieldValues(fieldValues) {
   return values;
 }
 
-function createItemListRow(item, fields, getAsset) {
+function createItemListRow(item, fields, getAsset, onEditItem) {
   const element = createElement("article", {
     attributes: { role: "listitem" },
     className: "item-list-row",
     dataset: { itemId: item.id }
   });
-  const copy = createElement("div", { className: "item-list-copy" });
-  const title = createElement("h4");
-  const itemName = createElement("span", {
-    className: "item-list-name",
-    textContent: item.name
-  });
-  const { fieldValues, missingRequiredFields } = getItemDisplayData(item, fields);
-  const thumbnail = createItemThumbnail(item, getAsset);
+  let currentItem = item;
+  let thumbnail = null;
   let updateWarning = null;
 
-  title.append(itemName);
-  if (missingRequiredFields.length > 0) {
-    const warning = createMissingFieldsWarning(missingRequiredFields, title, itemName);
-    updateWarning = warning.updateLayout;
-    title.append(warning.element);
-  }
-  copy.append(title);
+  function render(nextItem) {
+    thumbnail?.destroy();
+    currentItem = nextItem;
+    const copy = createElement("div", { className: "item-list-copy" });
+    const title = createElement("h4");
+    const itemName = createElement("span", {
+      className: "item-list-name",
+      textContent: nextItem.name
+    });
+    const { fieldValues, missingRequiredFields } = getItemDisplayData(nextItem, fields);
+    const controls = createElement("div", { className: "item-list-controls" });
+    const editButton = createElement("button", {
+      attributes: {
+        "aria-label": `Edit ${nextItem.name}`,
+        title: "Edit item",
+        type: "button"
+      },
+      className: "item-list-edit"
+    });
+    thumbnail = createItemThumbnail(nextItem, getAsset);
+    updateWarning = null;
 
-  if (fieldValues.length > 0) {
-    copy.append(createFieldValues(fieldValues));
+    title.append(itemName);
+    if (missingRequiredFields.length > 0) {
+      const warning = createMissingFieldsWarning(missingRequiredFields, title, itemName);
+      updateWarning = warning.updateLayout;
+      title.append(warning.element);
+    }
+    copy.append(title);
+    if (fieldValues.length > 0) {
+      copy.append(createFieldValues(fieldValues));
+    }
+    editButton.append(createIcon("edit"));
+    editButton.addEventListener("click", () => onEditItem(nextItem));
+    controls.append(editButton);
+    element.replaceChildren(thumbnail.element, copy, controls);
   }
 
-  element.append(thumbnail.element, copy);
+  render(item);
   return {
-    destroy: thumbnail.destroy,
     element,
     itemId: item.id,
-    updateWarning
+    get item() {
+      return currentItem;
+    },
+    destroy() {
+      thumbnail?.destroy();
+    },
+    update(nextItem) {
+      render(nextItem);
+      if (!prefersReducedMotion() && typeof element.animate === "function") {
+        element.animate([{ opacity: 0.55 }, { opacity: 1 }], getRowAnimationOptions(element));
+      }
+    },
+    updateWarning() {
+      updateWarning?.();
+    }
   };
 }
 
@@ -135,7 +169,7 @@ function animateRow(element, direction) {
 export function createItemList(
   items,
   fields,
-  { getAsset, onClearFilters = () => {}, sourceItems = items }
+  { getAsset, onClearFilters = () => {}, onEditItem = () => {}, sourceItems = items }
 ) {
   const element = createElement("div", {
     attributes: { "aria-label": "Collection items", role: "list" },
@@ -298,6 +332,9 @@ export function createItemList(
   function addOrRestoreRow(item) {
     const existingRow = rows.get(item.id);
     if (existingRow) {
+      if (existingRow.item !== item) {
+        existingRow.update(item);
+      }
       if (rowAnimations.has(item.id)) {
         cancelRowAnimation(item.id);
         const animation = animateRow(existingRow.element, "enter");
@@ -314,7 +351,7 @@ export function createItemList(
       return;
     }
 
-    const row = createItemListRow(item, fields, getAsset);
+    const row = createItemListRow(item, fields, getAsset, onEditItem);
     rows.set(item.id, row);
     element.insertBefore(row.element, findInsertionReference(item.id));
     const animation = animateRow(row.element, "enter");
@@ -351,7 +388,7 @@ export function createItemList(
   }
 
   items.forEach((item) => {
-    const row = createItemListRow(item, fields, getAsset);
+    const row = createItemListRow(item, fields, getAsset, onEditItem);
     rows.set(item.id, row);
     element.append(row.element);
   });

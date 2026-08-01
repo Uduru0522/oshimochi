@@ -13,7 +13,7 @@ function createMessage(className, textContent) {
   };
 }
 
-export function createItemBrowser({ goodsTypeId, itemManagement }) {
+export function createItemBrowser({ goodsTypeId, itemManagement, onEditItem }) {
   const element = createElement("div", { className: "item-browser" });
   const transition = createContentTransition(element, { animateInitial: true });
   let activeFilter = { query: "", rules: [] };
@@ -67,6 +67,7 @@ export function createItemBrowser({ goodsTypeId, itemManagement }) {
       createItemList(visibleItems, fields, {
         getAsset: itemManagement.getAsset,
         onClearFilters: clearFilters,
+        onEditItem,
         sourceItems: sortedItems
       })
     );
@@ -131,6 +132,15 @@ export function createItemBrowser({ goodsTypeId, itemManagement }) {
     renderItems({ incremental: true });
   }
 
+  function updateItem(updatedItem) {
+    if (destroyed || !items.some(({ id }) => id === updatedItem.id)) {
+      return;
+    }
+    items = items.map((item) => item.id === updatedItem.id ? updatedItem : item);
+    filterPanel.setData(fields, items);
+    renderItems({ incremental: true });
+  }
+
   return {
     addItems,
     element,
@@ -138,6 +148,7 @@ export function createItemBrowser({ goodsTypeId, itemManagement }) {
     filterDialog: filterPanel.dialog,
     sortButton: sortPanel.button,
     sortDialog: sortPanel.dialog,
+    updateItem,
     refresh,
     destroy() {
       destroyed = true;
