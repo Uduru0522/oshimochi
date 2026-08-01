@@ -87,7 +87,7 @@ visible with the same incomplete-item warning.
 
 ## Filter Items
 
-Status: implemented for the list presentation.
+Status: implemented for list and card presentations.
 
 1. User opens **Filter** from the collection title bar.
 2. User may enter a general search and add at most one rule for each active field.
@@ -97,9 +97,9 @@ Status: implemented for the list presentation.
 5. Clearing and applying filters restores the complete collection without
    reloading storage. The empty-result view also offers an immediate clear action.
 
-Applying or clearing filters reconciles list rows by item ID. Rows that stop
-matching collapse in place, while newly matching rows expand at their original
-collection position; the complete list is not torn down and rebuilt.
+Applying or clearing filters reconciles visible entries by item ID. List rows
+collapse or expand, while cards scale out or in and the remaining grid reflows.
+The complete presentation is not torn down and rebuilt.
 
 Newly saved items use the same keyed reconciliation path. A matching item grows
 into its collection position without replacing or reloading the existing list.
@@ -125,12 +125,12 @@ combine with OR. Image is required and is not exposed as a filter. Different
 field rules combine with AND.
 
 Filtering is an in-memory application operation over records already loaded by
-the item browser. It is deliberately independent from list markup so the planned
-card presentation can consume the same result set.
+the item browser. It is independent from list and card markup, so both consume
+the same result set.
 
 ## Sort Items
 
-Status: implemented for the list presentation.
+Status: implemented for list and card presentations.
 
 1. User opens **Sort** from the collection title bar.
 2. User chooses last update, creation date, item name, or a supported custom field.
@@ -143,18 +143,30 @@ numbers and dates retain their native order. Two-option and selection-list
 fields sort by the labels visible to the user rather than their stored values.
 
 Sorting runs after records are loaded and before filtering is evaluated. Both
-operations are independent from list markup, allowing a later card presentation
-to consume the same ordered result set.
+presentations consume the same ordered result set.
+
+## Switch Item Presentation
+
+Status: implemented.
+
+1. User chooses the list or card icon in the collection title bar.
+2. The item browser retains loaded records and all applied filter and sort state.
+3. Only the presentation renderer changes with a short content transition.
+
+List remains the default compact management view. Cards prioritize the complete
+processed image and item name, show up to three custom fields, and indicate when
+additional fields are available. Both presentations expose edit and delete actions
+and use keyed updates after item mutations.
 
 ## Edit Items
 
-Status: implemented for the list presentation.
+Status: implemented for list and card presentations.
 
 1. User opens an item through its edit icon.
 2. The existing generated form is populated from the item and current field definitions.
 3. The current image remains selected unless the user explicitly replaces and crops it.
 4. User reviews the complete item and applies the changes.
-5. The list updates the existing keyed row and reevaluates its filter and sort position.
+5. The active presentation updates the keyed entry and reevaluates its filter and sort position.
 
 Closing the editor preserves the active draft. **Clear changes** uses a two-click
 confirmation and restores the values loaded when editing began. After a successful
@@ -166,13 +178,13 @@ transaction. A failed transaction retains the review and draft for another attem
 
 ## Delete Items
 
-Status: implemented for active items in the list presentation.
+Status: implemented for active items in list and card presentations.
 
 1. User chooses the delete icon on an item row.
 2. A modal confirmation identifies the item and explains that deletion is recoverable.
 3. Confirming enters the shared mutation state and writes deletion timestamps.
 4. The item record, custom values, and image asset remain in local storage.
-5. After the write succeeds, only the deleted keyed row collapses out of the active list.
+5. After the write succeeds, only the deleted keyed entry leaves the active presentation.
 
 Closing or cancelling the confirmation does not change the item. A failed write
 keeps the item visible and presents the actionable storage error for another

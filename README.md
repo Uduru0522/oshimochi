@@ -27,15 +27,16 @@ Implemented:
 - typed item sorting across metadata, names, and supported custom values
 - modal item editing with optional image replacement and atomic persistence
 - confirmed item soft deletion with retained records and image assets
-- keyed list updates for filtering, sorting, and newly registered items
+- switchable list and card presentations over one filtered and sorted item set
+- keyed presentation updates for filtering, sorting, and newly registered items
 - runtime navigation refresh after database changes
 - offline app-shell caching
 - automated static and unit checks
 - GitHub Pages deployment
 
-A card presentation is the next application feature now that list management is
-complete. Restore and purge controls for soft-deleted items, followed by backup
-transfer, remain planned rather than implemented.
+Item list management and visual card browsing are complete. Restore and purge
+controls for soft-deleted items are the next application feature; backup transfer
+remains planned afterward.
 
 ## Run Locally
 

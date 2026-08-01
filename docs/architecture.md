@@ -154,9 +154,10 @@ Owns view definitions and view rendering.
   and deletion, responsive completeness warnings, fixed-stage image cropping,
   and modal item workflows. `items-view.js` composes the page actions, browser,
   and dialogs. `item-browser.js` owns asynchronous
-  loading, applied query state, and the active presentation. List/card mode
-  belongs at this same boundary so both presentations consume one filtered and
-  sorted item set. Filter and sort dialogs remain separate from their pure
+  loading, applied query state, and the active presentation. List/card mode lives
+  at this same boundary, while `item-list.js` and `item-cards.js` independently
+  reconcile keyed records from one filtered and sorted item set. Filter and sort
+  dialogs remain separate from their pure
   application evaluators. Display-model, typed-value, thumbnail, and warning
   helpers are presentation-neutral. Add and edit dialogs own separate draft
   lifecycles while sharing the entry form, crop editor, and review rendering. The

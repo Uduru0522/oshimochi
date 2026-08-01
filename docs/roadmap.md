@@ -64,26 +64,30 @@ order. It describes direction, not a release-date commitment.
 - require an image and write the item and image asset atomically
 - list newly registered items with thumbnails and custom values
 
-## Current Product Milestone: Item List Management
+## Completed Item List Management
 
 - [x] keep the current compact list as the primary item view
 - [x] filter items by built-in and custom field values
 - [x] sort items by name, creation time, update time, and supported custom values
 - [x] edit items through the existing modal workflow
 - [x] soft-delete items with explicit confirmation
-- [ ] add a cards view only after list management is complete
+- [x] add a cards view that shares the list query pipeline
 
-The next implementation target is the cards presentation. Filtering and sorting
-remain presentation-neutral so list and card views can consume the same prepared
-item set.
+List and card presentations consume the same loaded, filtered, and sorted item
+set. Both reconcile keyed items without reloading storage or replacing the whole
+collection.
+
+## Current Product Milestone: Deleted Item Management
+
+- [ ] provide a dedicated view of soft-deleted items
+- [ ] restore selected items to their active collection
+- [ ] permanently purge selected items and retained images with explicit confirmation
 
 ## Later Milestones
 
-1. Cards view for visual browsing.
-2. Restore and purge soft-deleted records.
-3. Export and validated import.
-4. Optional Google Drive snapshots.
-5. Evaluate live synchronization only after conflict semantics exist.
+1. Export and validated import.
+2. Optional Google Drive snapshots.
+3. Evaluate live synchronization only after conflict semantics exist.
 
 ## Deliberate Non-Goals
 

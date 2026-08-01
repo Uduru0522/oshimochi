@@ -183,10 +183,11 @@ remain consistent.
 Responsive behavior currently has one app-shell breakpoint at `1100px`, matching `APP_CONFIG.layout.narrowQuery`. Item rows also use a container query so their presentation follows the available workspace width rather than the viewport alone.
 
 Collection loading and active item presentation belong in
-`src/views/items/item-browser.js`. Keep list-only markup in `item-list.js`; place
-field/value interpretation in the shared item display helpers so list and card
-presentations do not duplicate it. Filtering and sorting should produce an item
-set for the active presentation rather than being embedded in either renderer.
+`src/views/items/item-browser.js`. Keep list-only markup in `item-list.js` and
+card-only markup in `item-cards.js`; place field/value interpretation in the
+shared item display helpers so presentations do not duplicate it. Filtering and
+sorting produce one prepared item set before the active renderer receives it.
+Presentation switching replaces only the renderer and retains applied query state.
 
 ## Dependency Rules
 
