@@ -85,6 +85,49 @@ Optional setting for them. Legacy optional two-option definitions may be
 upgraded to required without rewriting items; records that lack a value remain
 visible with the same incomplete-item warning.
 
+## Filter Items
+
+Status: implemented for the list presentation.
+
+1. User opens **Filter** from the collection title bar.
+2. User may enter a general search and add at most one rule for each active field.
+3. Changes remain staged inside the dialog until **Apply filters** is chosen.
+4. The item browser evaluates all applied field rules with AND semantics and
+   shows the number of active filters in the title-bar action.
+5. Clearing and applying filters restores the complete collection without
+   reloading storage. The empty-result view also offers an immediate clear action.
+
+Applying or clearing filters reconciles list rows by item ID. Rows that stop
+matching collapse in place, while newly matching rows expand at their original
+collection position; the complete list is not torn down and rebuilt.
+
+Newly saved items use the same keyed reconciliation path. A matching item grows
+into its collection position without replacing or reloading the existing list.
+
+General search is case-insensitive. Space-separated terms use AND semantics,
+quoted text matches a complete phrase, and a leading `-` excludes a term or
+quoted phrase. Internal item UUIDs are neither searchable nor exposed as field
+filters. Field rules follow their data type: text comparisons, collection-scaled
+number sliders, open-ended date ranges, direct multi-choice controls for
+two-option and selection-list fields, and URL text or domain matching. Equal
+date endpoints mean one exact date. An empty first or second endpoint means no
+lower or upper bound respectively.
+
+Numeric sliders distribute distinct observed values evenly by rank rather than
+by arithmetic distance. Extreme outliers therefore receive one position without
+compressing the ordinary values into an unusable section of the track; selected
+positions still resolve to their real inclusive numeric bounds.
+
+Text, number, date, and URL rules can also include records that have no value for
+that field. Two-option and selection-list rules need no separate missing-value
+control: selecting no choices means missing values only, and selected choices
+combine with OR. Image is required and is not exposed as a filter. Different
+field rules combine with AND.
+
+Filtering is an in-memory application operation over records already loaded by
+the item browser. It is deliberately independent from list markup so the planned
+card presentation can consume the same result set.
+
 ## Manage Fields
 
 Status: implemented.
@@ -129,11 +172,13 @@ Rules:
 The current UI supports text, long text, number, date, two-option toggle, web-address, and
 selection-list fields. Internal keys are generated once and are not exposed to
 ordinary users. Selection options receive stable IDs. Existing options may be
-extended but not removed.
+renamed or extended, but not removed. Renaming changes only the display label;
+stored item values continue to reference the same option ID.
 
 Safe initial modifications:
 
 - rename a display label
+- rename a selection-option label without changing its stable ID
 - change required to optional
 - change field position
 - add select options without invalidating existing values

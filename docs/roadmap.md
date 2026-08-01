@@ -66,12 +66,15 @@ order. It describes direction, not a release-date commitment.
 
 ## Current Product Milestone: Item List Management
 
-- keep the current compact list as the primary item view
-- filter items by built-in and custom field values
-- sort items by name, creation time, update time, and supported custom values
-- edit items through the existing modal workflow
-- soft-delete items with explicit confirmation
-- add a cards view only after list management is complete
+- [x] keep the current compact list as the primary item view
+- [x] filter items by built-in and custom field values
+- [ ] sort items by name, creation time, update time, and supported custom values
+- [ ] edit items through the existing modal workflow
+- [ ] soft-delete items with explicit confirmation
+- [ ] add a cards view only after list management is complete
+
+The next implementation target is sorting. Filtering remains presentation-neutral
+so the later cards view can consume the same filtered and sorted item set.
 
 ## Later Milestones
 

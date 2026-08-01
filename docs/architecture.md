@@ -51,6 +51,8 @@ Owns storage-neutral use cases that coordinate domain records and adapter calls.
 - `data/reset-local-data.js`: requests one atomic clear of all user-data stores
   while leaving application metadata and external backups intact.
 - `items/item-values.js`: normalizes and validates generated item-form values.
+- `items/filter-items.js`: parses general-search syntax and applies field-type-aware
+  filters to plain item records without depending on a presentation or storage adapter.
 - `items/manage-items.js`: loads active field definitions, constructs validated
   item and image records, and requests atomic persistence.
 
@@ -140,13 +142,17 @@ Owns view definitions and view rendering.
   administration, and options views.
 - `administration/`: Administration rendering and the goods-type creation flow.
   Its field manager separates staging state, list rendering, editing, review, and
-  orchestration into focused modules. Destructive local-data reset is isolated in
-  its own typed-confirmation component.
-- `items/`: collection browsing, responsive completeness warnings, fixed-stage
+  orchestration into focused modules. Field editors expand within their owning
+  list rows, while stable field and selection-option IDs remain application-layer
+  concerns. Destructive local-data reset is isolated in its own typed-confirmation
+  component.
+- `items/`: collection browsing, staged filtering, responsive completeness warnings, fixed-stage
   image cropping, and the modal item-entry workflow. `items-view.js` composes the
   page action, browser, and entry dialog. `item-browser.js` owns asynchronous
-  loading and the active presentation; filtering, sorting, and list/card mode
-  belong at this boundary. Display-model, typed-value, thumbnail, and warning
+  loading, applied filter state, and the active presentation. Sorting and
+  list/card mode belong at this same boundary so they consume one filtered item
+  set. The filter dialog and typed rule editors remain separate from the pure
+  application evaluator. Display-model, typed-value, thumbnail, and warning
   helpers are presentation-neutral. Entry form, crop editor, review rendering,
   generated form-field controls, save-error translation, and dialog orchestration
   remain separate so editing can reuse them without depending on list markup. Dialog screens and routed views

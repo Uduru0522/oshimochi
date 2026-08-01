@@ -145,8 +145,9 @@ options: {
 }
 ```
 
-Labels may be added, but option removal and identity-changing edits remain
-deferred until item-value migration rules exist.
+Labels may be renamed and new options may be added. Renaming preserves the
+option ID, so existing item values remain valid. Option removal and
+identity-changing edits remain deferred until item-value migration rules exist.
 
 Two-option toggle fields store customizable presentation labels while item
 values remain booleans:
