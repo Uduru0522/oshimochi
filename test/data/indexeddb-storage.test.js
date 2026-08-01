@@ -82,6 +82,7 @@ function createReadDatabase(records, { transactionError } = {}) {
 }
 
 function createWriteDatabase({ failAt = -1 } = {}) {
+  const deletes = [];
   const writes = [];
   const transactions = [];
 
@@ -93,7 +94,7 @@ function createWriteDatabase({ failAt = -1 } = {}) {
         objectStore(storeName) {
           function queueWrite(record) {
             const request = {};
-            requests.push({ record, request, storeName });
+            requests.push({ operation: "write", record, request, storeName });
 
             if (requests.length === 1) {
               setTimeout(() => {
@@ -108,9 +109,13 @@ function createWriteDatabase({ failAt = -1 } = {}) {
                   return;
                 }
 
-                requests.forEach(({ record: queuedRecord, request: queuedRequest, storeName: queuedStore }) => {
-                  writes.push({ record: queuedRecord, storeName: queuedStore });
-                  queuedRequest.result = queuedRecord.id;
+                requests.forEach(({ operation, record: queuedRecord, request: queuedRequest, storeName: queuedStore }) => {
+                  if (operation === "delete") {
+                    deletes.push({ id: queuedRecord, storeName: queuedStore });
+                  } else {
+                    writes.push({ record: queuedRecord, storeName: queuedStore });
+                  }
+                  queuedRequest.result = queuedRecord?.id;
                   queuedRequest.onsuccess();
                 });
                 transaction.oncomplete();
@@ -122,6 +127,11 @@ function createWriteDatabase({ failAt = -1 } = {}) {
 
           return {
             add: queueWrite,
+            delete(id) {
+              const request = {};
+              requests.push({ operation: "delete", record: id, request, storeName });
+              return request;
+            },
             put: queueWrite
           };
         }
@@ -130,6 +140,7 @@ function createWriteDatabase({ failAt = -1 } = {}) {
       transactions.push({ mode, storeNames });
       return transaction;
     },
+    deletes,
     transactions,
     writes
   };
@@ -669,6 +680,53 @@ test("item repository writes an image and item atomically", async () => {
     database.writes.map(({ storeName }) => storeName),
     [OBJECT_STORES.assets, OBJECT_STORES.items]
   );
+});
+
+test("item repository updates an item without rewriting its unchanged image", async () => {
+  const database = createWriteDatabase();
+  const repository = createItemRepository(database);
+  const item = { ...createItemRecord(), name: "Updated" };
+
+  await repository.update({ item });
+
+  assert.deepEqual(database.transactions, [
+    { mode: "readwrite", storeNames: OBJECT_STORES.items }
+  ]);
+  assert.deepEqual(database.writes, [
+    { record: item, storeName: OBJECT_STORES.items }
+  ]);
+  assert.deepEqual(database.deletes, []);
+});
+
+test("item repository replaces an image and item atomically", async () => {
+  const database = createWriteDatabase();
+  const repository = createItemRepository(database);
+  const item = { ...createItemRecord(), imageAssetId: "asset-2" };
+  const data = new Blob(["replacement"], { type: "image/jpeg" });
+  const asset = {
+    id: "asset-2",
+    data,
+    mediaType: "image/jpeg",
+    width: 560,
+    height: 792,
+    byteSize: data.size,
+    createdAt: item.createdAt,
+    updatedAt: item.updatedAt
+  };
+
+  await repository.update({ asset, item, previousImageAssetId: "asset-1" });
+
+  assert.deepEqual(database.transactions, [{
+    mode: "readwrite",
+    storeNames: [OBJECT_STORES.assets, OBJECT_STORES.items]
+  }]);
+  assert.deepEqual(
+    database.writes.map(({ storeName }) => storeName),
+    [OBJECT_STORES.assets, OBJECT_STORES.items]
+  );
+  assert.deepEqual(database.deletes, [
+    { id: "asset-1", storeName: OBJECT_STORES.assets }
+  ]);
 });
 
 test("item repository rejects invalid records before opening a transaction", async () => {

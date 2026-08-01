@@ -83,6 +83,11 @@ export function createIndexedDbStorage({
     return itemRepository.create(item);
   }
 
+  async function updateItem(change) {
+    assertInitialized();
+    return itemRepository.update(change);
+  }
+
   async function listItems(goodsTypeId, options) {
     assertInitialized();
     return itemRepository.list(goodsTypeId, options);
@@ -112,6 +117,7 @@ export function createIndexedDbStorage({
     listGoodsTypes,
     listItems,
     resetData,
-    saveFieldDefinitions
+    saveFieldDefinitions,
+    updateItem
   };
 }

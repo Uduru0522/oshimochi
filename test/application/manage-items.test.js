@@ -125,7 +125,8 @@ test("item creation reloads active fields and writes one validated record", asyn
       async getAsset() { return null; },
       async listFieldDefinitions() { return [nameField, notesField]; },
       async listGoodsTypes() { return [{ id: "figures" }]; },
-      async listItems() { return []; }
+      async listItems() { return []; },
+      async updateItem() {}
     },
     generateId: () => generatedIds.shift(),
     now: () => FIXED_TIME
@@ -152,7 +153,8 @@ test("item creation requires an image", async () => {
       async getAsset() { return null; },
       async listFieldDefinitions() { return []; },
       async listGoodsTypes() { return [{ id: "figures" }]; },
-      async listItems() { return []; }
+      async listItems() { return []; },
+      async updateItem() {}
     }
   });
 
@@ -171,7 +173,8 @@ test("item creation builds an image asset and item reference for one storage wri
       async getAsset() { return null; },
       async listFieldDefinitions() { return []; },
       async listGoodsTypes() { return [{ id: "figures" }]; },
-      async listItems() { return []; }
+      async listItems() { return []; },
+      async updateItem() {}
     },
     generateId: () => generatedIds.shift(),
     now: () => FIXED_TIME
@@ -186,5 +189,82 @@ test("item creation builds an image asset and item reference for one storage wri
   assert.equal(result.asset.id, "asset-1");
   assert.equal(result.item.id, "item-1");
   assert.equal(result.item.imageAssetId, "asset-1");
+  assert.deepEqual(writes, [result]);
+});
+
+test("item updates preserve identity and the existing image when it is unchanged", async () => {
+  const writes = [];
+  const notesField = createField({
+    id: "notes",
+    key: "notes",
+    displayName: "Notes",
+    dataType: "long_text"
+  });
+  const existingItem = createItemRecord({
+    id: "item-1",
+    goodsTypeId: "figures",
+    name: "Original",
+    imageAssetId: "asset-1",
+    customValues: { notes: "Old" },
+    createdAt: "2026-07-19T00:00:00.000Z"
+  }, { now: () => FIXED_TIME });
+  const operations = createItemManagementOperations({
+    storage: {
+      async createItem() {},
+      async getAsset() { return null; },
+      async listFieldDefinitions() { return [notesField]; },
+      async listGoodsTypes() { return [{ id: "figures" }]; },
+      async listItems() { return [existingItem]; },
+      async updateItem(change) { writes.push(change); }
+    },
+    now: () => "2026-07-21T00:00:00.000Z"
+  });
+
+  const result = await operations.updateItem({
+    item: existingItem,
+    name: " Updated ",
+    customValues: { notes: "New" }
+  });
+
+  assert.equal(result.asset, null);
+  assert.equal(result.previousImageAssetId, null);
+  assert.equal(result.item.id, existingItem.id);
+  assert.equal(result.item.createdAt, existingItem.createdAt);
+  assert.equal(result.item.updatedAt, "2026-07-21T00:00:00.000Z");
+  assert.equal(result.item.imageAssetId, "asset-1");
+  assert.equal(result.item.name, "Updated");
+  assert.deepEqual(writes, [result]);
+});
+
+test("item updates replace images through one storage request", async () => {
+  const writes = [];
+  const existingItem = createItemRecord({
+    id: "item-1",
+    goodsTypeId: "figures",
+    name: "Original",
+    imageAssetId: "asset-1"
+  }, { now: () => FIXED_TIME });
+  const operations = createItemManagementOperations({
+    storage: {
+      async createItem() {},
+      async getAsset() { return null; },
+      async listFieldDefinitions() { return []; },
+      async listGoodsTypes() { return [{ id: "figures" }]; },
+      async listItems() { return [existingItem]; },
+      async updateItem(change) { writes.push(change); }
+    },
+    generateId: () => "asset-2",
+    now: () => "2026-07-21T00:00:00.000Z"
+  });
+
+  const result = await operations.updateItem({
+    item: existingItem,
+    image: TEST_IMAGE,
+    name: "Original"
+  });
+
+  assert.equal(result.asset.id, "asset-2");
+  assert.equal(result.item.imageAssetId, "asset-2");
+  assert.equal(result.previousImageAssetId, "asset-1");
   assert.deepEqual(writes, [result]);
 });

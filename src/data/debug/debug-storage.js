@@ -189,6 +189,61 @@ export function createDebugStorage(options = {}) {
     return asset ? structuredClone(asset) : null;
   }
 
+  async function updateItem({ asset = null, item, previousImageAssetId = null }) {
+    assertInitialized();
+
+    let parsedAsset;
+    let parsedItem;
+
+    try {
+      parsedItem = parseItemRecord(item);
+      parsedAsset = asset === null ? null : parseAssetRecord(asset);
+
+      if (parsedAsset && parsedItem.imageAssetId !== parsedAsset.id) {
+        throw new TypeError("The updated item references a different replacement asset.");
+      }
+      if (parsedAsset && previousImageAssetId === parsedAsset.id) {
+        throw new TypeError("A replacement image requires new asset identity.");
+      }
+      if (!parsedAsset && previousImageAssetId !== null) {
+        throw new TypeError("An unchanged image cannot supersede an asset.");
+      }
+    } catch (error) {
+      throw new StorageError("The item update contains invalid data.", {
+        cause: error,
+        code: STORAGE_ERROR_CODES.invalidData
+      });
+    }
+
+    const itemIndex = itemRecords.findIndex(({ id }) => id === parsedItem.id);
+    const existingItem = itemRecords[itemIndex];
+    if (
+      !existingItem ||
+      existingItem.goodsTypeId !== parsedItem.goodsTypeId ||
+      existingItem.isDeleted ||
+      (parsedAsset && existingItem.imageAssetId !== previousImageAssetId) ||
+      (parsedAsset && assetRecords.some(({ id }) => id === parsedAsset.id))
+    ) {
+      throw new StorageError("The item update conflicts with the debug catalog.", {
+        code: STORAGE_ERROR_CODES.operationFailed
+      });
+    }
+
+    if (parsedAsset && previousImageAssetId) {
+      const assetIndex = assetRecords.findIndex(({ id }) => id === previousImageAssetId);
+      if (assetIndex < 0) {
+        throw new StorageError("The replaced image is unavailable.", {
+          code: STORAGE_ERROR_CODES.operationFailed
+        });
+      }
+      assetRecords.splice(assetIndex, 1, parsedAsset);
+    } else if (parsedAsset) {
+      assetRecords.push(parsedAsset);
+    }
+    itemRecords.splice(itemIndex, 1, parsedItem);
+    return structuredClone(parsedItem);
+  }
+
   async function listItems(goodsTypeId, { includeDeleted = false } = {}) {
     assertInitialized();
 
@@ -222,6 +277,7 @@ export function createDebugStorage(options = {}) {
     listGoodsTypes,
     listItems,
     resetData,
-    saveFieldDefinitions
+    saveFieldDefinitions,
+    updateItem
   };
 }
