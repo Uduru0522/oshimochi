@@ -163,7 +163,7 @@ Older toggle definitions with `options: null` are read as `No / Yes` for
 backward compatibility. Two-option fields are required, and new item forms
 always write one boolean value. An item
 may omit a required field only when it was created before that field existed;
-the UI marks such records as incomplete until item editing is implemented.
+the UI marks such records as incomplete until the missing values are supplied through item editing.
 
 ### Built-In Item Fields
 

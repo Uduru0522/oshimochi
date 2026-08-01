@@ -146,6 +146,24 @@ Sorting runs after records are loaded and before filtering is evaluated. Both
 operations are independent from list markup, allowing a later card presentation
 to consume the same ordered result set.
 
+## Edit Items
+
+Status: implemented for the list presentation.
+
+1. User opens an item through its edit icon.
+2. The existing generated form is populated from the item and current field definitions.
+3. The current image remains selected unless the user explicitly replaces and crops it.
+4. User reviews the complete item and applies the changes.
+5. The list updates the existing keyed row and reevaluates its filter and sort position.
+
+Closing the editor preserves the active draft. **Clear changes** uses a two-click
+confirmation and restores the values loaded when editing began. After a successful
+save, closing the success screen clears that draft.
+
+Text and custom values update without rewriting the image asset. Replacing the
+image writes the new asset and item and removes the superseded asset in one
+transaction. A failed transaction retains the review and draft for another attempt.
+
 ## Manage Fields
 
 Status: implemented.
