@@ -9,6 +9,7 @@ export function renderItemsView({ goodsType }, { itemManagement, mutationControl
     attributes: { type: "button" },
     className: "primary-action items-add-action"
   });
+  const viewActions = createElement("div", { className: "item-view-actions" });
   const browser = createItemBrowser({
     goodsTypeId: goodsType.id,
     itemManagement
@@ -17,7 +18,7 @@ export function renderItemsView({ goodsType }, { itemManagement, mutationControl
     goodsType,
     itemManagement,
     mutationController,
-    onCreated: browser.refresh
+    onCreated: browser.addItems
   });
 
   addButton.append(
@@ -25,7 +26,8 @@ export function renderItemsView({ goodsType }, { itemManagement, mutationControl
     createElement("span", { textContent: "Add item" })
   );
   addButton.addEventListener("click", itemEntry.open);
-  article.append(browser.element, itemEntry.dialog);
+  viewActions.append(browser.filterButton, addButton);
+  article.append(browser.element, browser.filterDialog, itemEntry.dialog);
   browser.refresh();
   return {
     content: article,
@@ -33,6 +35,6 @@ export function renderItemsView({ goodsType }, { itemManagement, mutationControl
       browser.destroy();
       itemEntry.destroy();
     },
-    topbarAction: addButton
+    topbarAction: viewActions
   };
 }

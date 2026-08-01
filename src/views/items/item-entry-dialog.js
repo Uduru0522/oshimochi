@@ -61,6 +61,7 @@ export function createItemEntryDialog({
   let isSaving = false;
   let clearConfirmationTimer = 0;
   let currentScreen = "loading";
+  let pendingCreatedItems = [];
   let destroyed = false;
   let destroyCurrentScreen = null;
   let loadVersion = 0;
@@ -157,15 +158,15 @@ export function createItemEntryDialog({
     );
 
     try {
-      await mutationController.run(async () => {
-        const result = await itemManagement.createItem({
+      const result = await mutationController.run(() =>
+        itemManagement.createItem({
           goodsTypeId: goodsType.id,
           name: draft.name,
           customValues: draft.customValues,
           image: draft.image
-        });
-        await onCreated(result.item);
-      });
+        })
+      );
+      pendingCreatedItems.push(result.item);
 
       if (!destroyed) {
         renderSuccess();
@@ -248,6 +249,7 @@ export function createItemEntryDialog({
     isClosing = false;
     delete dialog.dataset.closing;
     dialog.close();
+    flushCreatedItems();
   }
 
   function handleCloseAnimationEnd(event) {
@@ -265,6 +267,7 @@ export function createItemEntryDialog({
 
     if (prefersReducedMotion()) {
       dialog.close();
+      flushCreatedItems();
       return;
     }
 
@@ -275,6 +278,16 @@ export function createItemEntryDialog({
       finishClose,
       getAnimationDurationMs(dialog, MAX_UI_MOTION_MS)
     );
+  }
+
+  function flushCreatedItems() {
+    if (pendingCreatedItems.length === 0) {
+      return;
+    }
+
+    const createdItems = pendingCreatedItems;
+    pendingCreatedItems = [];
+    onCreated(createdItems);
   }
 
   closeButton.addEventListener("click", requestClose);
@@ -304,6 +317,7 @@ export function createItemEntryDialog({
       contentTransition.cancel();
       destroyCurrentScreen?.();
       destroyCurrentScreen = null;
+      pendingCreatedItems = [];
       isClosing = false;
       delete dialog.dataset.closing;
       if (dialog.open) {
