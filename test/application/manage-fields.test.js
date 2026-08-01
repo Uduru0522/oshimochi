@@ -231,3 +231,84 @@ test("field management rejects multiple staged changes for one field", async () 
     /one staged change/
   );
 });
+
+test("field management renames selection options without changing their IDs", async () => {
+  const { fields, operations } = createHarness();
+  fields.push(
+    createFieldDefinitionRecord(
+      {
+        id: "condition",
+        goodsTypeId: "figures",
+        key: "condition",
+        displayName: "Condition",
+        dataType: "select",
+        options: {
+          choices: [
+            { id: "condition-new", label: "New" },
+            { id: "condition-used", label: "Used" }
+          ]
+        },
+        position: 5
+      },
+      { now: () => FIXED_TIME }
+    )
+  );
+
+  const result = await operations.applyChanges({
+    goodsTypeId: "figures",
+    changes: [
+      {
+        kind: FIELD_CHANGE_KINDS.update,
+        fieldId: "condition",
+        selectOptions: [
+          { id: "condition-new", label: "Unopened" },
+          { id: "condition-used", label: "Displayed" }
+        ],
+        addOptionLabels: ["Damaged"]
+      }
+    ]
+  });
+
+  assert.deepEqual(result.find(({ id }) => id === "condition").options.choices, [
+    { id: "condition-new", label: "Unopened" },
+    { id: "condition-used", label: "Displayed" },
+    { id: "generated-1", label: "Damaged" }
+  ]);
+});
+
+test("field management does not allow selection options to be removed while editing", async () => {
+  const { fields, operations } = createHarness();
+  fields.push(
+    createFieldDefinitionRecord(
+      {
+        id: "condition",
+        goodsTypeId: "figures",
+        key: "condition",
+        displayName: "Condition",
+        dataType: "select",
+        options: {
+          choices: [
+            { id: "condition-new", label: "New" },
+            { id: "condition-used", label: "Used" }
+          ]
+        },
+        position: 5
+      },
+      { now: () => FIXED_TIME }
+    )
+  );
+
+  await assert.rejects(
+    operations.applyChanges({
+      goodsTypeId: "figures",
+      changes: [
+        {
+          kind: FIELD_CHANGE_KINDS.update,
+          fieldId: "condition",
+          selectOptions: [{ id: "condition-new", label: "Unopened" }]
+        }
+      ]
+    }),
+    /cannot be removed or replaced/
+  );
+});

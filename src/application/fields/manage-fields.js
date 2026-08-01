@@ -4,7 +4,8 @@ import {
   assertCustomFieldType,
   createBooleanOptions,
   createSelectOptions,
-  createUniqueFieldKey
+  createUniqueFieldKey,
+  updateSelectOptions
 } from "./field-configuration.js";
 
 export const FIELD_CHANGE_KINDS = Object.freeze({
@@ -159,8 +160,15 @@ export function createFieldManagementOperations({
         ...current,
         displayName: change.displayName ?? current.displayName,
         isRequired: nextRequired,
-        options: change.addOptionLabels
-          ? appendSelectOptions(current.options, change.addOptionLabels, generateId)
+        options: current.dataType === "select" && change.selectOptions
+          ? updateSelectOptions(
+            current.options,
+            change.selectOptions,
+            change.addOptionLabels,
+            generateId
+          )
+          : change.addOptionLabels
+            ? appendSelectOptions(current.options, change.addOptionLabels, generateId)
           : current.dataType === "boolean" && change.booleanOptions
             ? createBooleanOptions(
               change.booleanOptions.falseLabel,

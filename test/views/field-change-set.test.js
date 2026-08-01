@@ -28,6 +28,30 @@ test("field change set merges edits and ordering into one change per field", () 
   ]);
 });
 
+test("field change set highlights every field affected only by reordering", () => {
+  const changeSet = createFieldChangeSet(FIELDS);
+
+  changeSet.move("scale", -1);
+
+  assert.deepEqual(
+    changeSet.getPreviewFields()
+      .filter(({ isBuiltIn }) => !isBuiltIn)
+      .map(({ id, stagedKind }) => ({ id, stagedKind })),
+    [
+      { id: "scale", stagedKind: "update" },
+      { id: "maker", stagedKind: "update" }
+    ]
+  );
+
+  changeSet.move("scale", 1);
+  assert.deepEqual(
+    changeSet.getPreviewFields()
+      .filter(({ isBuiltIn }) => !isBuiltIn)
+      .map(({ stagedKind }) => stagedKind),
+    [null, null]
+  );
+});
+
 test("field change set keeps new drafts local and removable", () => {
   const changeSet = createFieldChangeSet(FIELDS);
 
@@ -104,4 +128,35 @@ test("field change set previews two-option label edits", () => {
     falseLabel: "Uncensored",
     trueLabel: "Censored"
   });
+});
+
+test("field change set stages and previews selection option label edits", () => {
+  const fields = [
+    ...FIELDS,
+    {
+      id: "condition",
+      displayName: "Condition",
+      dataType: "select",
+      isBuiltIn: false,
+      isDeleted: false,
+      isRequired: false,
+      options: {
+        choices: [
+          { id: "new", label: "New" },
+          { id: "used", label: "Used" }
+        ]
+      },
+      position: 4
+    }
+  ];
+  const changeSet = createFieldChangeSet(fields);
+  const selectOptions = [
+    { id: "new", label: "Unopened" },
+    { id: "used", label: "Displayed" }
+  ];
+
+  changeSet.stageUpdate("condition", { selectOptions });
+
+  assert.deepEqual(changeSet.getChanges()[0].selectOptions, selectOptions);
+  assert.deepEqual(changeSet.getPreviewFields().at(-1).options.choices, selectOptions);
 });

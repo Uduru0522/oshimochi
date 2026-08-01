@@ -118,3 +118,47 @@ export function appendSelectOptions(currentOptions, newLabels, generateId) {
     ]
   };
 }
+
+export function updateSelectOptions(
+  currentOptions,
+  updatedChoices,
+  newLabels,
+  generateId
+) {
+  const existingChoices = currentOptions?.choices;
+
+  if (!Array.isArray(existingChoices) || !Array.isArray(updatedChoices)) {
+    throw new TypeError("The existing selection field has invalid options.");
+  }
+
+  const existingIds = new Set(existingChoices.map(({ id }) => id));
+  const updatedIds = updatedChoices.map(({ id }) => id);
+
+  if (
+    updatedChoices.length !== existingChoices.length ||
+    new Set(updatedIds).size !== updatedIds.length ||
+    updatedIds.some((id) => !existingIds.has(id))
+  ) {
+    throw new TypeError("Existing selection options cannot be removed or replaced.");
+  }
+
+  const labelsById = new Map(updatedChoices.map(({ id, label }) => [
+    id,
+    requireNonEmptyString(label, "Selection option")
+  ]));
+  const additions = requireOptionLabels(newLabels ?? [], { allowEmpty: true });
+  const nextChoices = existingChoices.map(({ id }) => ({ id, label: labelsById.get(id) }));
+  const allLabels = [...nextChoices.map(({ label }) => label), ...additions];
+  const normalizedLabels = allLabels.map(normalizeLabel);
+
+  if (new Set(normalizedLabels).size !== normalizedLabels.length) {
+    throw new TypeError("Selection option labels must be unique.");
+  }
+
+  return {
+    choices: [
+      ...nextChoices,
+      ...additions.map((label) => ({ id: generateId(), label }))
+    ]
+  };
+}

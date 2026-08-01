@@ -23,7 +23,11 @@ function parseOptionLabels(value) {
     .filter(Boolean);
 }
 
-export function createFieldEditor({ field, onCancel, onSave }) {
+function normalizeOptionLabel(label) {
+  return label.trim().replace(/\s+/g, " ").toLocaleLowerCase();
+}
+
+export function createFieldEditor({ autoFocus = true, field, onCancel, onSave }) {
   const isNew = !field || field.stagedKind === "add";
   const form = createElement("form", { className: "field-editor" });
   const heading = createElement("div", { className: "form-heading" });
@@ -116,9 +120,7 @@ export function createFieldEditor({ field, onCancel, onSave }) {
       return;
     }
 
-    const existingChoices = isNew
-      ? []
-      : (field?.options?.choices ?? []).map(({ label }) => label);
+    const existingChoices = isNew ? [] : (field?.options?.choices ?? []);
     const optionInput = createElement("textarea", {
       attributes: { rows: "4" }
     });
@@ -136,12 +138,25 @@ export function createFieldEditor({ field, onCancel, onSave }) {
     );
 
     if (existingChoices.length > 0) {
-      optionsArea.prepend(
-        createElement("p", {
-          className: "existing-options",
-          textContent: `Current options: ${existingChoices.join(", ")}`
+      const existingEditor = createElement("div", {
+        className: "existing-option-editor"
+      });
+
+      existingEditor.append(
+        createElement("strong", { textContent: "Existing options" }),
+        createElement("small", {
+          textContent: "Option names can be changed. Existing options cannot be removed."
         })
       );
+      existingChoices.forEach(({ id, label }, index) => {
+        const input = createElement("input", {
+          attributes: { required: "", type: "text" }
+        });
+        input.dataset.optionId = id;
+        input.value = label;
+        existingEditor.append(createLabel(`Option ${index + 1}`, input));
+      });
+      optionsArea.prepend(existingEditor);
     }
   }
 
@@ -163,9 +178,14 @@ export function createFieldEditor({ field, onCancel, onSave }) {
     const optionLabels = parseOptionLabels(
       optionsArea.querySelector('[data-role="option-labels"]')?.value ?? ""
     );
-    const normalizedOptionLabels = optionLabels.map((label) =>
-      label.replace(/\s+/g, " ").toLocaleLowerCase()
+    const selectOptions = [...optionsArea.querySelectorAll("[data-option-id]")].map(
+      (input) => ({ id: input.dataset.optionId, label: input.value.trim() })
     );
+    const allOptionLabels = [
+      ...selectOptions.map(({ label }) => label),
+      ...optionLabels
+    ];
+    const normalizedOptionLabels = allOptionLabels.map(normalizeOptionLabel);
     const falseLabel = optionsArea.querySelector('[data-role="false-label"]')?.value.trim();
     const trueLabel = optionsArea.querySelector('[data-role="true-label"]')?.value.trim();
 
@@ -182,7 +202,12 @@ export function createFieldEditor({ field, onCancel, onSave }) {
       return;
     }
 
-    if (new Set(normalizedOptionLabels).size !== optionLabels.length) {
+    if (selectOptions.some(({ label }) => !label)) {
+      feedback.textContent = "Existing selection options need a name.";
+      return;
+    }
+
+    if (new Set(normalizedOptionLabels).size !== allOptionLabels.length) {
       feedback.textContent = "Selection option names must be unique.";
       return;
     }
@@ -195,25 +220,15 @@ export function createFieldEditor({ field, onCancel, onSave }) {
       return;
     }
 
-    if (
-      typeSelect.value === "select" &&
-      field &&
-      !isDraft &&
-      (field.options?.choices ?? []).some(({ label }) =>
-        normalizedOptionLabels.includes(label.replace(/\s+/g, " ").toLocaleLowerCase())
-      )
-    ) {
-      feedback.textContent = "One of these selection options already exists.";
-      return;
-    }
-
     try {
       onSave({
         displayName,
         dataType: typeSelect.value,
         isRequired: requiredInput.checked,
         ...(typeSelect.value === "select"
-          ? { [isNew ? "optionLabels" : "addOptionLabels"]: optionLabels }
+          ? isNew
+            ? { optionLabels }
+            : { addOptionLabels: optionLabels, selectOptions }
           : {}),
         ...(typeSelect.value === "boolean"
           ? isNew
@@ -231,7 +246,7 @@ export function createFieldEditor({ field, onCancel, onSave }) {
   form.append(
     heading,
     createLabel("Field name", nameInput, "Shown in item forms and detail views."),
-    createLabel("Data type", typeSelect, field && !isDraft ? "Data type cannot be changed after creation." : "Controls input and validation."),
+    createLabel("Data type", typeSelect, field && !isNew ? "Data type cannot be changed after creation." : "Controls input and validation."),
     requiredRow,
     optionsArea,
     feedback,
@@ -239,7 +254,9 @@ export function createFieldEditor({ field, onCancel, onSave }) {
   );
   renderOptions();
   updateRequiredState();
-  requestAnimationFrame(() => nameInput.focus());
+  if (autoFocus) {
+    requestAnimationFrame(() => nameInput.focus());
+  }
 
   return form;
 }

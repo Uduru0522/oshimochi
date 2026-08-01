@@ -45,6 +45,18 @@ function describeChange(change, fieldsById) {
   if (change.addOptionLabels?.length) {
     details.push(`Add ${change.addOptionLabels.length} options`);
   }
+  if (change.selectOptions) {
+    const previousLabels = new Map(
+      (field?.options?.choices ?? []).map(({ id, label }) => [id, label])
+    );
+    const renameCount = change.selectOptions.filter(
+      ({ id, label }) => previousLabels.get(id) !== label
+    ).length;
+
+    if (renameCount > 0) {
+      details.push(`Rename ${renameCount} option${renameCount === 1 ? "" : "s"}`);
+    }
+  }
   if (change.booleanOptions) {
     details.push(
       `Change options to ${change.booleanOptions.falseLabel} / ${change.booleanOptions.trueLabel}`

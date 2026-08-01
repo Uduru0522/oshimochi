@@ -22,27 +22,65 @@ function createToolButton(iconName, label, onClick, { disabled = false } = {}) {
   return button;
 }
 
+function createExpansionController(shell, expansion, content, getToggleButton) {
+  function setOpen(isOpen) {
+    shell.toggleAttribute("data-expanded", isOpen);
+    expansion.setAttribute("aria-hidden", String(!isOpen));
+    content.inert = !isOpen;
+    getToggleButton()?.setAttribute("aria-expanded", String(isOpen));
+  }
+
+  return {
+    close() {
+      setOpen(false);
+    },
+    get isOpen() {
+      return shell.hasAttribute("data-expanded");
+    },
+    open(panel) {
+      content.replaceChildren(panel);
+      setOpen(true);
+    }
+  };
+}
+
 export function createFieldList({ fields, onEdit, onMove, onRemove }) {
   const list = createElement("div", { className: "field-list" });
+  let activeExpansion = null;
   const activeCustomFields = fields.filter(
     ({ isBuiltIn, stagedKind }) => !isBuiltIn && stagedKind !== FIELD_CHANGE_KINDS.delete
   );
 
   fields.forEach((field) => {
-    const row = createElement("div", {
-      className: `field-row${field.stagedKind ? ` is-${field.stagedKind}` : ""}`
+    const shell = createElement("div", {
+      className: `field-row-shell${field.stagedKind ? ` is-${field.stagedKind}` : ""}`
     });
-    const identity = createElement("div", { className: "field-row-identity" });
+    const row = createElement("div", { className: "field-row" });
+    const name = createElement("div", { className: "field-row-name" });
+    const type = createElement("span", {
+      className: "field-type-label",
+      textContent: TYPE_LABELS.get(field.dataType) ?? field.dataType
+    });
     const metadata = createElement("div", { className: "field-row-metadata" });
     const actions = createElement("div", { className: "field-row-actions" });
-
-    identity.append(
-      createElement("strong", { textContent: field.displayName }),
-      createElement("span", {
-        className: "field-type-label",
-        textContent: TYPE_LABELS.get(field.dataType) ?? field.dataType
-      })
+    const expansion = createElement("div", {
+      attributes: { "aria-hidden": "true" },
+      className: "field-row-expansion"
+    });
+    const expansionContent = createElement("div", {
+      className: "field-row-expansion-content"
+    });
+    let editButton = null;
+    const expansionController = createExpansionController(
+      shell,
+      expansion,
+      expansionContent,
+      () => editButton
     );
+
+    expansionContent.inert = true;
+    expansion.append(expansionContent);
+    name.append(createElement("strong", { textContent: field.displayName }));
     metadata.append(
       createElement("span", {
         textContent: field.isRequired ? "Required" : "Optional"
@@ -89,19 +127,35 @@ export function createFieldList({ fields, onEdit, onMove, onRemove }) {
           () => onMove(field, 1),
           { disabled: orderIndex === activeCustomFields.length - 1 }
         ),
-        createToolButton("edit", "Edit field", () => onEdit(field)),
+        editButton = createToolButton("edit", "Edit field", () => {
+          if (expansionController.isOpen) {
+            expansionController.close();
+            activeExpansion = null;
+            return;
+          }
+
+          activeExpansion?.close();
+          activeExpansion = expansionController;
+          onEdit(field, expansionController);
+        }),
         createToolButton(
           "delete",
           field.stagedKind === FIELD_CHANGE_KINDS.add
             ? "Remove staged field"
             : "Remove field",
-          () => onRemove(field)
+          () => {
+            activeExpansion?.close();
+            activeExpansion = expansionController;
+            onRemove(field, expansionController);
+          }
         )
       );
+      editButton.setAttribute("aria-expanded", "false");
     }
 
-    row.append(identity, metadata, actions);
-    list.append(row);
+    row.append(name, type, metadata, actions);
+    shell.append(row, expansion);
+    list.append(shell);
   });
 
   return list;

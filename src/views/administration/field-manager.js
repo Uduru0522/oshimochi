@@ -107,8 +107,8 @@ export function createFieldManager({ fieldManagement, goodsTypes, mutationContro
     const addButton = createActionButton("Add field", {
       className: "primary-action"
     });
-    const editorSlot = createElement("div", { className: "field-editor-slot" });
-    const editorTransition = createContentTransition(editorSlot, { animateInitial: true });
+    const addEditorSlot = createElement("div", { className: "field-add-editor-slot" });
+    const addEditorTransition = createContentTransition(addEditorSlot, { animateInitial: true });
     const footer = createElement("div", { className: "field-stage-footer" });
     const stageStatus = createElement("span", {
       textContent: `${changeSet.changeCount} staged change${changeSet.changeCount === 1 ? "" : "s"}`
@@ -127,8 +127,8 @@ export function createFieldManager({ fieldManagement, goodsTypes, mutationContro
     );
     chooseButton.addEventListener("click", () => {
       if (changeSet.changeCount > 0) {
-        editorTransition.replace(() => {
-          editorSlot.replaceChildren(
+        addEditorTransition.replace(() => {
+          addEditorSlot.replaceChildren(
             createElement("p", {
               className: "form-warning",
               textContent: "Discard the staged changes before choosing another collection."
@@ -140,24 +140,24 @@ export function createFieldManager({ fieldManagement, goodsTypes, mutationContro
 
       renderLanding();
     });
-    addButton.addEventListener("click", () => openAddEditor(editorSlot, editorTransition));
+    addButton.addEventListener("click", () => openAddEditor(addEditorSlot, addEditorTransition));
     header.append(headerCopy, chooseButton);
 
     const list = createFieldList({
       fields: previewFields,
-      onEdit: (field) => openEditEditor(editorSlot, editorTransition, field),
+      onEdit: (field, expansion) => openEditEditor(expansion, field),
       onMove: (field, direction) => {
         changeSet.move(field.id, direction);
         renderWorkspace();
       },
-      onRemove: (field) => {
+      onRemove: (field, expansion) => {
         if (field.stagedKind === FIELD_CHANGE_KINDS.add) {
           changeSet.removeDraft(field.id);
           renderWorkspace();
           return;
         }
 
-        openDeleteConfirmation(editorSlot, editorTransition, field);
+        openDeleteConfirmation(expansion, field);
       }
     });
 
@@ -181,7 +181,7 @@ export function createFieldManager({ fieldManagement, goodsTypes, mutationContro
       );
     }
 
-    workspace.append(addButton, list, editorSlot, footer);
+    workspace.append(addButton, addEditorSlot, list, footer);
 
     contentTransition.replace(() => container.replaceChildren(workspace));
   }
@@ -204,27 +204,26 @@ export function createFieldManager({ fieldManagement, goodsTypes, mutationContro
     }, { afterUpdate: () => editorSlot.scrollIntoView({ block: "nearest" }) });
   }
 
-  function openEditEditor(editorSlot, editorTransition, field) {
-    editorTransition.replace(() => {
-      editorSlot.replaceChildren(
-        createFieldEditor({
-          field,
-          onCancel: () => editorTransition.replace(() => editorSlot.replaceChildren()),
-          onSave: (values) => {
-            assertUniqueDisplayName(values.displayName, field.id);
-            if (field.stagedKind === FIELD_CHANGE_KINDS.add) {
-              changeSet.updateDraft(field.id, values);
-            } else {
-              changeSet.stageUpdate(field.id, values);
-            }
-            renderWorkspace();
+  function openEditEditor(expansion, field) {
+    expansion.open(
+      createFieldEditor({
+        autoFocus: false,
+        field,
+        onCancel: expansion.close,
+        onSave: (values) => {
+          assertUniqueDisplayName(values.displayName, field.id);
+          if (field.stagedKind === FIELD_CHANGE_KINDS.add) {
+            changeSet.updateDraft(field.id, values);
+          } else {
+            changeSet.stageUpdate(field.id, values);
           }
-        })
-      );
-    }, { afterUpdate: () => editorSlot.scrollIntoView({ block: "nearest" }) });
+          renderWorkspace();
+        }
+      })
+    );
   }
 
-  function openDeleteConfirmation(editorSlot, editorTransition, field) {
+  function openDeleteConfirmation(expansion, field) {
     const confirmation = createElement("div", { className: "field-delete-confirmation" });
     const actions = createElement("div", { className: "form-actions" });
     const cancelButton = createActionButton("Cancel");
@@ -238,19 +237,14 @@ export function createFieldManager({ fieldManagement, goodsTypes, mutationContro
         textContent: "This is a soft deletion. Existing item values are preserved for future restoration."
       })
     );
-    cancelButton.addEventListener("click", () => {
-      editorTransition.replace(() => editorSlot.replaceChildren());
-    });
+    cancelButton.addEventListener("click", expansion.close);
     deleteButton.addEventListener("click", () => {
       changeSet.stageDelete(field.id);
       renderWorkspace();
     });
     actions.append(cancelButton, deleteButton);
     confirmation.append(actions);
-    editorTransition.replace(
-      () => editorSlot.replaceChildren(confirmation),
-      { afterUpdate: () => editorSlot.scrollIntoView({ block: "nearest" }) }
-    );
+    expansion.open(confirmation);
   }
 
   function renderReview() {

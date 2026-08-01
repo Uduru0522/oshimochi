@@ -61,6 +61,15 @@ export function createFieldChangeSet(fields) {
       nextChange.addOptionLabels = clone(mergedValues.addOptionLabels);
     }
     if (
+      mergedValues.selectOptions &&
+      mergedValues.selectOptions.some(({ id, label }, index) => {
+        const original = field.options?.choices?.[index];
+        return original?.id !== id || original.label !== label;
+      })
+    ) {
+      nextChange.selectOptions = clone(mergedValues.selectOptions);
+    }
+    if (
       mergedValues.booleanOptions &&
       (mergedValues.booleanOptions.falseLabel !== field.options?.falseLabel ||
         mergedValues.booleanOptions.trueLabel !== field.options?.trueLabel)
@@ -173,13 +182,18 @@ export function createFieldChangeSet(fields) {
 
       const field = baseById.get(fieldId);
       const update = change?.kind === FIELD_CHANGE_KINDS.update ? clone(change) : {};
+      const nextPosition = builtIns.length + index;
+      const isReordered = field.position !== nextPosition;
       return {
         ...clone(field),
         ...update,
+        ...(update.selectOptions
+          ? { options: { choices: clone(update.selectOptions) } }
+          : {}),
         ...(update.booleanOptions ? { options: clone(update.booleanOptions) } : {}),
         originalIsRequired: field.isRequired,
-        position: builtIns.length + index,
-        stagedKind: change?.kind ?? null
+        position: nextPosition,
+        stagedKind: change?.kind ?? (isReordered ? FIELD_CHANGE_KINDS.update : null)
       };
     });
 
