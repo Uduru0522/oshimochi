@@ -150,19 +150,22 @@ Owns view definitions and view rendering.
   list rows, while stable field and selection-option IDs remain application-layer
   concerns. Destructive local-data reset is isolated in its own typed-confirmation
   component.
-- `items/`: collection browsing, staged filtering and sorting, keyed item editing, responsive completeness warnings, fixed-stage
-  image cropping, and the modal item-entry workflow. `items-view.js` composes the
-  page action, browser, and entry dialog. `item-browser.js` owns asynchronous
+- `items/`: collection browsing, staged filtering and sorting, keyed item editing
+  and deletion, responsive completeness warnings, fixed-stage image cropping,
+  and modal item workflows. `items-view.js` composes the page actions, browser,
+  and dialogs. `item-browser.js` owns asynchronous
   loading, applied query state, and the active presentation. List/card mode
   belongs at this same boundary so both presentations consume one filtered and
   sorted item set. Filter and sort dialogs remain separate from their pure
   application evaluators. Display-model, typed-value, thumbnail, and warning
   helpers are presentation-neutral. Add and edit dialogs own separate draft
-  lifecycles while sharing the entry form, crop editor, review rendering,
-  generated form-field controls, save-error translation, and dialog orchestration
-  remain separate so editing can reuse them without depending on list markup. Dialog screens and routed views
-  both expose explicit teardown for observers, pending asynchronous work, and
-  temporary image resources.
+  lifecycles while sharing the entry form, crop editor, and review rendering. The
+  delete dialog owns explicit confirmation and delegates the actual soft-delete
+  operation to the application layer; it never mutates list state before storage
+  succeeds. Generated form-field controls, save-error translation, and dialog
+  orchestration remain separate so editing can reuse them without depending on
+  list markup. Dialog screens and routed views both expose explicit teardown for
+  observers, pending asynchronous work, and temporary image resources.
 
 ## View Model
 

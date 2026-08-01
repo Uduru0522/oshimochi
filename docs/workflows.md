@@ -164,6 +164,24 @@ Text and custom values update without rewriting the image asset. Replacing the
 image writes the new asset and item and removes the superseded asset in one
 transaction. A failed transaction retains the review and draft for another attempt.
 
+## Delete Items
+
+Status: implemented for active items in the list presentation.
+
+1. User chooses the delete icon on an item row.
+2. A modal confirmation identifies the item and explains that deletion is recoverable.
+3. Confirming enters the shared mutation state and writes deletion timestamps.
+4. The item record, custom values, and image asset remain in local storage.
+5. After the write succeeds, only the deleted keyed row collapses out of the active list.
+
+Closing or cancelling the confirmation does not change the item. A failed write
+keeps the item visible and presents the actionable storage error for another
+attempt. Active filters and sorting are retained while the row is removed.
+
+Restoration and permanent purge controls are separate future work. Until those
+controls exist, soft-deleted records are retained but intentionally omitted from
+the active collection UI.
+
 ## Manage Fields
 
 Status: implemented.

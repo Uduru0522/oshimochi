@@ -70,11 +70,12 @@ order. It describes direction, not a release-date commitment.
 - [x] filter items by built-in and custom field values
 - [x] sort items by name, creation time, update time, and supported custom values
 - [x] edit items through the existing modal workflow
-- [ ] soft-delete items with explicit confirmation
+- [x] soft-delete items with explicit confirmation
 - [ ] add a cards view only after list management is complete
 
-The next implementation target is item soft deletion. Filtering and sorting remain
-presentation-neutral so the later cards view can consume the same prepared item set.
+The next implementation target is the cards presentation. Filtering and sorting
+remain presentation-neutral so list and card views can consume the same prepared
+item set.
 
 ## Later Milestones
 
