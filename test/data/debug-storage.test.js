@@ -355,6 +355,32 @@ test("DebugStorage replaces an edited item and image without retaining the old a
   assert.equal((await storage.getAsset(replacementAsset.id)).data.size, replacementData.size);
 });
 
+test("DebugStorage hides soft-deleted items while retaining their image assets", async () => {
+  const storage = createDebugStorage();
+  await storage.initialize();
+  const [existingItem] = await storage.listItems("tapestries");
+  const deletedItem = {
+    ...existingItem,
+    isDeleted: true,
+    deletedAt: "2026-07-21T00:00:00.000Z",
+    updatedAt: "2026-07-21T00:00:00.000Z"
+  };
+
+  await storage.updateItem({ item: deletedItem });
+
+  assert.equal(
+    (await storage.listItems("tapestries")).some(({ id }) => id === deletedItem.id),
+    false
+  );
+  assert.deepEqual(
+    (await storage.listItems("tapestries", { includeDeleted: true })).find(
+      ({ id }) => id === deletedItem.id
+    ),
+    deletedItem
+  );
+  assert.notEqual(await storage.getAsset(deletedItem.imageAssetId), null);
+});
+
 test("DebugStorage reset clears all temporary domain records", async () => {
   const storage = createDebugStorage();
 
