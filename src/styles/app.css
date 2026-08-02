@@ -26,6 +26,10 @@
   --motion-fast: 160ms;
   --motion-enter: 140ms;
   --motion-layout: 180ms;
+  --item-membership-duration: 220ms;
+  --item-layout-min-duration: 180ms;
+  --item-layout-max-duration: 360ms;
+  --item-layout-distance-factor: 0.18;
   --font-ui: Inter, "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
@@ -736,7 +740,7 @@ textarea {
   position: relative;
   background: var(--surface);
   scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
-  scrollbar-gutter: auto;
+  scrollbar-gutter: stable;
   scrollbar-width: thin;
   touch-action: pan-y;
   opacity: 1;
@@ -1983,6 +1987,7 @@ textarea {
 }
 
 .item-card-grid {
+  position: relative;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 1fr));
   align-items: stretch;

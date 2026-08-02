@@ -1,7 +1,6 @@
 import { createElement } from "../../shared/dom.js";
 import { createIcon } from "../../shared/icons.js";
 import {
-  MAX_UI_MOTION_MS,
   getCustomPropertyDurationMs,
   prefersReducedMotion
 } from "../../shared/motion.js";
@@ -12,14 +11,19 @@ import { formatMissingFields } from "./item-missing-warning.js";
 import { createItemThumbnail } from "./item-thumbnail.js";
 import { createKeyedLayoutMotion } from "./keyed-layout-motion.js";
 
-const CARD_MOTION_FALLBACK_MS = 140;
+const CARD_MOTION_FALLBACK_MS = 220;
+const MAX_CARD_MOTION_MS = 300;
 const VISIBLE_FIELD_COUNT = 3;
 
 function getCardAnimationOptions(element) {
   return {
     duration: Math.min(
-      getCustomPropertyDurationMs(element, "--motion-fast", CARD_MOTION_FALLBACK_MS),
-      MAX_UI_MOTION_MS
+      getCustomPropertyDurationMs(
+        element,
+        "--item-membership-duration",
+        CARD_MOTION_FALLBACK_MS
+      ),
+      MAX_CARD_MOTION_MS
     ),
     easing: "cubic-bezier(0.2, 0.8, 0.2, 1)",
     fill: "both"
@@ -185,6 +189,41 @@ export function createItemCards(
     animations.delete(itemId);
   }
 
+  function hasExitingCards() {
+    return [...animations.values()].some(({ direction }) => direction === "exit");
+  }
+
+  function freezeGridHeight() {
+    if (!hasExitingCards()) {
+      element.style.minHeight = `${element.offsetHeight}px`;
+    }
+  }
+
+  function releaseGridHeight() {
+    if (!hasExitingCards()) {
+      element.style.minHeight = "";
+    }
+  }
+
+  function takeCardOutOfFlow(card) {
+    const cardRect = card.element.getBoundingClientRect();
+    const gridRect = element.getBoundingClientRect();
+    Object.assign(card.element.style, {
+      height: `${cardRect.height}px`,
+      left: `${cardRect.left - gridRect.left}px`,
+      position: "absolute",
+      top: `${cardRect.top - gridRect.top}px`,
+      width: `${cardRect.width}px`,
+      zIndex: "2"
+    });
+  }
+
+  function restoreCardFlow(card) {
+    ["height", "left", "position", "top", "width", "z-index"].forEach((property) => {
+      card.element.style.removeProperty(property);
+    });
+  }
+
   function reorderCards(nextItems) {
     const nextIds = nextItems.map(({ id }) => id);
     const currentIds = [...element.children]
@@ -223,14 +262,14 @@ export function createItemCards(
       return;
     }
     cancelAnimation(itemId);
+    freezeGridHeight();
+    takeCardOutOfFlow(card);
     const animation = animateCard(card.element, "exit");
     if (!animation) {
-      const remainingIds = desiredItems.map(({ id }) => id);
-      const previousPositions = layoutMotion.capture(remainingIds);
       card.destroy();
       card.element.remove();
       cards.delete(itemId);
-      animateReflow(previousPositions, remainingIds);
+      releaseGridHeight();
       showEmptyState();
       return;
     }
@@ -243,14 +282,12 @@ export function createItemCards(
       ) {
         return;
       }
-      const remainingIds = desiredItems.map(({ id }) => id);
-      const previousPositions = layoutMotion.capture(remainingIds);
       animations.delete(itemId);
       card.destroy();
       card.element.remove();
       cards.delete(itemId);
       animation.cancel();
-      animateReflow(previousPositions, remainingIds);
+      releaseGridHeight();
       showEmptyState();
     }, () => {});
   }
@@ -263,6 +300,9 @@ export function createItemCards(
       }
       if (animations.has(item.id)) {
         cancelAnimation(item.id);
+        restoreCardFlow(existingCard);
+        element.insertBefore(existingCard.element, findInsertionReference(item.id));
+        releaseGridHeight();
         const animation = animateCard(existingCard.element, "enter");
         if (animation) {
           animations.set(item.id, { animation, direction: "enter" });

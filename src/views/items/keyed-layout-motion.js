@@ -1,10 +1,34 @@
-import {
-  MAX_UI_MOTION_MS,
-  getCustomPropertyDurationMs,
-  prefersReducedMotion
-} from "../../shared/motion.js";
+import { getCustomPropertyDurationMs, prefersReducedMotion } from "../../shared/motion.js";
 
-const LAYOUT_MOTION_FALLBACK_MS = 180;
+const LAYOUT_MIN_FALLBACK_MS = 180;
+const LAYOUT_MAX_FALLBACK_MS = 360;
+const DISTANCE_FACTOR_FALLBACK = 0.18;
+
+function getLayoutDurationMs(element, offsetX, offsetY) {
+  const style = getComputedStyle(element);
+  const minDuration = getCustomPropertyDurationMs(
+    element,
+    "--item-layout-min-duration",
+    LAYOUT_MIN_FALLBACK_MS
+  );
+  const maxDuration = Math.max(
+    minDuration,
+    getCustomPropertyDurationMs(
+      element,
+      "--item-layout-max-duration",
+      LAYOUT_MAX_FALLBACK_MS
+    )
+  );
+  const configuredFactor = Number.parseFloat(
+    style.getPropertyValue("--item-layout-distance-factor")
+  );
+  const distanceFactor = Number.isFinite(configuredFactor)
+    ? configuredFactor
+    : DISTANCE_FACTOR_FALLBACK;
+  const distance = Math.hypot(offsetX, offsetY);
+
+  return Math.min(maxDuration, minDuration + distance * distanceFactor);
+}
 
 export function createKeyedLayoutMotion(getElement) {
   const animations = new Map();
@@ -45,15 +69,8 @@ export function createKeyedLayoutMotion(getElement) {
           { transform: "translate(0, 0)" }
         ],
         {
-          duration: Math.min(
-            getCustomPropertyDurationMs(
-              element,
-              "--motion-layout",
-              LAYOUT_MOTION_FALLBACK_MS
-            ),
-            MAX_UI_MOTION_MS
-          ),
-          easing: "cubic-bezier(0.2, 0.8, 0.2, 1)",
+          duration: getLayoutDurationMs(element, offsetX, offsetY),
+          easing: "cubic-bezier(0.4, 0, 0.2, 1)",
           fill: "both"
         }
       );

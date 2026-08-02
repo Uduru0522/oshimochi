@@ -1,7 +1,6 @@
 import { createElement } from "../../shared/dom.js";
 import { createIcon } from "../../shared/icons.js";
 import {
-  MAX_UI_MOTION_MS,
   getCustomPropertyDurationMs,
   prefersReducedMotion
 } from "../../shared/motion.js";
@@ -12,7 +11,8 @@ import { createMissingFieldsWarning } from "./item-missing-warning.js";
 import { createItemThumbnail } from "./item-thumbnail.js";
 import { createKeyedLayoutMotion } from "./keyed-layout-motion.js";
 
-const ROW_MOTION_FALLBACK_MS = 140;
+const ROW_MOTION_FALLBACK_MS = 220;
+const MAX_ROW_MOTION_MS = 300;
 
 function createFieldValues(fieldValues) {
   const values = createElement("dl", { className: "item-list-values" });
@@ -114,8 +114,12 @@ function createItemListRow(item, fields, getAsset, onDeleteItem, onEditItem) {
 function getRowAnimationOptions(element) {
   return {
     duration: Math.min(
-      getCustomPropertyDurationMs(element, "--motion-fast", ROW_MOTION_FALLBACK_MS),
-      MAX_UI_MOTION_MS
+      getCustomPropertyDurationMs(
+        element,
+        "--item-membership-duration",
+        ROW_MOTION_FALLBACK_MS
+      ),
+      MAX_ROW_MOTION_MS
     ),
     easing: "cubic-bezier(0.2, 0.8, 0.2, 1)",
     fill: "both"

@@ -32,7 +32,13 @@ test("keyed layout motion translates existing items from measured old to new pos
   }]));
 
   globalThis.getComputedStyle = () => ({
-    getPropertyValue: () => "180ms"
+    getPropertyValue(propertyName) {
+      return {
+        "--item-layout-distance-factor": "0.18",
+        "--item-layout-max-duration": "360ms",
+        "--item-layout-min-duration": "180ms"
+      }[propertyName] ?? "";
+    }
   });
   globalThis.matchMedia = () => ({ matches: false });
 
@@ -52,7 +58,8 @@ test("keyed layout motion translates existing items from measured old to new pos
       { transform: "translate(0px, 80px)" },
       { transform: "translate(0, 0)" }
     ]);
-    assert.equal(animations[0].options.duration, 180);
+    assert.equal(animations[0].options.duration, 226.8);
+    assert.equal(animations[1].options.duration, 194.4);
 
     motion.destroy();
     assert.equal(animations.every(({ cancelled }) => cancelled), true);
