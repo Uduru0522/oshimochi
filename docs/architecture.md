@@ -131,6 +131,8 @@ Important tokens:
 - `--motion-fast`: fast UI state changes.
 - `--motion-enter`: lightweight feedback when workflow content is replaced.
 - `--motion-layout`: wide/narrow layout settle animation.
+- `--item-membership-duration`: item entrance and exit feedback.
+- `--item-layout-*`: distance-aware item reordering bounds and scaling.
 - `--scrollbar-*`: app scrollbar styling.
 - `--focus-ring`: keyboard focus outline color.
 - `--accent-tint`: low-emphasis icon background.
