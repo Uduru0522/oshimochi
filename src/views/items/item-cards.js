@@ -189,22 +189,6 @@ export function createItemCards(
     animations.delete(itemId);
   }
 
-  function hasExitingCards() {
-    return [...animations.values()].some(({ direction }) => direction === "exit");
-  }
-
-  function freezeGridHeight() {
-    if (!hasExitingCards()) {
-      element.style.minHeight = `${element.offsetHeight}px`;
-    }
-  }
-
-  function releaseGridHeight() {
-    if (!hasExitingCards()) {
-      element.style.minHeight = "";
-    }
-  }
-
   function takeCardOutOfFlow(card) {
     const cardRect = card.element.getBoundingClientRect();
     const gridRect = element.getBoundingClientRect();
@@ -262,14 +246,12 @@ export function createItemCards(
       return;
     }
     cancelAnimation(itemId);
-    freezeGridHeight();
     takeCardOutOfFlow(card);
     const animation = animateCard(card.element, "exit");
     if (!animation) {
       card.destroy();
       card.element.remove();
       cards.delete(itemId);
-      releaseGridHeight();
       showEmptyState();
       return;
     }
@@ -287,7 +269,6 @@ export function createItemCards(
       card.element.remove();
       cards.delete(itemId);
       animation.cancel();
-      releaseGridHeight();
       showEmptyState();
     }, () => {});
   }
@@ -302,7 +283,6 @@ export function createItemCards(
         cancelAnimation(item.id);
         restoreCardFlow(existingCard);
         element.insertBefore(existingCard.element, findInsertionReference(item.id));
-        releaseGridHeight();
         const animation = animateCard(existingCard.element, "enter");
         if (animation) {
           animations.set(item.id, { animation, direction: "enter" });
