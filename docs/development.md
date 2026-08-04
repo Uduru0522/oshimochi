@@ -69,6 +69,13 @@ For item-registration changes:
 - reload debug mode and confirm created items disappear
 - confirm a failed save retains the item draft
 
+For item-browser presentation changes:
+
+- switch between list and cards with portrait and landscape fixtures; every thumbnail must remain fully visible in a square media region
+- apply text search and several field filters; cards must prioritize matching fields without changing their fixed field limit
+- filter, clear, sort, add, edit, and delete while scrolled; retained entries must move from their previous positions instead of being rebuilt
+- verify the item toolbar remains aligned in its full and compact title-bar states
+
 ## Browser Storage
 
 Settings are stored in browser `localStorage`, not in project files.
@@ -184,9 +191,11 @@ Responsive behavior currently has one app-shell breakpoint at `1100px`, matching
 
 Collection loading and active item presentation belong in
 `src/views/items/item-browser.js`. Keep list-only markup in `item-list.js` and
-card-only markup in `item-cards.js`; place field/value interpretation in the
-shared item display helpers so presentations do not duplicate it. Filtering and
-sorting produce one prepared item set before the active renderer receives it.
+card collection reconciliation in `item-cards.js`. Keep one-card body rendering
+in `item-card-content.js` and pure field prioritization in `item-card-context.js`;
+place field/value interpretation in the shared item display helpers so
+presentations do not duplicate it. Filtering and sorting produce one prepared
+item set before the active renderer receives it.
 Presentation switching replaces only the renderer and retains applied query state.
 
 ## Dependency Rules

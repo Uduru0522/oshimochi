@@ -161,9 +161,15 @@ Status: implemented.
 List remains the default compact management view. Cards prioritize the complete
 processed image and item name. Their square image stage contains either supported
 90-degree crop orientation without clipping, so portrait and landscape assets use
-the same card geometry. Cards show up to three custom fields and indicate when
-additional fields are available. Both presentations expose edit and delete actions
-and use keyed updates after item mutations.
+the same card geometry. The thumbnail renderer uses stored asset dimensions rather
+than relying on image-load timing, and centers the complete processed image over a
+subtle media surface.
+
+Cards show up to three custom fields. Field priority is applied filter rules,
+positive general-search matches, the active custom sort field, then schema order.
+If more filtered fields match than the card can show, a disclosure opens their
+values without changing card geometry. Both presentations expose edit and delete
+actions and use keyed updates after item mutations.
 
 ## Edit Items
 

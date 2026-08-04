@@ -161,9 +161,12 @@ Owns view definitions and view rendering.
   reconcile keyed records from one filtered and sorted item set. Their shared
   keyed-layout helper measures stable entries before DOM ordering changes, then
   animates those entries from their previous positions without moving new entries
-  away from their final insertion points. Filter and sort dialogs remain separate
-  from their pure application evaluators. Display-model, typed-value, thumbnail, and warning
-  helpers are presentation-neutral. Add and edit dialogs own separate draft
+  away from their final insertion points. Card collection reconciliation remains
+  separate from `item-card-content.js`, which renders one card body, and the pure
+  `item-card-context.js` selector, which chooses fields from applied query state.
+  Filter and sort dialogs remain separate from their pure application evaluators.
+  Display-model, typed-value, thumbnail, and warning helpers are presentation-neutral.
+  Add and edit dialogs own separate draft
   lifecycles while sharing the entry form, crop editor, and review rendering. The
   delete dialog owns explicit confirmation and delegates the actual soft-delete
   operation to the application layer; it never mutates list state before storage
