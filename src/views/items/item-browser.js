@@ -73,7 +73,10 @@ export function createItemBrowser({ goodsTypeId, itemManagement, onDeleteItem, o
     const visibleItems = filterItems(sortedItems, fields, activeFilter);
 
     if (incremental && typeof activePresentation?.update === "function") {
-      activePresentation.update(visibleItems, sortedItems);
+      activePresentation.update(visibleItems, sortedItems, {
+        filter: activeFilter,
+        sort: activeSort
+      });
       return;
     }
 
@@ -82,10 +85,12 @@ export function createItemBrowser({ goodsTypeId, itemManagement, onDeleteItem, o
         ? createItemCards
         : createItemList;
       return createPresentation(visibleItems, fields, {
+        filter: activeFilter,
         getAsset: itemManagement.getAsset,
         onClearFilters: clearFilters,
         onDeleteItem,
         onEditItem,
+        sort: activeSort,
         sourceItems: sortedItems
       });
     });

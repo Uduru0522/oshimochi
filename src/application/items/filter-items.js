@@ -123,6 +123,27 @@ function matchesGeneralQuery(item, fields, tokens) {
   });
 }
 
+export function getItemSearchMatchingFieldIds(item, fields, query) {
+  const positiveTokens = parseItemSearchQuery(query).filter(({ excluded }) => !excluded);
+
+  if (positiveTokens.length === 0) {
+    return [];
+  }
+
+  return fields
+    .filter(({ dataType }) => dataType !== "image")
+    .filter(({ isBuiltIn, key }) => !isBuiltIn || key !== "id")
+    .filter((field) => {
+      const value = normalizeText(
+        getHumanReadableValue(getItemFieldValue(item, field), field)
+      );
+      return value !== "" && positiveTokens.some(({ value: token }) =>
+        value.includes(normalizeText(token))
+      );
+    })
+    .map(({ id }) => id);
+}
+
 function matchesText(value, rule) {
   const actual = normalizeText(value);
   const expected = normalizeText(rule.value ?? "");

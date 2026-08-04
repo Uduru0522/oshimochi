@@ -4,16 +4,13 @@ import {
   getCustomPropertyDurationMs,
   prefersReducedMotion
 } from "../../shared/motion.js";
-import { createItemDisplayValue } from "./item-display-value.js";
+import { createItemCardContent } from "./item-card-content.js";
 import { createItemEmptyState } from "./item-empty-state.js";
-import { getItemDisplayData } from "./item-display-model.js";
-import { formatMissingFields } from "./item-missing-warning.js";
 import { createItemThumbnail } from "./item-thumbnail.js";
 import { createKeyedLayoutMotion } from "./keyed-layout-motion.js";
 
 const CARD_MOTION_FALLBACK_MS = 220;
 const MAX_CARD_MOTION_MS = 300;
-const VISIBLE_FIELD_COUNT = 3;
 
 function getCardAnimationOptions(element) {
   return {
@@ -42,90 +39,67 @@ function animateCard(element, direction) {
   );
 }
 
-function createCardValues(fieldValues) {
-  const values = createElement("dl", { className: "item-card-values" });
-
-  fieldValues.slice(0, VISIBLE_FIELD_COUNT).forEach(({ field, value }) => {
-    const description = createElement("dd");
-    description.append(createItemDisplayValue(field, value));
-    values.append(
-      createElement("dt", {
-        attributes: { title: field.displayName },
-        textContent: field.displayName
-      }),
-      description
-    );
-  });
-  return values;
-}
-
-function createItemCard(item, fields, getAsset, onDeleteItem, onEditItem) {
+function createItemCard(
+  item,
+  fields,
+  getAsset,
+  onDeleteItem,
+  onEditItem,
+  presentationContext
+) {
   const element = createElement("article", {
     attributes: { role: "listitem" },
     className: "item-card",
     dataset: { itemId: item.id }
   });
+  const body = createElement("div", { className: "item-card-body" });
+  const controls = createElement("div", { className: "item-card-controls" });
+  const editButton = createElement("button", {
+    attributes: { title: "Edit item", type: "button" },
+    className: "item-card-edit"
+  });
+  const deleteButton = createElement("button", {
+    attributes: { title: "Delete item", type: "button" },
+    className: "item-card-delete"
+  });
   let currentItem = item;
-  let thumbnail = null;
+  let thumbnail = createItemThumbnail(item, getAsset, {
+    className: "item-card-thumbnail"
+  });
 
-  function render(nextItem) {
-    thumbnail?.destroy();
-    currentItem = nextItem;
-    const { fieldValues, missingRequiredFields } = getItemDisplayData(nextItem, fields);
-    const body = createElement("div", { className: "item-card-body" });
-    const heading = createElement("h4", {
-      attributes: { title: nextItem.name },
-      textContent: nextItem.name
-    });
-    const controls = createElement("div", { className: "item-card-controls" });
-    const editButton = createElement("button", {
-      attributes: {
-        "aria-label": `Edit ${nextItem.name}`,
-        title: "Edit item",
-        type: "button"
-      },
-      className: "item-card-edit"
-    });
-    const deleteButton = createElement("button", {
-      attributes: {
-        "aria-label": `Delete ${nextItem.name}`,
-        title: "Delete item",
-        type: "button"
-      },
-      className: "item-card-delete"
-    });
-    thumbnail = createItemThumbnail(nextItem, getAsset, {
+  editButton.append(createIcon("edit"));
+  deleteButton.append(createIcon("delete"));
+  editButton.addEventListener("click", () => onEditItem(currentItem));
+  deleteButton.addEventListener("click", () => onDeleteItem(currentItem));
+  controls.append(editButton, deleteButton);
+  element.append(thumbnail.element, body, controls);
+
+  function updateThumbnail(nextItem) {
+    if (nextItem.imageAssetId === currentItem.imageAssetId) {
+      return;
+    }
+
+    const nextThumbnail = createItemThumbnail(nextItem, getAsset, {
       className: "item-card-thumbnail"
     });
-
-    editButton.append(createIcon("edit"));
-    deleteButton.append(createIcon("delete"));
-    editButton.addEventListener("click", () => onEditItem(nextItem));
-    deleteButton.addEventListener("click", () => onDeleteItem(nextItem));
-    controls.append(editButton, deleteButton);
-    body.append(heading);
-
-    if (missingRequiredFields.length > 0) {
-      const message = formatMissingFields(missingRequiredFields);
-      body.append(createElement("span", {
-        attributes: { title: message },
-        className: "item-card-warning",
-        textContent: `${missingRequiredFields.length} missing field(s)`
-      }));
-    }
-    if (fieldValues.length > 0) {
-      body.append(createCardValues(fieldValues));
-    }
-    if (fieldValues.length > VISIBLE_FIELD_COUNT) {
-      body.append(createElement("p", {
-        className: "item-card-more",
-        textContent: `+${fieldValues.length - VISIBLE_FIELD_COUNT} more fields`
-      }));
-    }
-    element.replaceChildren(thumbnail.element, body, controls);
+    thumbnail.element.replaceWith(nextThumbnail.element);
+    thumbnail.destroy();
+    thumbnail = nextThumbnail;
   }
 
-  render(item);
+  function render(nextItem, nextPresentationContext) {
+    updateThumbnail(nextItem);
+    currentItem = nextItem;
+    editButton.setAttribute("aria-label", `Edit ${nextItem.name}`);
+    deleteButton.setAttribute("aria-label", `Delete ${nextItem.name}`);
+    body.replaceChildren(...createItemCardContent(
+      nextItem,
+      fields,
+      nextPresentationContext
+    ));
+  }
+
+  render(item, presentationContext);
   return {
     element,
     get item() {
@@ -134,9 +108,10 @@ function createItemCard(item, fields, getAsset, onDeleteItem, onEditItem) {
     destroy() {
       thumbnail?.destroy();
     },
-    update(nextItem) {
-      render(nextItem);
-      if (!prefersReducedMotion() && typeof element.animate === "function") {
+    update(nextItem, nextPresentationContext) {
+      const itemChanged = currentItem !== nextItem;
+      render(nextItem, nextPresentationContext);
+      if (itemChanged && !prefersReducedMotion() && typeof element.animate === "function") {
         element.animate([{ opacity: 0.55 }, { opacity: 1 }], getCardAnimationOptions(element));
       }
     }
@@ -147,10 +122,12 @@ export function createItemCards(
   items,
   fields,
   {
+    filter = {},
     getAsset,
     onClearFilters = () => {},
     onDeleteItem = () => {},
     onEditItem = () => {},
+    sort = null,
     sourceItems = items
   }
 ) {
@@ -165,6 +142,7 @@ export function createItemCards(
   let desiredIds = new Set(items.map(({ id }) => id));
   let destroyed = false;
   let emptyState = null;
+  let presentationContext = { filter, sort };
   let sourceItemCount = sourceItems.length;
 
   function removeEmptyState() {
@@ -276,9 +254,7 @@ export function createItemCards(
   function addOrRestoreCard(item) {
     const existingCard = cards.get(item.id);
     if (existingCard) {
-      if (existingCard.item !== item) {
-        existingCard.update(item);
-      }
+      existingCard.update(item, presentationContext);
       if (animations.has(item.id)) {
         cancelAnimation(item.id);
         restoreCardFlow(existingCard);
@@ -296,7 +272,14 @@ export function createItemCards(
       }
       return;
     }
-    const card = createItemCard(item, fields, getAsset, onDeleteItem, onEditItem);
+    const card = createItemCard(
+      item,
+      fields,
+      getAsset,
+      onDeleteItem,
+      onEditItem,
+      presentationContext
+    );
     cards.set(item.id, card);
     element.insertBefore(card.element, findInsertionReference(item.id));
     const animation = animateCard(card.element, "enter");
@@ -311,10 +294,15 @@ export function createItemCards(
     }
   }
 
-  function update(nextItems, nextSourceItems = nextItems) {
+  function update(
+    nextItems,
+    nextSourceItems = nextItems,
+    nextPresentationContext = presentationContext
+  ) {
     if (destroyed) {
       return;
     }
+    presentationContext = nextPresentationContext;
     desiredItems = nextItems;
     desiredIds = new Set(nextItems.map(({ id }) => id));
     sourceItemCount = nextSourceItems.length;
@@ -337,7 +325,14 @@ export function createItemCards(
   }
 
   items.forEach((item) => {
-    const card = createItemCard(item, fields, getAsset, onDeleteItem, onEditItem);
+    const card = createItemCard(
+      item,
+      fields,
+      getAsset,
+      onDeleteItem,
+      onEditItem,
+      presentationContext
+    );
     cards.set(item.id, card);
     element.append(card.element);
   });

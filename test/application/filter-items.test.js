@@ -5,6 +5,7 @@ import {
   ITEM_FILTER_OPERATORS as OP,
   countActiveItemFilters,
   filterItems,
+  getItemSearchMatchingFieldIds,
   getNumberFilterDomain,
   parseItemSearchQuery
 } from "../../src/application/items/filter-items.js";
@@ -94,6 +95,14 @@ test("general search covers human-readable values and combines terms with AND", 
   assert.deepEqual(ids({ query: 'festival "factory sealed" -winter' }), ["item-1"]);
   assert.deepEqual(ids({ query: "limited example.com" }), ["item-1"]);
   assert.deepEqual(ids({ query: "item-1" }), []);
+});
+
+test("general search reports the fields that explain a positive match", () => {
+  assert.deepEqual(
+    getItemSearchMatchingFieldIds(items[0], fields, 'festival "limited release" example.com'),
+    ["field-name", "notes", "source"]
+  );
+  assert.deepEqual(getItemSearchMatchingFieldIds(items[0], fields, "-winter"), []);
 });
 
 test("text filters support comparisons and optional missing-value inclusion", () => {

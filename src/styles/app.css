@@ -3,6 +3,7 @@
   --bg: #eef1f4;
   --surface: #fbfcfd;
   --surface-muted: #f5f7f9;
+  --thumbnail-surface: #edf1f3;
   --line: #dce2e8;
   --line-strong: #cad3dc;
   --text: #18212b;
@@ -38,6 +39,7 @@
   --bg: #101417;
   --surface: #151a1e;
   --surface-muted: #1d2429;
+  --thumbnail-surface: #101518;
   --line: #2a333a;
   --line-strong: #3a454d;
   --text: #eef3f5;
@@ -709,11 +711,36 @@ textarea {
 }
 
 .workspace[data-view-scrolled] .topbar-actions .items-add-action {
+  width: 34px;
+  min-width: 34px;
+  height: 34px;
   min-height: 34px;
   gap: 0;
-  padding-right: 8px;
-  padding-left: 8px;
+  padding: 0;
   justify-content: center;
+}
+
+.workspace[data-view-scrolled] .topbar-actions .items-filter-action,
+.workspace[data-view-scrolled] .topbar-actions .items-sort-action {
+  width: 34px;
+  min-width: 34px;
+  height: 34px;
+  min-height: 34px;
+  gap: 0;
+  justify-content: center;
+  padding: 0;
+}
+
+.workspace[data-view-scrolled] .topbar-actions .item-presentation-control {
+  grid-template-columns: repeat(2, 30px);
+  width: 64px;
+  height: 34px;
+  padding: 1px;
+}
+
+.workspace[data-view-scrolled] .topbar-actions .item-presentation-option {
+  width: 30px;
+  height: 30px;
 }
 
 .workspace[data-view-scrolled] .topbar-actions .items-add-action span {
@@ -1904,19 +1931,22 @@ textarea {
 
 .item-list-thumbnail {
   width: 104px;
-  height: 128px;
+  height: 104px;
   flex: 0 0 104px;
-  overflow: hidden;
-  background: var(--surface-muted);
-  border: 1px solid var(--line);
   border-radius: 4px;
   align-self: center;
 }
 
-.item-list-thumbnail img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.item-thumbnail {
+  display: grid;
+  overflow: hidden;
+  place-items: center;
+  background: var(--thumbnail-surface);
+}
+
+.item-thumbnail img {
+  display: block;
+  object-fit: fill;
 }
 
 .item-list-values {
@@ -2018,22 +2048,9 @@ textarea {
 }
 
 .item-card-thumbnail {
-  display: grid;
   width: 100%;
   aspect-ratio: 1;
   min-width: 0;
-  overflow: hidden;
-  place-items: center;
-  background: var(--surface-muted);
-  border-bottom: 1px solid var(--line);
-}
-
-.item-card-thumbnail img {
-  width: auto;
-  max-width: 100%;
-  height: auto;
-  max-height: 100%;
-  object-fit: contain;
 }
 
 .item-card-body {
@@ -2181,6 +2198,59 @@ textarea {
   color: var(--muted);
   font-size: 11px;
   line-height: 1.4;
+}
+
+button.item-card-more {
+  width: max-content;
+  max-width: 100%;
+  padding: 0;
+  overflow: hidden;
+  color: var(--focus);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+button.item-card-more:hover {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+button.item-card-more:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.item-card-filter-popover {
+  width: min(380px, calc(100% - 32px));
+  max-height: min(420px, calc(100dvh - 48px));
+  margin: auto;
+  padding: 18px;
+  overflow: auto;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  box-shadow: 0 24px 64px rgba(5, 12, 15, 0.28);
+}
+
+.item-card-filter-popover::backdrop {
+  background: rgba(7, 12, 15, 0.28);
+}
+
+.item-card-filter-popover h5 {
+  margin: 0 0 14px;
+  overflow-wrap: anywhere;
+  font-size: 15px;
+  line-height: 1.35;
+}
+
+.item-card-filter-popover .item-card-values {
+  grid-template-columns: minmax(100px, 42%) minmax(0, 1fr);
 }
 
 .item-binary-display {
@@ -2331,7 +2401,7 @@ textarea {
 
 .item-delete-summary .item-list-thumbnail {
   width: 78px;
-  height: 96px;
+  height: 78px;
   flex-basis: 78px;
 }
 
@@ -3919,26 +3989,31 @@ textarea {
   .items-filter-action {
     width: 38px;
     min-width: 38px;
-    padding-right: 9px;
-    padding-left: 9px;
+    height: 38px;
+    min-height: 38px;
+    padding: 0;
     justify-content: center;
     gap: 0;
   }
 
   .item-presentation-control {
-    grid-template-columns: repeat(2, 30px);
-    width: 64px;
+    grid-template-columns: repeat(2, 34px);
+    width: 72px;
+    height: 38px;
+    padding: 1px;
   }
 
   .item-presentation-option {
-    width: 30px;
+    width: 34px;
+    height: 34px;
   }
 
   .items-sort-action {
     width: 38px;
     min-width: 38px;
-    padding-right: 9px;
-    padding-left: 9px;
+    height: 38px;
+    min-height: 38px;
+    padding: 0;
     justify-content: center;
     gap: 0;
   }
