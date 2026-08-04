@@ -132,6 +132,8 @@ Important tokens:
 - `--motion-enter`: lightweight feedback when workflow content is replaced.
 - `--motion-layout`: wide/narrow layout settle animation.
 - `--item-membership-duration`: item entrance and exit feedback.
+- `--item-card-exit-duration`, `--item-card-move-duration`, and
+  `--item-card-enter-duration`: ordered card collection transition phases.
 - `--item-layout-*`: distance-aware item reordering bounds and scaling.
 - `--scrollbar-*`: app scrollbar styling.
 - `--focus-ring`: keyboard focus outline color.

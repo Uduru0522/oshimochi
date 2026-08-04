@@ -74,6 +74,7 @@ For item-browser presentation changes:
 - switch between list and cards with portrait and landscape fixtures; every thumbnail must remain fully visible in a square media region
 - apply text search and several field filters; cards must prioritize matching fields without changing their fixed field limit
 - filter, clear, sort, add, edit, and delete while scrolled; retained entries must move from their previous positions instead of being rebuilt
+- confirm card filtering completes exits before grid movement and movement before entrances
 - verify the item toolbar remains aligned in its full and compact title-bar states
 
 ## Browser Storage

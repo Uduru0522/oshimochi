@@ -101,10 +101,13 @@ Applying or clearing filters reconciles visible entries by item ID. List rows
 collapse or expand, while cards scale out or in and the remaining grid reflows.
 The complete presentation is not torn down and rebuilt.
 
-Card exits leave grid flow at their current visual coordinates before fading, so
-remaining and returning cards can move through one coordinated layout change.
-Reordering duration scales with travel distance: nearby entries settle quickly,
-while full-grid reversals remain traceable without changing the global fast UI timing.
+Card membership changes run in three short phases: outgoing cards disappear
+while the grid remains fixed, retained cards move into the final grid, and new
+cards appear only after movement finishes. Empty phases are skipped.
+
+Outgoing cards remain in grid flow until their exit phase finishes. Incoming
+cards occupy their final grid positions invisibly during movement, preventing
+membership changes from competing visually with retained-card reordering.
 
 Newly saved items use the same keyed reconciliation path. A matching item grows
 into its collection position without replacing or reloading the existing list.
