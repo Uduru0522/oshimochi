@@ -1,11 +1,29 @@
 import { createElement } from "../../shared/dom.js";
 
+export function getContainedImageFrame(width, height) {
+  if (![width, height].every((value) => Number.isFinite(value) && value > 0)) {
+    return { height: "100%", width: "100%" };
+  }
+
+  if (width > height) {
+    return { height: `${(height / width) * 100}%`, width: "100%" };
+  }
+
+  if (height > width) {
+    return { height: "100%", width: `${(width / height) * 100}%` };
+  }
+
+  return { height: "100%", width: "100%" };
+}
+
 export function createItemThumbnail(
   item,
   getAsset,
   { className = "item-list-thumbnail" } = {}
 ) {
-  const element = createElement("div", { className });
+  const element = createElement("div", {
+    className: `item-thumbnail ${className}`
+  });
   let disposed = false;
   let imageUrl = "";
 
@@ -25,6 +43,7 @@ export function createItemThumbnail(
 
         imageUrl = URL.createObjectURL(asset.data);
         const image = createElement("img", { attributes: { alt: "" } });
+        Object.assign(image.style, getContainedImageFrame(asset.width, asset.height));
         image.addEventListener("load", releaseImageUrl, { once: true });
         image.addEventListener("error", releaseImageUrl, { once: true });
         image.src = imageUrl;
