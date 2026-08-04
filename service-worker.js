@@ -1,4 +1,4 @@
-const CACHE_NAME = "wotagoods-manager-v107";
+const CACHE_NAME = "wotagoods-manager-v108";
 
 const ASSET_GROUPS = {
   app: [

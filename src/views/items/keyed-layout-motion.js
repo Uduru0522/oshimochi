@@ -4,7 +4,21 @@ const LAYOUT_MIN_FALLBACK_MS = 180;
 const LAYOUT_MAX_FALLBACK_MS = 360;
 const DISTANCE_FACTOR_FALLBACK = 0.18;
 
-function getLayoutDurationMs(element, offsetX, offsetY) {
+function getLayoutDurationMs(
+  element,
+  offsetX,
+  offsetY,
+  durationProperty,
+  durationFallbackMs
+) {
+  if (durationProperty) {
+    return getCustomPropertyDurationMs(
+      element,
+      durationProperty,
+      durationFallbackMs
+    );
+  }
+
   const style = getComputedStyle(element);
   const minDuration = getCustomPropertyDurationMs(
     element,
@@ -30,7 +44,10 @@ function getLayoutDurationMs(element, offsetX, offsetY) {
   return Math.min(maxDuration, minDuration + distance * distanceFactor);
 }
 
-export function createKeyedLayoutMotion(getElement) {
+export function createKeyedLayoutMotion(
+  getElement,
+  { durationFallbackMs = LAYOUT_MIN_FALLBACK_MS, durationProperty = "" } = {}
+) {
   const animations = new Map();
 
   function capture(itemIds) {
@@ -46,9 +63,10 @@ export function createKeyedLayoutMotion(getElement) {
 
   function animate(previousPositions, itemIds) {
     if (prefersReducedMotion()) {
-      return;
+      return Promise.resolve();
     }
 
+    const completions = [];
     itemIds.forEach((itemId) => {
       const element = getElement(itemId);
       const previous = previousPositions.get(itemId);
@@ -69,19 +87,26 @@ export function createKeyedLayoutMotion(getElement) {
           { transform: "translate(0, 0)" }
         ],
         {
-          duration: getLayoutDurationMs(element, offsetX, offsetY),
+          duration: getLayoutDurationMs(
+            element,
+            offsetX,
+            offsetY,
+            durationProperty,
+            durationFallbackMs
+          ),
           easing: "cubic-bezier(0.4, 0, 0.2, 1)",
           fill: "both"
         }
       );
       animations.set(itemId, animation);
-      animation.finished.then(() => {
+      completions.push(animation.finished.then(() => {
         if (animations.get(itemId) === animation) {
           animations.delete(itemId);
           animation.cancel();
         }
-      }, () => {});
+      }, () => {}));
     });
+    return Promise.all(completions);
   }
 
   return {

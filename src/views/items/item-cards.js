@@ -9,18 +9,16 @@ import { createItemEmptyState } from "./item-empty-state.js";
 import { createItemThumbnail } from "./item-thumbnail.js";
 import { createKeyedLayoutMotion } from "./keyed-layout-motion.js";
 
-const CARD_MOTION_FALLBACK_MS = 220;
-const MAX_CARD_MOTION_MS = 300;
+const CARD_MEMBERSHIP_FALLBACK_MS = 120;
 
-function getCardAnimationOptions(element) {
+function getCardAnimationOptions(element, direction) {
   return {
-    duration: Math.min(
-      getCustomPropertyDurationMs(
-        element,
-        "--item-membership-duration",
-        CARD_MOTION_FALLBACK_MS
-      ),
-      MAX_CARD_MOTION_MS
+    duration: getCustomPropertyDurationMs(
+      element,
+      direction === "enter"
+        ? "--item-card-enter-duration"
+        : "--item-card-exit-duration",
+      CARD_MEMBERSHIP_FALLBACK_MS
     ),
     easing: "cubic-bezier(0.2, 0.8, 0.2, 1)",
     fill: "both"
@@ -35,7 +33,7 @@ function animateCard(element, direction) {
   const hidden = { opacity: 0, scale: 0.96 };
   return element.animate(
     direction === "enter" ? [hidden, visible] : [visible, hidden],
-    getCardAnimationOptions(element)
+    getCardAnimationOptions(element, direction)
   );
 }
 
@@ -112,7 +110,10 @@ function createItemCard(
       const itemChanged = currentItem !== nextItem;
       render(nextItem, nextPresentationContext);
       if (itemChanged && !prefersReducedMotion() && typeof element.animate === "function") {
-        element.animate([{ opacity: 0.55 }, { opacity: 1 }], getCardAnimationOptions(element));
+        element.animate(
+          [{ opacity: 0.55 }, { opacity: 1 }],
+          getCardAnimationOptions(element, "enter")
+        );
       }
     }
   };
@@ -136,14 +137,21 @@ export function createItemCards(
     className: "item-card-grid"
   });
   const cards = new Map();
-  const animations = new Map();
-  const layoutMotion = createKeyedLayoutMotion((itemId) => cards.get(itemId)?.element);
-  let desiredItems = items;
+  const membershipAnimations = new Set();
+  const layoutMotion = createKeyedLayoutMotion(
+    (itemId) => cards.get(itemId)?.element,
+    {
+      durationFallbackMs: 140,
+      durationProperty: "--item-card-move-duration"
+    }
+  );
   let desiredIds = new Set(items.map(({ id }) => id));
   let destroyed = false;
   let emptyState = null;
+  let pendingUpdate = null;
   let presentationContext = { filter, sort };
   let sourceItemCount = sourceItems.length;
+  let transitionRunning = false;
 
   function removeEmptyState() {
     emptyState?.remove();
@@ -151,7 +159,7 @@ export function createItemCards(
   }
 
   function showEmptyState() {
-    if (destroyed || desiredIds.size > 0 || animations.size > 0 || emptyState) {
+    if (destroyed || desiredIds.size > 0 || emptyState) {
       return;
     }
     emptyState = createItemEmptyState({
@@ -160,30 +168,6 @@ export function createItemCards(
     });
     element.append(emptyState);
     animateCard(emptyState, "enter");
-  }
-
-  function cancelAnimation(itemId) {
-    animations.get(itemId)?.animation.cancel();
-    animations.delete(itemId);
-  }
-
-  function takeCardOutOfFlow(card) {
-    const cardRect = card.element.getBoundingClientRect();
-    const gridRect = element.getBoundingClientRect();
-    Object.assign(card.element.style, {
-      height: `${cardRect.height}px`,
-      left: `${cardRect.left - gridRect.left}px`,
-      position: "absolute",
-      top: `${cardRect.top - gridRect.top}px`,
-      width: `${cardRect.width}px`,
-      zIndex: "2"
-    });
-  }
-
-  function restoreCardFlow(card) {
-    ["height", "left", "position", "top", "width", "z-index"].forEach((property) => {
-      card.element.style.removeProperty(property);
-    });
   }
 
   function reorderCards(nextItems) {
@@ -206,72 +190,7 @@ export function createItemCards(
     });
   }
 
-  function findInsertionReference(itemId) {
-    const itemIndex = desiredItems.findIndex(({ id }) => id === itemId);
-    return desiredItems
-      .slice(itemIndex + 1)
-      .map(({ id }) => cards.get(id)?.element)
-      .find(Boolean) ?? null;
-  }
-
-  function animateReflow(previousPositions, itemIds) {
-    layoutMotion.animate(previousPositions, itemIds.filter((itemId) => cards.has(itemId)));
-  }
-
-  function removeCard(itemId) {
-    const card = cards.get(itemId);
-    if (!card || animations.get(itemId)?.direction === "exit") {
-      return;
-    }
-    cancelAnimation(itemId);
-    takeCardOutOfFlow(card);
-    const animation = animateCard(card.element, "exit");
-    if (!animation) {
-      card.destroy();
-      card.element.remove();
-      cards.delete(itemId);
-      showEmptyState();
-      return;
-    }
-    animations.set(itemId, { animation, direction: "exit" });
-    animation.finished.then(() => {
-      if (
-        destroyed ||
-        animations.get(itemId)?.animation !== animation ||
-        desiredIds.has(itemId)
-      ) {
-        return;
-      }
-      animations.delete(itemId);
-      card.destroy();
-      card.element.remove();
-      cards.delete(itemId);
-      animation.cancel();
-      showEmptyState();
-    }, () => {});
-  }
-
-  function addOrRestoreCard(item) {
-    const existingCard = cards.get(item.id);
-    if (existingCard) {
-      existingCard.update(item, presentationContext);
-      if (animations.has(item.id)) {
-        cancelAnimation(item.id);
-        restoreCardFlow(existingCard);
-        element.insertBefore(existingCard.element, findInsertionReference(item.id));
-        const animation = animateCard(existingCard.element, "enter");
-        if (animation) {
-          animations.set(item.id, { animation, direction: "enter" });
-          animation.finished.then(() => {
-            if (animations.get(item.id)?.animation === animation) {
-              animations.delete(item.id);
-              animation.cancel();
-            }
-          }, () => {});
-        }
-      }
-      return;
-    }
+  function createCard(item) {
     const card = createItemCard(
       item,
       fields,
@@ -281,16 +200,102 @@ export function createItemCards(
       presentationContext
     );
     cards.set(item.id, card);
-    element.insertBefore(card.element, findInsertionReference(item.id));
-    const animation = animateCard(card.element, "enter");
-    if (animation) {
-      animations.set(item.id, { animation, direction: "enter" });
-      animation.finished.then(() => {
-        if (animations.get(item.id)?.animation === animation) {
-          animations.delete(item.id);
-          animation.cancel();
-        }
-      }, () => {});
+    return card;
+  }
+
+  async function runMembershipPhase(cardEntries, direction) {
+    const animations = cardEntries
+      .map(({ card }) => animateCard(card.element, direction))
+      .filter(Boolean);
+    animations.forEach((animation) => membershipAnimations.add(animation));
+    await Promise.all(animations.map((animation) => animation.finished.catch(() => {})));
+    animations.forEach((animation) => membershipAnimations.delete(animation));
+    return animations;
+  }
+
+  function finishMembershipPhase(animations) {
+    animations.forEach((animation) => animation.cancel());
+  }
+
+  function hideIncomingCard(card) {
+    card.element.style.opacity = "0";
+    card.element.style.scale = "0.96";
+  }
+
+  function revealIncomingCard(card) {
+    card.element.style.removeProperty("opacity");
+    card.element.style.removeProperty("scale");
+  }
+
+  async function applyUpdate({
+    nextItems,
+    nextPresentationContext,
+    nextSourceItems
+  }) {
+    desiredIds = new Set(nextItems.map(({ id }) => id));
+    sourceItemCount = nextSourceItems.length;
+    const nextItemsById = new Map(nextItems.map((item) => [item.id, item]));
+    const exitingCards = [...cards.entries()]
+      .filter(([itemId]) => !desiredIds.has(itemId))
+      .map(([itemId, card]) => ({ itemId, card }));
+    const exitAnimations = await runMembershipPhase(exitingCards, "exit");
+
+    if (destroyed) {
+      finishMembershipPhase(exitAnimations);
+      return;
+    }
+
+    const retainedIds = nextItems
+      .map(({ id }) => id)
+      .filter((itemId) => cards.has(itemId));
+    const previousPositions = layoutMotion.capture(retainedIds);
+    exitingCards.forEach(({ itemId, card }) => {
+      card.destroy();
+      card.element.remove();
+      cards.delete(itemId);
+    });
+    finishMembershipPhase(exitAnimations);
+
+    presentationContext = nextPresentationContext;
+    if (desiredIds.size > 0) {
+      removeEmptyState();
+    }
+    retainedIds.forEach((itemId) => {
+      cards.get(itemId)?.update(nextItemsById.get(itemId), presentationContext);
+    });
+    const enteringCards = nextItems
+      .filter(({ id }) => !cards.has(id))
+      .map((item) => ({ itemId: item.id, card: createCard(item) }));
+    enteringCards.forEach(({ card }) => {
+      hideIncomingCard(card);
+      element.append(card.element);
+    });
+    reorderCards(nextItems);
+    await layoutMotion.animate(previousPositions, retainedIds);
+
+    if (destroyed) {
+      return;
+    }
+
+    enteringCards.forEach(({ card }) => revealIncomingCard(card));
+    const enterAnimations = await runMembershipPhase(enteringCards, "enter");
+    finishMembershipPhase(enterAnimations);
+    showEmptyState();
+  }
+
+  async function processPendingUpdates() {
+    if (transitionRunning) {
+      return;
+    }
+    transitionRunning = true;
+    try {
+      while (pendingUpdate && !destroyed) {
+        const nextUpdate = pendingUpdate;
+        pendingUpdate = null;
+        await applyUpdate(nextUpdate);
+      }
+    } finally {
+      transitionRunning = false;
     }
   }
 
@@ -300,40 +305,14 @@ export function createItemCards(
     nextPresentationContext = presentationContext
   ) {
     if (destroyed) {
-      return;
+      return Promise.resolve();
     }
-    presentationContext = nextPresentationContext;
-    desiredItems = nextItems;
-    desiredIds = new Set(nextItems.map(({ id }) => id));
-    sourceItemCount = nextSourceItems.length;
-    const existingIds = nextItems
-      .map(({ id }) => id)
-      .filter((itemId) => cards.has(itemId));
-    const previousPositions = layoutMotion.capture(existingIds);
-    if (desiredIds.size > 0) {
-      removeEmptyState();
-    }
-    cards.forEach((_, itemId) => {
-      if (!desiredIds.has(itemId)) {
-        removeCard(itemId);
-      }
-    });
-    nextItems.forEach(addOrRestoreCard);
-    reorderCards(nextItems);
-    animateReflow(previousPositions, existingIds);
-    showEmptyState();
+    pendingUpdate = { nextItems, nextPresentationContext, nextSourceItems };
+    return processPendingUpdates();
   }
 
   items.forEach((item) => {
-    const card = createItemCard(
-      item,
-      fields,
-      getAsset,
-      onDeleteItem,
-      onEditItem,
-      presentationContext
-    );
-    cards.set(item.id, card);
+    const card = createCard(item);
     element.append(card.element);
   });
   showEmptyState();
@@ -343,8 +322,9 @@ export function createItemCards(
     update,
     destroy() {
       destroyed = true;
-      animations.forEach(({ animation }) => animation.cancel());
-      animations.clear();
+      pendingUpdate = null;
+      membershipAnimations.forEach((animation) => animation.cancel());
+      membershipAnimations.clear();
       layoutMotion.destroy();
       cards.forEach((card) => card.destroy());
       cards.clear();

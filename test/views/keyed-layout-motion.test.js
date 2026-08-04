@@ -68,3 +68,48 @@ test("keyed layout motion translates existing items from measured old to new pos
     globalThis.matchMedia = originalMatchMedia;
   }
 });
+
+test("keyed layout motion supports a fixed presentation phase duration", async () => {
+  const originalGetComputedStyle = globalThis.getComputedStyle;
+  const originalMatchMedia = globalThis.matchMedia;
+  const animations = [];
+  let position = { left: 20, top: 40 };
+  const element = {
+    animate(keyframes, options) {
+      const animation = {
+        cancel() {},
+        finished: Promise.resolve(),
+        keyframes,
+        options
+      };
+      animations.push(animation);
+      return animation;
+    },
+    getBoundingClientRect() {
+      return position;
+    }
+  };
+
+  globalThis.getComputedStyle = () => ({
+    getPropertyValue(propertyName) {
+      return propertyName === "--item-card-move-duration" ? "140ms" : "";
+    }
+  });
+  globalThis.matchMedia = () => ({ matches: false });
+
+  try {
+    const motion = createKeyedLayoutMotion(() => element, {
+      durationFallbackMs: 140,
+      durationProperty: "--item-card-move-duration"
+    });
+    const previousPositions = motion.capture(["item"]);
+    position = { left: 240, top: 40 };
+
+    await motion.animate(previousPositions, ["item"]);
+
+    assert.equal(animations[0].options.duration, 140);
+  } finally {
+    globalThis.getComputedStyle = originalGetComputedStyle;
+    globalThis.matchMedia = originalMatchMedia;
+  }
+});
