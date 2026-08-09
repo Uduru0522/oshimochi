@@ -6,7 +6,7 @@ order. It describes direction, not a release-date commitment.
 ## Completed Foundations
 
 - responsive application shell
-- primary, child, and utility navigation
+- primary and utility navigation
 - user and debug runtime modes
 - theme persistence without first-paint flash
 - offline app-shell service worker
@@ -46,7 +46,8 @@ order. It describes direction, not a release-date commitment.
 
 ## Completed Collection Workflow Shell
 
-- keep one Overview and one Items view per goods type
+- open each goods type directly in its Items view
+- keep Overview available as a secondary title-bar action
 - launch item registration as a modal workflow from Items
 - reserve Overview for future per-collection summaries
 - reset all loaded collection data through typed confirmation
@@ -66,7 +67,7 @@ order. It describes direction, not a release-date commitment.
 
 ## Completed Item List Management
 
-- [x] keep the current compact list as the primary item view
+- [x] use cards as the default item view while retaining the compact list
 - [x] filter items by built-in and custom field values
 - [x] sort items by name, creation time, update time, and supported custom values
 - [x] edit items through the existing modal workflow

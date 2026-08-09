@@ -41,7 +41,7 @@ For persistence changes, create a goods type in each mode and reload:
 
 - user-mode goods types must remain after reload
 - debug-mode goods types must return to the fixtures after reload
-- successful creation must open the new goods-type view
+- successful creation must open the new goods type's Items view
 - a duplicate display name may warn but must not be blocked
 
 For field-management changes:
@@ -71,6 +71,10 @@ For item-registration changes:
 
 For item-browser presentation changes:
 
+- choose a goods type and confirm it opens Items directly
+- open Collection overview from the title-bar information action, confirm the
+  goods type stays highlighted, then return through the arrow in the same position
+- confirm cards are selected on first opening a collection and List remains selectable
 - switch between list and cards with portrait and landscape fixtures; every thumbnail must remain fully visible in a square media region
 - apply text search and several field filters; cards must prioritize matching fields without changing their fixed field limit
 - filter, clear, sort, add, edit, and delete while scrolled; retained entries must move from their previous positions instead of being rebuilt
@@ -84,12 +88,16 @@ Settings are stored in browser `localStorage`, not in project files.
 Current keys:
 
 ```text
+wotagoods.language
 wotagoods.theme
 ```
 
 Expected values:
 
 ```text
+en
+ja
+zh-Hant
 light
 dark
 ```
@@ -97,6 +105,8 @@ dark
 In DevTools Console:
 
 ```js
+localStorage.getItem("wotagoods.language")
+localStorage.removeItem("wotagoods.language")
 localStorage.getItem("wotagoods.theme")
 localStorage.removeItem("wotagoods.theme")
 ```
@@ -124,12 +134,21 @@ devices. Do not inspect or mutate IndexedDB directly from view modules.
 4. Add navigation metadata if it should appear in primary or utility navigation.
 
 Keep route/view IDs stable. They are used by navigation state and router state.
+Secondary routes that should keep a primary destination highlighted must declare
+that destination as `navigationId`. Pass route IDs through view definitions and
+renderer callbacks; do not parse route strings inside components.
+Goods-type route IDs are constructed by
+`src/views/goods-types/goods-type-view-ids.js`; use those helpers when opening a
+collection after an app-level operation.
 
 ## Adding A Goods Type For Debug Mode
 
 Edit the fixture definitions in `src/data/debug/debug-fixtures.js`. The default
 catalog intentionally covers every supported custom field type, optional and
-missing required values, configurable toggles, and both image orientations.
+missing required values, configurable toggles, and both image orientations. Its
+Tapestries collection contains at least 20 items with repeated and distinct
+values specifically for filtering, sorting, list/card rendering, and keyed
+membership-motion tests.
 
 Use stable IDs and domain-facing property names:
 
@@ -141,9 +160,10 @@ Use stable IDs and domain-facing property names:
 }
 ```
 
-Keep fixture IDs stable and link each item image through matching item and asset
-IDs. Construct records through the domain model factories so invalid fixture data
-fails during startup and in automated tests.
+Keep fixture IDs stable. The catalog derives item and asset records from one
+entry so their identities cannot drift apart. Construct records through the
+domain model factories so invalid fixture data fails during startup and in
+automated tests. Extend the catalog-coverage test when adding a new test purpose.
 
 This is only debug data. `DebugStorage` clones these records and never writes them
 to the user database. Supplying custom goods types to `createDebugStorage()` also
@@ -157,6 +177,23 @@ Theme constants live in `src/app/config.js`.
 Runtime theme changes are handled by `src/services/theme.js`.
 
 First-paint theme is handled by `src/bootstrap/theme-bootstrap.js`. Keep that bootstrap file small and synchronous.
+
+## Language Rules
+
+Language constants live in `src/app/config.js`. Runtime persistence and document
+metadata are owned by `src/services/language.js`; first-paint `lang` selection is
+handled by `src/bootstrap/language-bootstrap.js`.
+
+Interface copy must pass through `translate()` in browser-facing composition
+modules. Do not translate user-defined collection, field, option, or item values.
+English source copy is the fallback, and parameterized copy uses named
+placeholders such as `{name}`. Keep both non-English catalogs synchronized and
+add tests when introducing locale normalization or interpolation behavior.
+
+After copy or layout changes, switch among English, Japanese, and Traditional
+Chinese in Options and check navigation, Administration, dialogs, filter/sort
+controls, long labels, and narrow mode. Reload once in each language to verify
+that `wotagoods.language` applies before the app mounts.
 
 ## CSS Rules
 

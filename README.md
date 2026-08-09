@@ -12,13 +12,14 @@ Implemented:
 
 - responsive application shell and view navigation
 - light and dark themes
+- English, Japanese, and Traditional Chinese interface languages
 - user and debug runtime modes
 - versioned IndexedDB schema initialization
 - isolated in-memory debug storage
 - Administration workflow for creating goods types
 - atomic goods-type and protected-field persistence
 - staged custom-field management with atomic apply
-- consolidated Overview and Items views for each goods type
+- direct-to-items navigation for each goods type with a secondary Overview action
 - modal item-entry shell launched from the Items view
 - typed reset of all browser-local collection data
 - generated item-entry forms with image cropping, review, and atomic local persistence
@@ -27,7 +28,7 @@ Implemented:
 - typed item sorting across metadata, names, and supported custom values
 - modal item editing with optional image replacement and atomic persistence
 - confirmed item soft deletion with retained records and image assets
-- switchable list and card presentations over one filtered and sorted item set
+- card-first, switchable card and list presentations over one filtered and sorted item set
 - keyed presentation updates for filtering, sorting, and newly registered items
 - runtime navigation refresh after database changes
 - offline app-shell caching
@@ -89,6 +90,7 @@ src/application/       Storage-neutral application operations
 src/app/               Startup, shell behavior, routing, layout
 src/bootstrap/         Scripts that run before first paint
 src/data/              Domain records and storage adapters
+src/localization/      Translation catalogs and locale-aware copy lookup
 src/navigation/        Primary and utility navigation
 src/services/          Browser services
 src/shared/            Domain-independent UI helpers

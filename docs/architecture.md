@@ -6,7 +6,9 @@ workflows and alternate item presentations are added.
 
 ## Runtime Flow
 
-1. `index.html` loads `src/bootstrap/theme-bootstrap.js` before CSS. This applies the saved theme before first paint and prevents a light-mode flash.
+1. `index.html` loads the language and theme bootstrap scripts before CSS. They
+   apply saved display preferences before first paint and prevent incorrect
+   color-scheme and font-fallback flashes.
 2. `index.html` loads `src/styles/app.css`.
 3. `src/main.js` imports `src/app/app-shell.js`.
 4. `createApp()` creates the runtime mode, shell services, mutation controller,
@@ -27,11 +29,12 @@ workflows and alternate item presentations are added.
 Owns application assembly and app-level behavior.
 
 - `app-shell.js`: composition root and browser lifecycle owner.
+- `app-language.js`: applies localized document and static shell labels.
 - `app-runtime.js`: builds data-dependent views, navigation, renderer, and router,
   and returns the runtime teardown function.
 - `app-elements.js`: required DOM lookup for shell elements.
 - `app-mode.js`: user/debug mode detection.
-- `config.js`: shared constants for selectors, theme, layout, and defaults.
+- `config.js`: shared constants for selectors, language, theme, layout, and defaults.
 - `layout-transition.js`: wide/narrow breakpoint transition state.
 - `mutation-controller.js`: one global database-mutation lock and busy state.
 - `startup-state.js`: storage loading and recoverable startup-error rendering.
@@ -66,9 +69,23 @@ must not depend on DOM elements, IndexedDB object-store names, or view modules.
 
 Contains scripts that must run before normal app startup. Keep this folder small.
 
-- `theme-bootstrap.js`: reads `localStorage` directly and sets `data-theme` before CSS loads.
+- `language-bootstrap.js`: reads the saved locale and sets the root `lang` before CSS loads.
+- `theme-bootstrap.js`: reads the saved theme and sets `data-theme` before CSS loads.
 
-This duplicates a small part of `src/services/theme.js` on purpose. The service cannot run early enough to prevent first-paint theme flash.
+These duplicate a small part of their runtime services on purpose. Module
+services cannot run early enough to prevent first-paint preference flashes.
+
+### `src/localization/`
+
+Owns interface translation without knowing about storage or view lifecycles.
+
+- `translations.js`: Japanese and Traditional Chinese catalogs keyed by the
+  English source copy.
+- `translate.js`: supported-locale normalization, English fallback, and named
+  placeholder interpolation.
+
+Views translate interface-owned copy while rendering. User-defined goods-type,
+field, option, and item names are data and are never translated.
 
 ### `src/data/`
 
@@ -90,7 +107,7 @@ memory, and never opens IndexedDB; its changes disappear on reload.
 Owns navigation rendering and navigation-specific scroll behavior.
 
 - `navigation.js`: combines primary and utility navigation.
-- `primary-navigation.js`: dashboard, goods types, goods child views, administration.
+- `primary-navigation.js`: dashboard, direct-to-items goods types, and administration.
 - `utility-navigation.js`: Options gear in the app chrome.
 - `nav-items.js`: nav button/separator builders.
 - `scrollable-row.js`: horizontal scroll behavior for narrow navigation.
@@ -105,6 +122,7 @@ so nested interactions cannot move their parent scroll surface.
 Owns browser/platform services.
 
 - `storage.js`: namespaced localStorage wrapper with safe fallbacks.
+- `language.js`: persisted language controller and localized document metadata.
 - `theme.js`: app theme controller and persisted theme changes.
 - `service-worker-registration.js`: service worker registration.
 
@@ -138,7 +156,14 @@ Important tokens:
 - `--scrollbar-*`: app scrollbar styling.
 - `--focus-ring`: keyboard focus outline color.
 - `--accent-tint`: low-emphasis icon background.
-- `--nav-child-indent`: wide sidebar child-view indent.
+- `--font-ui`: the locale-aware Noto Sans stack used throughout the interface.
+
+Fonts are selected through local font stacks so the app remains dependency-free
+and works offline. Headings, controls, and body copy all use the same Sans family
+for a consistent application-oriented appearance. Systems without installed Noto
+CJK fonts use the listed Japanese or Traditional Chinese platform fallback.
+Bundled webfonts may be added later if exact cross-platform typography is worth
+the offline download size.
 
 ### `src/views/`
 
@@ -147,7 +172,11 @@ Owns view definitions and view rendering.
 - `view-definitions.js`: source of truth for view IDs, titles, sections, nav metadata, and renderer keys.
 - `view-metadata.js`: shared constants for view IDs, nav groups, nav kinds, and renderer keys.
 - `view-renderer.js`: renderer registry for dashboard, goods overview, items,
-  administration, and options views.
+  administration, and options views. It receives app-level navigation as a
+  callback instead of importing the router.
+- `goods-types/`: secondary collection Overview rendering and its compact
+  title-bar route action. Route-ID construction also lives here so startup,
+  definitions, and components do not duplicate route-string formats.
 - `administration/`: Administration rendering and the goods-type creation flow.
   Its field manager separates staging state, list rendering, editing, review, and
   orchestration into focused modules. Field editors expand within their owning
@@ -187,17 +216,26 @@ Primary navigation uses:
 nav: { group: "primary" }
 ```
 
-Goods-type parent views use:
+Each goods type's primary Items route uses:
 
 ```js
 nav: { group: "primary", kind: "goods-type" }
 ```
 
-The Items child view uses:
+Its secondary Overview route has no `nav` metadata. Instead it aliases the
+primary route for navigation highlighting and carries the return route ID:
 
 ```js
-nav: { group: "primary", kind: "goods-child", parentId: `goods:${goodsType.id}` }
+{
+  id: `goods:${goodsType.id}:overview`,
+  navigationId: `goods:${goodsType.id}`,
+  itemsViewId: `goods:${goodsType.id}`
+}
 ```
+
+The Items definition carries the matching `overviewViewId`. Renderers use these
+explicit links to create title-bar actions; the generic router and navigation do
+not derive or parse goods-type route strings.
 
 Options uses:
 

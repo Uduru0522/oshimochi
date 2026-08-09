@@ -4,6 +4,22 @@ This document specifies implemented and planned user workflows. Their data rules
 come from [Domain Model](data-model.md), and their transactions follow
 [Persistence](persistence.md).
 
+## Change Interface Language
+
+Status: implemented.
+
+1. User opens **Options** and expands **Language**.
+2. User chooses English, Japanese, or Traditional Chinese.
+3. The selected locale is written to browser `localStorage` and the application
+   remounts the current Options view with translated shell and workflow copy.
+4. On later visits, a synchronous bootstrap applies the root document language
+   before CSS and normal startup run.
+
+Language is an interface preference only. User-entered collection names, field
+names, option labels, and item values remain exactly as entered. The app uses an
+offline-safe locale-aware Noto Sans stack with platform CJK fallbacks throughout
+the interface; it does not request fonts from a third-party host.
+
 ## Create Goods Type
 
 Status: implemented.
@@ -15,12 +31,32 @@ Status: implemented.
 5. A review step shows the entered type details and explains that protected fields
    are created automatically.
 6. Confirmation creates the goods type and built-in field definitions atomically.
-7. Navigation refreshes and opens the new goods type.
+7. Navigation refreshes and opens the new goods type's Items view.
 
 Display names do not need to be globally unique, but the UI should warn when an
 active type already uses the same normalized name. IDs are generated internally.
 User mode persists the result in IndexedDB. Debug mode applies the same workflow
 to temporary in-memory data that disappears when the page reloads.
+
+## Open A Collection
+
+Status: implemented.
+
+1. User chooses a goods type in primary navigation.
+2. The app opens that collection's Items view immediately.
+3. The collection remains highlighted while the user browses Items or its
+   secondary Overview route.
+4. User may open **Collection overview** from the title-bar information action.
+5. User returns to Items through the title-bar return arrow or by
+   choosing the collection in primary navigation again.
+
+The information action is the rightmost Items control. The Overview return arrow
+uses the same top-right anchor, so opening metadata does not move the control the
+user must use to leave it.
+
+Overview is intentionally outside primary navigation. It holds collection
+metadata and remains available for future collection-level summaries without
+adding another permanent destination to the navigation pane.
 
 ## Add Item
 
@@ -157,12 +193,15 @@ presentations consume the same ordered result set.
 
 Status: implemented.
 
+Cards are the default whenever a collection Items view is opened. List remains
+available as a compact alternate presentation.
+
 1. User chooses the list or card icon in the collection title bar.
 2. The item browser retains loaded records and all applied filter and sort state.
 3. Only the presentation renderer changes with a short content transition.
 
-List remains the default compact management view. Cards prioritize the complete
-processed image and item name. Their square image stage contains either supported
+Cards prioritize the complete processed image and item name. Their square image
+stage contains either supported
 90-degree crop orientation without clipping, so portrait and landscape assets use
 the same card geometry. The thumbnail renderer uses stored asset dimensions rather
 than relying on image-load timing, and centers the complete processed image over a

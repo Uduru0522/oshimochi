@@ -22,6 +22,12 @@ In the GitHub repository:
 
 The workflow in `.github/workflows/deploy-pages.yml` deploys the static site whenever `main` is pushed. It can also be run manually from the repository's **Actions** tab.
 
+The workflow uses Node 24 and the Node 24-based Pages action majors:
+`actions/configure-pages@v6`, `actions/upload-pages-artifact@v5`, and
+`actions/deploy-pages@v5`. Do not suppress runtime deprecation warnings with
+`FORCE_JAVASCRIPT_ACTIONS_TO_NODE24`; upgrade an affected action to a release
+that declares the current runtime instead.
+
 ## Pre-Push Verification
 
 Run the static checks:
@@ -70,6 +76,8 @@ In browser DevTools, verify:
 - Application > Service Workers shows an active worker.
 - Reloading after enabling offline mode still opens the app shell.
 - Dark mode survives a reload.
+- Choosing a goods type opens Items directly, while the title-bar information
+  action opens its secondary Overview route.
 
 Localhost and GitHub Pages are different browser origins. Their settings and
 IndexedDB databases are separate.
