@@ -264,7 +264,7 @@ test("DebugStorage creates and lists isolated item records", async () => {
   );
 });
 
-test("DebugStorage fixtures demonstrate every supported custom field type", async () => {
+test("DebugStorage fixtures provide a varied item-management catalog", async () => {
   const storage = createDebugStorage();
 
   await storage.initialize();
@@ -278,17 +278,42 @@ test("DebugStorage fixtures demonstrate every supported custom field type", asyn
   const tapestries = await storage.listItems("tapestries");
   const legacyItem = tapestries.find(({ id }) => id === "tapestry-legacy-record");
   const optionalItem = tapestries.find(({ id }) => id === "tapestry-winter-cafe");
-  const asset = await storage.getAsset(tapestries[0].imageAssetId);
+  const tapestryAssets = await Promise.all(
+    tapestries.map(({ imageAssetId }) => storage.getAsset(imageAssetId))
+  );
+  const seriesValues = tapestries
+    .map(({ customValues }) => customValues["tapestries-series"])
+    .filter(Boolean);
+  const widths = tapestries
+    .map(({ customValues }) => customValues["tapestries-width_cm"])
+    .filter(Number.isFinite);
+  const conditions = new Set(
+    tapestries
+      .map(({ customValues }) => customValues["tapestries-condition"])
+      .filter(Boolean)
+  );
+  const displayStates = new Set(
+    tapestries.map(({ customValues }) => customValues["tapestries-display_status"])
+  );
+  const imageOrientations = new Set(
+    tapestryAssets.map(({ width, height }) => width < height ? "portrait" : "landscape")
+  );
 
   assert.deepEqual(
     [...customTypes].sort(),
     ["boolean", "date", "long_text", "number", "select", "text", "url"]
   );
-  assert.equal(tapestries.length, 3);
+  assert.ok(tapestries.length >= 20);
+  assert.ok(new Set(seriesValues).size >= 6);
+  assert.ok(seriesValues.length > new Set(seriesValues).size);
+  assert.ok(new Set(widths).size >= 8);
+  assert.deepEqual([...conditions].sort(), ["displayed", "opened", "sealed"]);
+  assert.deepEqual([...displayStates].sort(), [false, true]);
+  assert.deepEqual([...imageOrientations].sort(), ["landscape", "portrait"]);
   assert.equal(Object.hasOwn(legacyItem.customValues, "tapestries-series"), false);
   assert.equal(Object.hasOwn(optionalItem.customValues, "tapestries-notes"), false);
-  assert.equal(asset.mediaType, "image/svg+xml");
-  assert.ok(asset.data.size > 0);
+  assert.equal(tapestryAssets.every(({ mediaType }) => mediaType === "image/svg+xml"), true);
+  assert.equal(tapestryAssets.every(({ data }) => data.size > 0), true);
 });
 
 test("DebugStorage keeps image assets linked to their item", async () => {
