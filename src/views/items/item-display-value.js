@@ -2,7 +2,9 @@ import { createElement } from "../../shared/dom.js";
 import { formatItemFieldValue } from "./item-value-format.js";
 
 function formatDate(value) {
-  return new Intl.DateTimeFormat(undefined, {
+  const language = globalThis.document?.documentElement?.lang || undefined;
+
+  return new Intl.DateTimeFormat(language, {
     dateStyle: "medium",
     timeZone: "UTC"
   }).format(new Date(`${value}T00:00:00.000Z`));

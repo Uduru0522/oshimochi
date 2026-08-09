@@ -3,6 +3,7 @@ import {
   countActiveItemFilters,
   getNumberFilterDomain
 } from "../../application/items/filter-items.js";
+import { translate } from "../../localization/translate.js";
 import { createActionButton } from "../../shared/action-button.js";
 import { createElement } from "../../shared/dom.js";
 import { createIcon } from "../../shared/icons.js";
@@ -19,10 +20,14 @@ import {
 
 export function createItemFilterPanel({ onApply }) {
   const button = createElement("button", {
-    attributes: { "aria-label": "Filter items", title: "Filter items", type: "button" },
+    attributes: {
+      "aria-label": translate("Filter items"),
+      title: translate("Filter items"),
+      type: "button"
+    },
     className: "secondary-action items-filter-action"
   });
-  const buttonLabel = createElement("span", { textContent: "Filter" });
+  const buttonLabel = createElement("span", { textContent: translate("Filter") });
   const badge = createElement("span", {
     attributes: { "aria-hidden": "true" },
     className: "items-filter-badge"
@@ -34,10 +39,14 @@ export function createItemFilterPanel({ onApply }) {
   const header = createElement("header", { className: "item-filter-header" });
   const heading = createElement("h3", {
     attributes: { id: "itemFilterTitle" },
-    textContent: "Filter items"
+    textContent: translate("Filter items")
   });
   const closeButton = createElement("button", {
-    attributes: { "aria-label": "Close item filters", title: "Close", type: "button" },
+    attributes: {
+      "aria-label": translate("Close item filters"),
+      title: translate("Close"),
+      type: "button"
+    },
     className: "item-entry-close"
   });
   const form = createElement("form", { className: "item-filter-form" });
@@ -46,12 +55,12 @@ export function createItemFilterPanel({ onApply }) {
   const searchInput = createElement("input", {
     attributes: {
       autocomplete: "off",
-      placeholder: 'Search, "exact phrase", -excluded',
+      placeholder: translate('Search, "exact phrase", -excluded'),
       type: "search"
     }
   });
   const addFieldSelect = createElement("select", {
-    attributes: { "aria-label": "Add field filter" },
+    attributes: { "aria-label": translate("Add field filter") },
     className: "item-filter-add-field"
   });
   const rulesElement = createElement("div", { className: "item-filter-rules" });
@@ -60,9 +69,9 @@ export function createItemFilterPanel({ onApply }) {
     className: "item-filter-error"
   });
   const footer = createElement("footer", { className: "item-filter-footer" });
-  const clearButton = createActionButton("Clear filters");
-  const cancelButton = createActionButton("Cancel");
-  const applyButton = createActionButton("Apply filters", {
+  const clearButton = createActionButton(translate("Clear filters"));
+  const cancelButton = createActionButton(translate("Cancel"));
+  const applyButton = createActionButton(translate("Apply filters"), {
     className: "primary-action",
     type: "submit"
   });
@@ -83,7 +92,10 @@ export function createItemFilterPanel({ onApply }) {
   badge.hidden = true;
   button.append(createIcon("filter"), buttonLabel, badge);
   closeButton.append(createIcon("close"));
-  searchField.append(createElement("strong", { textContent: "Search all fields" }), searchInput);
+  searchField.append(
+    createElement("strong", { textContent: translate("Search all fields") }),
+    searchInput
+  );
   const footerActions = createElement("div", { className: "item-filter-footer-actions" });
   footerActions.append(cancelButton, applyButton);
   footer.append(clearButton, footerActions);
@@ -97,7 +109,12 @@ export function createItemFilterPanel({ onApply }) {
     badge.hidden = count === 0;
     badge.textContent = count > 99 ? "99+" : String(count);
     button.dataset.active = String(count > 0);
-    button.setAttribute("aria-label", count > 0 ? `Filter items, ${count} active` : "Filter items");
+    button.setAttribute(
+      "aria-label",
+      count > 0
+        ? translate("Filter items, {count} active", { count })
+        : translate("Filter items")
+    );
   }
 
   function getAvailableFields() {
@@ -108,7 +125,7 @@ export function createItemFilterPanel({ onApply }) {
   function renderAddFieldOptions() {
     addFieldSelect.replaceChildren(createElement("option", {
       attributes: { value: "" },
-      textContent: "Add field filter..."
+      textContent: translate("Add field filter...")
     }));
     getAvailableFields().forEach((field) => {
       addFieldSelect.append(createElement("option", {
@@ -124,7 +141,7 @@ export function createItemFilterPanel({ onApply }) {
     if (draftFilter.rules.length === 0) {
       rulesElement.append(createElement("p", {
         className: "item-filter-no-rules",
-        textContent: "No field filters added."
+        textContent: translate("No field filters added.")
       }));
     } else {
       draftFilter.rules.forEach((rule) => {
@@ -225,7 +242,7 @@ export function createItemFilterPanel({ onApply }) {
         : null;
       const message = field
         ? validateItemFilterRule(rule, field, numberDomain)
-        : "A filtered field is unavailable.";
+        : translate("A filtered field is unavailable.");
       if (message) {
         error.textContent = message;
         error.scrollIntoView({ block: "nearest" });

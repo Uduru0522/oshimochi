@@ -1,4 +1,5 @@
 import { STORAGE_ERROR_CODES } from "../data/contracts/storage-contract.js";
+import { translate } from "../localization/translate.js";
 import { createElement } from "../shared/dom.js";
 
 function resetNavigation(elements) {
@@ -21,12 +22,12 @@ export function renderStartupLoading(elements) {
   });
 
   status.append(
-    createElement("h3", { textContent: "Opening your collection" }),
-    createElement("p", { textContent: "Loading local data..." })
+    createElement("h3", { textContent: translate("Opening your collection") }),
+    createElement("p", { textContent: translate("Loading local data...") })
   );
 
   resetNavigation(elements);
-  setTitle(elements, "Application", "Opening collection");
+  setTitle(elements, translate("Application"), translate("Opening collection"));
   elements.viewPanel.replaceChildren(status);
 }
 
@@ -40,22 +41,24 @@ export function renderStartupError(elements, error, { onRetry }) {
   const retryButton = createElement("button", {
     attributes: { type: "button" },
     className: "primary-action",
-    textContent: "Retry"
+    textContent: translate("Retry")
   });
 
   retryButton.addEventListener("click", () => void onRetry());
   actions.append(retryButton);
   article.append(
-    createElement("h3", { textContent: "Your collection could not be opened" }),
+    createElement("h3", {
+      textContent: translate("Your collection could not be opened")
+    }),
     createElement("p", {
       textContent: isUpgradeBlocked
-        ? "Close other Wotagoods tabs, then retry. Your saved data has not been changed."
-        : "Local browser storage is unavailable or could not be initialized. Your saved data has not been changed."
+        ? translate("Close other Wotagoods tabs, then retry. Your saved data has not been changed.")
+        : translate("Local browser storage is unavailable or could not be initialized. Your saved data has not been changed.")
     }),
     actions
   );
 
   resetNavigation(elements);
-  setTitle(elements, "Application", "Storage unavailable");
+  setTitle(elements, translate("Application"), translate("Storage unavailable"));
   elements.viewPanel.replaceChildren(article);
 }

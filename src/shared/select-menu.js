@@ -8,7 +8,7 @@ import {
 
 let menuIdSequence = 0;
 
-export function createSelectMenu({ ariaLabel }) {
+export function createSelectMenu({ ariaLabel, emptyLabel = "Select..." }) {
   const menuId = `selectMenu${++menuIdSequence}`;
   const element = createElement("div", { className: "select-menu" });
   const trigger = createElement("button", {
@@ -43,7 +43,7 @@ export function createSelectMenu({ ariaLabel }) {
     const selectedIndex = getSelectedIndex();
     const selectedOption = options[selectedIndex];
     selectedValue = selectedOption?.value ?? "";
-    triggerLabel.textContent = selectedOption?.label ?? "Select...";
+    triggerLabel.textContent = selectedOption?.label ?? emptyLabel;
     [...listbox.children].forEach((optionElement, index) => {
       optionElement.dataset.selected = String(index === selectedIndex);
       optionElement.setAttribute("aria-selected", String(index === selectedIndex));

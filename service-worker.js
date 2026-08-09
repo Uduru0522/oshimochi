@@ -1,4 +1,4 @@
-const CACHE_NAME = "wotagoods-manager-v108";
+const CACHE_NAME = "wotagoods-manager-v111";
 
 const ASSET_GROUPS = {
   app: [
@@ -12,6 +12,7 @@ const ASSET_GROUPS = {
     "./src/application/items/sort-items.js",
     "./src/application/items/manage-items.js",
     "./src/app/app-elements.js",
+    "./src/app/app-language.js",
     "./src/app/app-mode.js",
     "./src/app/app-runtime.js",
     "./src/app/app-shell.js",
@@ -26,6 +27,7 @@ const ASSET_GROUPS = {
   core: [
     "./",
     "./index.html",
+    "./src/bootstrap/language-bootstrap.js",
     "./src/bootstrap/theme-bootstrap.js",
     "./src/main.js",
     "./src/styles/app.css"
@@ -62,6 +64,7 @@ const ASSET_GROUPS = {
     "./src/navigation/utility-navigation.js"
   ],
   services: [
+    "./src/services/language.js",
     "./src/services/service-worker-registration.js",
     "./src/services/storage.js",
     "./src/services/theme.js"
@@ -76,6 +79,10 @@ const ASSET_GROUPS = {
     "./src/shared/select-menu.js",
     "./src/shared/ui-components.js"
   ],
+  localization: [
+    "./src/localization/translate.js",
+    "./src/localization/translations.js"
+  ],
   views: [
     "./src/views/administration/administration-view.js",
     "./src/views/administration/field-change-review.js",
@@ -85,6 +92,9 @@ const ASSET_GROUPS = {
     "./src/views/administration/field-manager.js",
     "./src/views/administration/goods-type-creator.js",
     "./src/views/administration/local-data-reset.js",
+    "./src/views/goods-types/goods-type-overview.js",
+    "./src/views/goods-types/goods-type-view-action.js",
+    "./src/views/goods-types/goods-type-view-ids.js",
     "./src/views/items/item-entry-dialog.js",
     "./src/views/items/item-entry-form.js",
     "./src/views/items/item-entry-review.js",

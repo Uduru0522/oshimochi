@@ -1,5 +1,6 @@
 import { createElement } from "../../shared/dom.js";
 import { createIcon } from "../../shared/icons.js";
+import { translate } from "../../localization/translate.js";
 import {
   getCustomPropertyDurationMs,
   prefersReducedMotion
@@ -54,16 +55,16 @@ function createItemListRow(item, fields, getAsset, onDeleteItem, onEditItem) {
     const controls = createElement("div", { className: "item-list-controls" });
     const editButton = createElement("button", {
       attributes: {
-        "aria-label": `Edit ${nextItem.name}`,
-        title: "Edit item",
+        "aria-label": translate("Edit {name}", { name: nextItem.name }),
+        title: translate("Edit item"),
         type: "button"
       },
       className: "item-list-edit"
     });
     const deleteButton = createElement("button", {
       attributes: {
-        "aria-label": `Delete ${nextItem.name}`,
-        title: "Delete item",
+        "aria-label": translate("Delete {name}", { name: nextItem.name }),
+        title: translate("Delete item"),
         type: "button"
       },
       className: "item-list-delete"
@@ -167,7 +168,7 @@ export function createItemList(
   }
 ) {
   const element = createElement("div", {
-    attributes: { "aria-label": "Collection items", role: "list" },
+    attributes: { "aria-label": translate("Collection items"), role: "list" },
     className: "item-list"
   });
   let sourceOrder = new Map(sourceItems.map((item, index) => [item.id, index]));

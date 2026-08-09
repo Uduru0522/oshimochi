@@ -1,5 +1,6 @@
 import { createElement } from "../../shared/dom.js";
 import { createIcon } from "../../shared/icons.js";
+import { translate } from "../../localization/translate.js";
 import {
   getCustomPropertyDurationMs,
   prefersReducedMotion
@@ -53,11 +54,11 @@ function createItemCard(
   const body = createElement("div", { className: "item-card-body" });
   const controls = createElement("div", { className: "item-card-controls" });
   const editButton = createElement("button", {
-    attributes: { title: "Edit item", type: "button" },
+    attributes: { title: translate("Edit item"), type: "button" },
     className: "item-card-edit"
   });
   const deleteButton = createElement("button", {
-    attributes: { title: "Delete item", type: "button" },
+    attributes: { title: translate("Delete item"), type: "button" },
     className: "item-card-delete"
   });
   let currentItem = item;
@@ -88,8 +89,14 @@ function createItemCard(
   function render(nextItem, nextPresentationContext) {
     updateThumbnail(nextItem);
     currentItem = nextItem;
-    editButton.setAttribute("aria-label", `Edit ${nextItem.name}`);
-    deleteButton.setAttribute("aria-label", `Delete ${nextItem.name}`);
+    editButton.setAttribute(
+      "aria-label",
+      translate("Edit {name}", { name: nextItem.name })
+    );
+    deleteButton.setAttribute(
+      "aria-label",
+      translate("Delete {name}", { name: nextItem.name })
+    );
     body.replaceChildren(...createItemCardContent(
       nextItem,
       fields,
@@ -133,7 +140,7 @@ export function createItemCards(
   }
 ) {
   const element = createElement("div", {
-    attributes: { "aria-label": "Collection item cards", role: "list" },
+    attributes: { "aria-label": translate("Collection item cards"), role: "list" },
     className: "item-card-grid"
   });
   const cards = new Map();

@@ -1,4 +1,5 @@
 import { createActionButton } from "../../shared/action-button.js";
+import { translate } from "../../localization/translate.js";
 import { createContentTransition } from "../../shared/content-transition.js";
 import { createElement } from "../../shared/dom.js";
 import { createIcon } from "../../shared/icons.js";
@@ -37,13 +38,17 @@ export function createItemEditDialog({
   const header = createElement("header", { className: "item-entry-header" });
   const heading = createElement("h3", {
     attributes: { id: "itemEditTitle" },
-    textContent: `Edit ${goodsType.displayName} item`
+    textContent: translate("Edit {name} item", { name: goodsType.displayName })
   });
   const closeButton = createElement("button", {
-    attributes: { "aria-label": "Close item editor", title: "Close", type: "button" },
+    attributes: {
+      "aria-label": translate("Close item editor"),
+      title: translate("Close"),
+      type: "button"
+    },
     className: "item-entry-close"
   });
-  const clearButton = createActionButton("Clear changes", {
+  const clearButton = createActionButton(translate("Clear changes"), {
     className: "item-entry-clear secondary-action"
   });
   const headerActions = createElement("div", { className: "item-entry-header-actions" });
@@ -72,7 +77,7 @@ export function createItemEditDialog({
     globalThis.clearTimeout(clearConfirmationTimer);
     clearConfirmationTimer = 0;
     delete clearButton.dataset.confirming;
-    clearButton.textContent = "Clear changes";
+    clearButton.textContent = translate("Clear changes");
   }
 
   function disposeDraft() {
@@ -134,7 +139,7 @@ export function createItemEditDialog({
       fields,
       onBack: renderEditor,
       onSave: saveChanges,
-      saveLabel: "Save changes"
+      saveLabel: translate("Save changes")
     }));
   }
 
@@ -145,8 +150,8 @@ export function createItemEditDialog({
     isSaving = true;
     closeButton.disabled = true;
     renderMessage(
-      "Saving changes...",
-      "Updating this item in local browser storage.",
+      translate("Saving changes..."),
+      translate("Updating this item in local browser storage."),
       { progress: true }
     );
 
@@ -175,13 +180,17 @@ export function createItemEditDialog({
   function renderSuccess() {
     setScreen("success");
     const success = createElement("div", { className: "item-entry-success" });
-    const doneButton = createActionButton("Done", { className: "primary-action" });
+    const doneButton = createActionButton(translate("Done"), {
+      className: "primary-action"
+    });
     const actions = createElement("div", { className: "form-actions" });
     doneButton.addEventListener("click", requestClose);
     actions.append(doneButton);
     success.append(
-      createElement("h4", { textContent: "Changes saved" }),
-      createElement("p", { textContent: `${draft.name} has been updated.` }),
+      createElement("h4", { textContent: translate("Changes saved") }),
+      createElement("p", {
+        textContent: translate("{name} has been updated.", { name: draft.name })
+      }),
       actions
     );
     replaceScreen(() => success);
@@ -189,7 +198,10 @@ export function createItemEditDialog({
 
   async function loadEditor(item) {
     const requestedVersion = ++loadVersion;
-    renderMessage("Loading item...", "Reading its fields and current image.");
+    renderMessage(
+      translate("Loading item..."),
+      translate("Reading its fields and current image.")
+    );
 
     try {
       const [loadedFields, asset] = await Promise.all([
@@ -212,8 +224,8 @@ export function createItemEditDialog({
       }
       console.error("Item editor could not be loaded:", error);
       renderMessage(
-        "Item could not be edited",
-        "Its fields or image could not be read. Close this window and try again.",
+        translate("Item could not be edited"),
+        translate("Its fields or image could not be read. Close this window and try again."),
         { error: true }
       );
     }
@@ -281,7 +293,7 @@ export function createItemEditDialog({
       return;
     }
     clearButton.dataset.confirming = "true";
-    clearButton.textContent = "Confirm reset";
+    clearButton.textContent = translate("Confirm reset");
     clearConfirmationTimer = globalThis.setTimeout(resetClearConfirmation, 4000);
   });
   dialog.addEventListener("cancel", (event) => {

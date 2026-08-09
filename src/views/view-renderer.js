@@ -1,9 +1,11 @@
 import { createElement } from "../shared/dom.js";
+import { translate } from "../localization/translate.js";
+import { createSelectMenu } from "../shared/select-menu.js";
 import { RENDERERS } from "./view-metadata.js";
 import { renderAdministrationView } from "./administration/administration-view.js";
 import { renderItemsView } from "./items/items-view.js";
+import { renderGoodsTypeOverview } from "./goods-types/goods-type-overview.js";
 import {
-  createMetaList,
   createSettingsSection,
   createSwitchSetting
 } from "../shared/ui-components.js";
@@ -18,40 +20,57 @@ export function renderPlaceholderView(view) {
   return article;
 }
 
-export function renderGoodsTypeView(view) {
-  const { goodsType } = view;
-  const article = createElement("article", { className: "content-panel goods-type-panel" });
-  const heading = createElement("h3", { textContent: `${goodsType.displayName} overview` });
-
-  article.append(
-    heading,
-    createMetaList([
-      { label: "Goods type ID", value: goodsType.id },
-      { label: "Description", value: goodsType.description || "No description" }
-    ])
-  );
-
-  return article;
-}
-
-export function renderOptionsView({ themeController }) {
+export function renderOptionsView({ languageController, onLanguageChanged, themeController }) {
   const article = createElement("article", { className: "settings-view" });
   const colorTheme = createSettingsSection({
-    title: "Color theme",
-    description: "Adjust the application's appearance."
+    title: translate("Color theme"),
+    description: translate("Adjust the application's appearance.")
   });
   const darkMode = createSwitchSetting({
     checked: themeController.isDarkMode(),
-    description: "Use a darker interface for lower-light environments.",
+    description: translate("Use a darker interface for lower-light environments."),
     id: "darkModeToggle",
-    label: "Dark mode",
+    label: translate("Dark mode"),
     onChange: (isEnabled) => themeController.setDarkMode(isEnabled)
   });
+  const languageSection = createSettingsSection({
+    title: translate("Language"),
+    description: translate("Choose the language used by the application interface.")
+  });
+  const languageRow = createElement("div", { className: "setting-row language-setting" });
+  const languageCopy = createElement("span");
+  const languageTitle = createElement("strong", {
+    textContent: translate("Interface language")
+  });
+  const languageDescription = createElement("small", {
+    textContent: translate("Changes apply immediately and are saved in this browser.")
+  });
+  const languageMenu = createSelectMenu({
+    ariaLabel: translate("Interface language"),
+    emptyLabel: translate("Select...")
+  });
+
+  languageMenu.setOptions([
+    { label: translate("English"), value: "en" },
+    { label: translate("Japanese"), value: "ja" },
+    { label: translate("Traditional Chinese"), value: "zh-Hant" }
+  ]);
+  languageMenu.value = languageController.getLanguage();
+  languageMenu.element.addEventListener("change", () => {
+    languageController.setLanguage(languageMenu.value);
+    onLanguageChanged();
+  });
+  languageCopy.append(languageTitle, languageDescription);
+  languageRow.append(languageCopy, languageMenu.element);
 
   colorTheme.append(darkMode);
-  article.append(colorTheme);
+  languageSection.append(languageRow);
+  article.append(colorTheme, languageSection);
 
-  return article;
+  return {
+    content: article,
+    destroy: () => languageMenu.destroy()
+  };
 }
 
 export function createViewRenderer({
@@ -59,9 +78,12 @@ export function createViewRenderer({
   fieldManagement,
   goodsTypes,
   itemManagement,
+  languageController,
   mutationController,
+  onNavigate,
   onGoodsTypeCreated,
   onLocalDataReset,
+  onLanguageChanged,
   resetLocalData,
   themeController
 }) {
@@ -75,12 +97,19 @@ export function createViewRenderer({
       onLocalDataReset,
       resetLocalData
     }),
-    [RENDERERS.goodsType]: (view) => renderGoodsTypeView(view),
+    [RENDERERS.goodsTypeOverview]: (view) => renderGoodsTypeOverview(view, {
+      onOpenItems: () => onNavigate(view.itemsViewId)
+    }),
     [RENDERERS.goodsTypeItems]: (view) => renderItemsView(view, {
       itemManagement,
-      mutationController
+      mutationController,
+      onOpenOverview: () => onNavigate(view.overviewViewId)
     }),
-    [RENDERERS.options]: () => renderOptionsView({ themeController }),
+    [RENDERERS.options]: () => renderOptionsView({
+      languageController,
+      onLanguageChanged,
+      themeController
+    }),
     [RENDERERS.placeholder]: (view) => renderPlaceholderView(view)
   };
 

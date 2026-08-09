@@ -1,4 +1,5 @@
 import { FIELD_CHANGE_KINDS } from "../../application/fields/manage-fields.js";
+import { translate } from "../../localization/translate.js";
 import { createActionButton } from "../../shared/action-button.js";
 import { createContentTransition } from "../../shared/content-transition.js";
 import { createElement } from "../../shared/dom.js";
@@ -25,7 +26,10 @@ export function createFieldManager({ fieldManagement, goodsTypes, mutationContro
     );
 
     if (duplicate) {
-      throw new TypeError(`A field named "${duplicate.displayName}" already exists.`);
+      throw new TypeError(translate(
+        "A field named \"{name}\" already exists.",
+        { name: duplicate.displayName }
+      ));
     }
   }
 
@@ -33,9 +37,9 @@ export function createFieldManager({ fieldManagement, goodsTypes, mutationContro
     const header = createElement("div", { className: "field-manager-header" });
     const controls = createElement("div", { className: "field-manager-controls" });
     const select = createElement("select", {
-      attributes: { "aria-label": "Goods type" }
+      attributes: { "aria-label": translate("Goods type") }
     });
-    const openButton = createActionButton("Manage fields", {
+    const openButton = createActionButton(translate("Manage fields"), {
       className: "primary-action"
     });
 
@@ -59,11 +63,11 @@ export function createFieldManager({ fieldManagement, goodsTypes, mutationContro
       createElement("div", { className: "field-manager-copy" })
     );
     header.firstElementChild.append(
-      createElement("h3", { textContent: "Manage item fields" }),
+      createElement("h3", { textContent: translate("Manage item fields") }),
       createElement("p", {
         textContent: goodsTypes.length > 0
-          ? "Choose a collection to configure the information stored for its items."
-          : "Create a goods type before configuring item fields."
+          ? translate("Choose a collection to configure the information stored for its items.")
+          : translate("Create a goods type before configuring item fields.")
       })
     );
     controls.append(select, openButton);
@@ -83,7 +87,7 @@ export function createFieldManager({ fieldManagement, goodsTypes, mutationContro
       container.replaceChildren(
         createElement("div", {
           className: "field-manager-loading",
-          textContent: "Loading fields..."
+          textContent: translate("Loading fields...")
         })
       );
     });
@@ -94,7 +98,9 @@ export function createFieldManager({ fieldManagement, goodsTypes, mutationContro
       renderWorkspace();
     } catch (error) {
       console.error("Field definitions could not be loaded:", error);
-      renderLanding("Fields could not be loaded. Check browser storage access and try again.");
+      renderLanding(translate(
+        "Fields could not be loaded. Check browser storage access and try again."
+      ));
     }
   }
 
@@ -103,26 +109,32 @@ export function createFieldManager({ fieldManagement, goodsTypes, mutationContro
     const workspace = createElement("div", { className: "field-manager-workspace" });
     const header = createElement("div", { className: "field-workspace-header" });
     const headerCopy = createElement("div");
-    const chooseButton = createActionButton("Change collection");
-    const addButton = createActionButton("Add field", {
+    const chooseButton = createActionButton(translate("Change collection"));
+    const addButton = createActionButton(translate("Add field"), {
       className: "primary-action"
     });
     const addEditorSlot = createElement("div", { className: "field-add-editor-slot" });
     const addEditorTransition = createContentTransition(addEditorSlot, { animateInitial: true });
     const footer = createElement("div", { className: "field-stage-footer" });
     const stageStatus = createElement("span", {
-      textContent: `${changeSet.changeCount} staged change${changeSet.changeCount === 1 ? "" : "s"}`
+      textContent: translate("{count} staged change(s)", {
+        count: changeSet.changeCount
+      })
     });
-    const discardButton = createActionButton("Discard staged");
-    const reviewButton = createActionButton("Review and apply", {
+    const discardButton = createActionButton(translate("Discard staged"));
+    const reviewButton = createActionButton(translate("Review and apply"), {
       className: "primary-action"
     });
     const previewFields = changeSet.getPreviewFields();
 
     headerCopy.append(
-      createElement("h3", { textContent: `${goodsType.displayName} fields` }),
+      createElement("h3", {
+        textContent: translate("{name} fields", { name: goodsType.displayName })
+      }),
       createElement("p", {
-        textContent: "Protected fields are fixed. Custom changes remain staged until review."
+        textContent: translate(
+          "Protected fields are fixed. Custom changes remain staged until review."
+        )
       })
     );
     chooseButton.addEventListener("click", () => {
@@ -131,7 +143,9 @@ export function createFieldManager({ fieldManagement, goodsTypes, mutationContro
           addEditorSlot.replaceChildren(
             createElement("p", {
               className: "form-warning",
-              textContent: "Discard the staged changes before choosing another collection."
+              textContent: translate(
+                "Discard the staged changes before choosing another collection."
+              )
             })
           );
         });
@@ -165,7 +179,7 @@ export function createFieldManager({ fieldManagement, goodsTypes, mutationContro
     reviewButton.disabled = changeSet.changeCount === 0;
     discardButton.addEventListener("click", () => {
       changeSet.reset();
-      renderWorkspace("Staged changes discarded.");
+      renderWorkspace(translate("Staged changes discarded."));
     });
     reviewButton.addEventListener("click", renderReview);
     footer.append(stageStatus, discardButton, reviewButton);
@@ -226,15 +240,19 @@ export function createFieldManager({ fieldManagement, goodsTypes, mutationContro
   function openDeleteConfirmation(expansion, field) {
     const confirmation = createElement("div", { className: "field-delete-confirmation" });
     const actions = createElement("div", { className: "form-actions" });
-    const cancelButton = createActionButton("Cancel");
-    const deleteButton = createActionButton("Stage removal", {
+    const cancelButton = createActionButton(translate("Cancel"));
+    const deleteButton = createActionButton(translate("Stage removal"), {
       className: "danger-action"
     });
 
     confirmation.append(
-      createElement("h4", { textContent: `Remove ${field.displayName}?` }),
+      createElement("h4", {
+        textContent: translate("Remove {field}?", { field: field.displayName })
+      }),
       createElement("p", {
-        textContent: "This is a soft deletion. Existing item values are preserved for future restoration."
+        textContent: translate(
+          "This is a soft deletion. Existing item values are preserved for future restoration."
+        )
       })
     );
     cancelButton.addEventListener("click", expansion.close);
@@ -261,7 +279,7 @@ export function createFieldManager({ fieldManagement, goodsTypes, mutationContro
           onApplied: async () => {
             baseFields = await fieldManagement.listFields(selectedGoodsTypeId);
             changeSet = createFieldChangeSet(baseFields);
-            renderWorkspace("Field changes applied.");
+            renderWorkspace(translate("Field changes applied."));
           },
           onBack: () => renderWorkspace()
         })

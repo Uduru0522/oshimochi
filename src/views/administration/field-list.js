@@ -1,5 +1,6 @@
 import { CUSTOM_FIELD_TYPES } from "../../application/fields/field-configuration.js";
 import { FIELD_CHANGE_KINDS } from "../../application/fields/manage-fields.js";
+import { translate } from "../../localization/translate.js";
 import { createElement } from "../../shared/dom.js";
 import { createIcon } from "../../shared/icons.js";
 
@@ -59,7 +60,7 @@ export function createFieldList({ fields, onEdit, onMove, onRemove }) {
     const name = createElement("div", { className: "field-row-name" });
     const type = createElement("span", {
       className: "field-type-label",
-      textContent: TYPE_LABELS.get(field.dataType) ?? field.dataType
+      textContent: translate(TYPE_LABELS.get(field.dataType) ?? field.dataType)
     });
     const metadata = createElement("div", { className: "field-row-metadata" });
     const actions = createElement("div", { className: "field-row-actions" });
@@ -83,7 +84,7 @@ export function createFieldList({ fields, onEdit, onMove, onRemove }) {
     name.append(createElement("strong", { textContent: field.displayName }));
     metadata.append(
       createElement("span", {
-        textContent: field.isRequired ? "Required" : "Optional"
+        textContent: translate(field.isRequired ? "Required" : "Optional")
       })
     );
 
@@ -91,24 +92,26 @@ export function createFieldList({ fields, onEdit, onMove, onRemove }) {
       metadata.append(
         createElement("span", {
           className: "field-stage-badge",
-          textContent: field.stagedKind === FIELD_CHANGE_KINDS.delete
+          textContent: translate(field.stagedKind === FIELD_CHANGE_KINDS.delete
             ? "Staged removal"
             : field.stagedKind === FIELD_CHANGE_KINDS.add
               ? "Staged addition"
-              : "Staged edit"
+              : "Staged edit")
         })
       );
     }
 
     if (field.isBuiltIn) {
       actions.append(
-        createToolButton("lock", "Protected field", () => {}, { disabled: true })
+        createToolButton("lock", translate("Protected field"), () => {}, {
+          disabled: true
+        })
       );
     } else if (field.stagedKind === FIELD_CHANGE_KINDS.delete) {
       actions.append(
         createElement("span", {
           className: "field-removal-note",
-          textContent: "Applied after review"
+          textContent: translate("Applied after review")
         })
       );
     } else {
@@ -117,17 +120,17 @@ export function createFieldList({ fields, onEdit, onMove, onRemove }) {
       actions.append(
         createToolButton(
           "moveUp",
-          "Move field up",
+          translate("Move field up"),
           () => onMove(field, -1),
           { disabled: orderIndex === 0 }
         ),
         createToolButton(
           "moveDown",
-          "Move field down",
+          translate("Move field down"),
           () => onMove(field, 1),
           { disabled: orderIndex === activeCustomFields.length - 1 }
         ),
-        editButton = createToolButton("edit", "Edit field", () => {
+        editButton = createToolButton("edit", translate("Edit field"), () => {
           if (expansionController.isOpen) {
             expansionController.close();
             activeExpansion = null;
@@ -141,8 +144,8 @@ export function createFieldList({ fields, onEdit, onMove, onRemove }) {
         createToolButton(
           "delete",
           field.stagedKind === FIELD_CHANGE_KINDS.add
-            ? "Remove staged field"
-            : "Remove field",
+            ? translate("Remove staged field")
+            : translate("Remove field"),
           () => {
             activeExpansion?.close();
             activeExpansion = expansionController;

@@ -1,4 +1,5 @@
 import { CUSTOM_FIELD_TYPES } from "../../application/fields/field-configuration.js";
+import { translate } from "../../localization/translate.js";
 import { createActionButton } from "../../shared/action-button.js";
 import { createElement } from "../../shared/dom.js";
 
@@ -49,15 +50,19 @@ export function createFieldEditor({ autoFocus = true, field, onCancel, onSave })
     attributes: { "aria-live": "polite" },
     className: "form-feedback"
   });
-  const cancelButton = createActionButton("Cancel");
-  const stageButton = createActionButton(isNew ? "Stage field" : "Stage changes", {
+  const cancelButton = createActionButton(translate("Cancel"));
+  const stageButton = createActionButton(
+    translate(isNew ? "Stage field" : "Stage changes"), {
     className: "primary-action",
     type: "submit"
   });
 
   CUSTOM_FIELD_TYPES.forEach(({ label, value }) => {
     typeSelect.append(
-      createElement("option", { attributes: { value }, textContent: label })
+      createElement("option", {
+        attributes: { value },
+        textContent: translate(label)
+      })
     );
   });
 
@@ -81,13 +86,21 @@ export function createFieldEditor({ autoFocus = true, field, onCancel, onSave })
   requiredRow.append(
     requiredInput,
     createElement("span", {
-      textContent: "Require a value when registering an item"
+      textContent: translate("Require a value when registering an item")
     })
   );
   heading.append(
-    createElement("h4", { textContent: field?.stagedKind === "add" ? "Edit staged field" : field ? "Edit field" : "Add field" }),
+    createElement("h4", {
+      textContent: translate(field?.stagedKind === "add"
+        ? "Edit staged field"
+        : field
+          ? "Edit field"
+          : "Add field")
+    }),
     createElement("p", {
-      textContent: "Changes remain local until the complete staged set is applied."
+      textContent: translate(
+        "Changes remain local until the complete staged set is applied."
+      )
     })
   );
 
@@ -95,7 +108,10 @@ export function createFieldEditor({ autoFocus = true, field, onCancel, onSave })
     optionsArea.replaceChildren();
 
     if (typeSelect.value === "boolean") {
-      const labels = field?.options ?? { falseLabel: "No", trueLabel: "Yes" };
+      const labels = field?.options ?? {
+        falseLabel: translate("No"),
+        trueLabel: translate("Yes")
+      };
       const labelGrid = createElement("div", { className: "binary-option-editor" });
       const falseLabelInput = createElement("input", {
         attributes: { required: "", type: "text" }
@@ -109,8 +125,16 @@ export function createFieldEditor({ autoFocus = true, field, onCancel, onSave })
       falseLabelInput.value = labels.falseLabel;
       trueLabelInput.value = labels.trueLabel;
       labelGrid.append(
-        createLabel("Left option", falseLabelInput, "Shown when the toggle is off."),
-        createLabel("Right option", trueLabelInput, "Shown when the toggle is on.")
+        createLabel(
+          translate("Left option"),
+          falseLabelInput,
+          translate("Shown when the toggle is off.")
+        ),
+        createLabel(
+          translate("Right option"),
+          trueLabelInput,
+          translate("Shown when the toggle is on.")
+        )
       );
       optionsArea.append(labelGrid);
       return;
@@ -131,9 +155,9 @@ export function createFieldEditor({ autoFocus = true, field, onCancel, onSave })
       : (field?.addOptionLabels ?? []).join("\n");
     optionsArea.append(
       createLabel(
-        isNew ? "Options" : "Additional options",
+        translate(isNew ? "Options" : "Additional options"),
         optionInput,
-        "Enter one option per line."
+        translate("Enter one option per line.")
       )
     );
 
@@ -143,9 +167,11 @@ export function createFieldEditor({ autoFocus = true, field, onCancel, onSave })
       });
 
       existingEditor.append(
-        createElement("strong", { textContent: "Existing options" }),
+        createElement("strong", { textContent: translate("Existing options") }),
         createElement("small", {
-          textContent: "Option names can be changed. Existing options cannot be removed."
+          textContent: translate(
+            "Option names can be changed. Existing options cannot be removed."
+          )
         })
       );
       existingChoices.forEach(({ id, label }, index) => {
@@ -154,7 +180,10 @@ export function createFieldEditor({ autoFocus = true, field, onCancel, onSave })
         });
         input.dataset.optionId = id;
         input.value = label;
-        existingEditor.append(createLabel(`Option ${index + 1}`, input));
+        existingEditor.append(createLabel(
+          translate("Option {number}", { number: index + 1 }),
+          input
+        ));
       });
       optionsArea.prepend(existingEditor);
     }
@@ -192,23 +221,23 @@ export function createFieldEditor({ autoFocus = true, field, onCancel, onSave })
     if (!displayName) {
       nameInput.toggleAttribute("data-invalid", true);
       nameInput.setAttribute("aria-invalid", "true");
-      feedback.textContent = "Enter a field name before staging this change.";
+      feedback.textContent = translate("Enter a field name before staging this change.");
       nameInput.focus();
       return;
     }
 
     if (typeSelect.value === "select" && isNew && optionLabels.length === 0) {
-      feedback.textContent = "Enter at least one option for a selection list.";
+      feedback.textContent = translate("Enter at least one option for a selection list.");
       return;
     }
 
     if (selectOptions.some(({ label }) => !label)) {
-      feedback.textContent = "Existing selection options need a name.";
+      feedback.textContent = translate("Existing selection options need a name.");
       return;
     }
 
     if (new Set(normalizedOptionLabels).size !== allOptionLabels.length) {
-      feedback.textContent = "Selection option names must be unique.";
+      feedback.textContent = translate("Selection option names must be unique.");
       return;
     }
 
@@ -216,7 +245,7 @@ export function createFieldEditor({ autoFocus = true, field, onCancel, onSave })
       typeSelect.value === "boolean" &&
       (!falseLabel || !trueLabel || falseLabel.toLocaleLowerCase() === trueLabel.toLocaleLowerCase())
     ) {
-      feedback.textContent = "Enter two different labels for the toggle.";
+      feedback.textContent = translate("Enter two different labels for the toggle.");
       return;
     }
 
@@ -245,8 +274,18 @@ export function createFieldEditor({ autoFocus = true, field, onCancel, onSave })
   actions.append(cancelButton, stageButton);
   form.append(
     heading,
-    createLabel("Field name", nameInput, "Shown in item forms and detail views."),
-    createLabel("Data type", typeSelect, field && !isNew ? "Data type cannot be changed after creation." : "Controls input and validation."),
+    createLabel(
+      translate("Field name"),
+      nameInput,
+      translate("Shown in item forms and detail views.")
+    ),
+    createLabel(
+      translate("Data type"),
+      typeSelect,
+      translate(field && !isNew
+        ? "Data type cannot be changed after creation."
+        : "Controls input and validation.")
+    ),
     requiredRow,
     optionsArea,
     feedback,

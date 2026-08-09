@@ -1,14 +1,17 @@
 import { createElement } from "../../shared/dom.js";
+import { translate } from "../../localization/translate.js";
 import { createSchemaTable, createSettingsSection } from "../../shared/ui-components.js";
 import { createGoodsTypeCreator } from "./goods-type-creator.js";
 import { createFieldManager } from "./field-manager.js";
 import { createLocalDataReset } from "./local-data-reset.js";
 
-const GOODS_TYPE_COLUMNS = Object.freeze([
-  { key: "id", label: "ID" },
-  { key: "displayName", label: "Display name" },
-  { key: "description", label: "Description" }
-]);
+function getGoodsTypeColumns() {
+  return [
+    { key: "id", label: translate("ID") },
+    { key: "displayName", label: translate("Display name") },
+    { key: "description", label: translate("Description") }
+  ];
+}
 
 export function renderAdministrationView({
   createGoodsType,
@@ -23,21 +26,23 @@ export function renderAdministrationView({
     className: "settings-view administration-view"
   });
   const schemaSection = createSettingsSection({
-    title: "Goods type registry",
-    description:
+    title: translate("Goods type registry"),
+    description: translate(
       "Goods types organize items and define the custom fields shown in forms and detail views."
+    )
   });
 
   if (goodsTypes.length > 0) {
     schemaSection.append(
-      createSchemaTable({ columns: GOODS_TYPE_COLUMNS, rows: goodsTypes })
+      createSchemaTable({ columns: getGoodsTypeColumns(), rows: goodsTypes })
     );
   } else {
     schemaSection.append(
       createElement("p", {
         className: "empty-note",
-        textContent:
+        textContent: translate(
           "No goods types are saved yet. Create the first collection above."
+        )
       })
     );
   }

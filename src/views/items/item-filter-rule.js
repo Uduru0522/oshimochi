@@ -1,4 +1,5 @@
 import { ITEM_FILTER_OPERATORS as OP } from "../../application/items/filter-items.js";
+import { translate } from "../../localization/translate.js";
 import { createElement } from "../../shared/dom.js";
 import { createIcon } from "../../shared/icons.js";
 
@@ -15,7 +16,7 @@ function createSelect(options, value) {
   options.forEach((option) => {
     const element = createElement("option", {
       attributes: { value: option.value },
-      textContent: option.label
+      textContent: translate(option.label)
     });
     element.selected = option.value === value;
     select.append(element);
@@ -23,7 +24,7 @@ function createSelect(options, value) {
   return select;
 }
 
-function createValueInput(rule, { placeholder = "Value", type = "text" } = {}) {
+function createValueInput(rule, { placeholder = translate("Value"), type = "text" } = {}) {
   const input = createElement("input", {
     attributes: { placeholder, type, value: rule.value ?? "" }
   });
@@ -35,7 +36,7 @@ function createValueInput(rule, { placeholder = "Value", type = "text" } = {}) {
 
 function createMissingValueControl(rule) {
   const element = createElement("label", {
-    attributes: { title: "Include items without a value" },
+    attributes: { title: translate("Include items without a value") },
     className: "item-filter-include-missing"
   });
   const input = createElement("input", { attributes: { type: "checkbox" } });
@@ -51,7 +52,7 @@ function createMissingValueControl(rule) {
   element.append(
     input,
     track,
-    createElement("span", { textContent: "Include missing" })
+    createElement("span", { textContent: translate("Include missing") })
   );
 
   return {
@@ -78,7 +79,7 @@ function renderTextControls(container, rule, field) {
   container.append(
     operator,
     createValueInput(rule, {
-      placeholder: rule.operator === OP.DOMAIN_EQUALS ? "example.com" : "Value",
+      placeholder: rule.operator === OP.DOMAIN_EQUALS ? "example.com" : translate("Value"),
       type: field.dataType === "url" ? "text" : "search"
     })
   );
@@ -118,7 +119,9 @@ function renderNumberControls(container, rule, domain, missingControl) {
   if (!domain) {
     rule.includeMissing = true;
     missingControl.setImplicit(true);
-    range.append(createElement("p", { textContent: "No numeric values in this collection." }));
+    range.append(createElement("p", {
+      textContent: translate("No numeric values in this collection.")
+    }));
     container.append(range);
     return;
   }
@@ -143,7 +146,7 @@ function renderNumberControls(container, rule, domain, missingControl) {
 
   const lower = createElement("input", {
     attributes: {
-      "aria-label": "Minimum value",
+      "aria-label": translate("Minimum value"),
       max: domain.values.length - 1,
       min: 0,
       step: 1,
@@ -153,7 +156,7 @@ function renderNumberControls(container, rule, domain, missingControl) {
   });
   const upper = createElement("input", {
     attributes: {
-      "aria-label": "Maximum value",
+      "aria-label": translate("Maximum value"),
       max: domain.values.length - 1,
       min: 0,
       step: 1,
@@ -182,8 +185,8 @@ function renderNumberControls(container, rule, domain, missingControl) {
     range.style.setProperty("--range-start", `${(lowerIndex / lastIndex) * 100}%`);
     range.style.setProperty("--range-end", `${(upperIndex / lastIndex) * 100}%`);
     output.textContent = [
-      rule.min === undefined ? "Any" : formatRangeNumber(rule.min),
-      rule.max === undefined ? "Any" : formatRangeNumber(rule.max)
+      rule.min === undefined ? translate("Any") : formatRangeNumber(rule.min),
+      rule.max === undefined ? translate("Any") : formatRangeNumber(rule.max)
     ].join(" ~ ");
   }
 
@@ -197,10 +200,10 @@ function renderNumberControls(container, rule, domain, missingControl) {
 function renderDateControls(container, rule) {
   const range = createElement("div", { className: "item-filter-date-range" });
   const from = createElement("input", {
-    attributes: { "aria-label": "From date", type: "date" }
+    attributes: { "aria-label": translate("From date"), type: "date" }
   });
   const to = createElement("input", {
-    attributes: { "aria-label": "To date", type: "date" }
+    attributes: { "aria-label": translate("To date"), type: "date" }
   });
   from.value = rule.from ?? "";
   to.value = rule.to ?? "";
@@ -299,21 +302,29 @@ export function createDefaultItemFilterRule(field) {
 
 export function validateItemFilterRule(rule, field, numberDomain = null) {
   if (["text", "long_text", "url"].includes(field.dataType)) {
-    return String(rule.value ?? "").trim() ? "" : `Enter a value for ${field.displayName}.`;
+    return String(rule.value ?? "").trim()
+      ? ""
+      : translate("Enter a value for {field}.", { field: field.displayName });
   }
 
   if (field.dataType === "number") {
     return numberDomain || rule.includeMissing
       ? ""
-      : `${field.displayName} has no numeric values to filter.`;
+      : translate("{field} has no numeric values to filter.", {
+        field: field.displayName
+      });
   }
 
   if (field.dataType === "date") {
     if (!rule.from && !rule.to) {
-      return `Choose at least one date for ${field.displayName}.`;
+      return translate("Choose at least one date for {field}.", {
+        field: field.displayName
+      });
     }
     return rule.from && rule.to && rule.from > rule.to
-      ? `The first ${field.displayName} date must come first.`
+      ? translate("The first {field} date must come first.", {
+        field: field.displayName
+      })
       : "";
   }
 
@@ -332,8 +343,8 @@ export function createItemFilterRuleEditor({ field, numberDomain, onRemove, rule
   });
   const removeButton = createElement("button", {
     attributes: {
-      "aria-label": `Remove ${field.displayName} filter`,
-      title: "Remove filter",
+      "aria-label": translate("Remove {field} filter", { field: field.displayName }),
+      title: translate("Remove filter"),
       type: "button"
     },
     className: "item-filter-remove"

@@ -1,4 +1,5 @@
 import { createActionButton } from "../../shared/action-button.js";
+import { translate } from "../../localization/translate.js";
 import { createContentTransition } from "../../shared/content-transition.js";
 import { createElement } from "../../shared/dom.js";
 import { createIcon } from "../../shared/icons.js";
@@ -39,17 +40,17 @@ export function createItemEntryDialog({
   const header = createElement("header", { className: "item-entry-header" });
   const heading = createElement("h3", {
     attributes: { id: "itemEntryTitle" },
-    textContent: `Add item to ${goodsType.displayName}`
+    textContent: translate("Add item to {name}", { name: goodsType.displayName })
   });
   const closeButton = createElement("button", {
     attributes: {
-      "aria-label": "Close item entry",
-      title: "Close",
+      "aria-label": translate("Close item entry"),
+      title: translate("Close"),
       type: "button"
     },
     className: "item-entry-close"
   });
-  const clearButton = createActionButton("Clear all", {
+  const clearButton = createActionButton(translate("Clear all"), {
     className: "item-entry-clear secondary-action"
   });
   const headerActions = createElement("div", { className: "item-entry-header-actions" });
@@ -77,7 +78,7 @@ export function createItemEntryDialog({
     globalThis.clearTimeout(clearConfirmationTimer);
     clearConfirmationTimer = 0;
     delete clearButton.dataset.confirming;
-    clearButton.textContent = "Clear all";
+    clearButton.textContent = translate("Clear all");
   }
 
   function resetDraft() {
@@ -154,8 +155,8 @@ export function createItemEntryDialog({
     isSaving = true;
     closeButton.disabled = true;
     renderMessage(
-      "Saving item...",
-      "Writing this item to local browser storage.",
+      translate("Saving item..."),
+      translate("Writing this item to local browser storage."),
       { showProgress: true }
     );
 
@@ -188,8 +189,8 @@ export function createItemEntryDialog({
     setScreen("success");
     const success = createElement("div", { className: "item-entry-success" });
     const actions = createElement("div", { className: "form-actions" });
-    const doneButton = createActionButton("Done", { className: "primary-action" });
-    const anotherButton = createActionButton("Add another");
+    const doneButton = createActionButton(translate("Done"), { className: "primary-action" });
+    const anotherButton = createActionButton(translate("Add another"));
 
     doneButton.addEventListener("click", () => {
       requestClose();
@@ -201,8 +202,12 @@ export function createItemEntryDialog({
     });
     actions.append(anotherButton, doneButton);
     success.append(
-      createElement("h4", { textContent: "Item saved" }),
-      createElement("p", { textContent: `${draft.name} is now stored in this collection.` }),
+      createElement("h4", { textContent: translate("Item saved") }),
+      createElement("p", {
+        textContent: translate("{name} is now stored in this collection.", {
+          name: draft.name
+        })
+      }),
       actions
     );
     replaceScreen(() => success);
@@ -215,7 +220,10 @@ export function createItemEntryDialog({
 
     isLoading = true;
     const requestedVersion = ++loadVersion;
-    renderMessage("Loading item fields...", "Reading the collection configuration.");
+    renderMessage(
+      translate("Loading item fields..."),
+      translate("Reading the collection configuration.")
+    );
 
     try {
       fields = await itemManagement.getEntryFields(goodsType.id);
@@ -232,8 +240,8 @@ export function createItemEntryDialog({
 
       console.error("Item fields could not be loaded:", error);
       renderMessage(
-        "Item fields could not be loaded",
-        "Close this window and try again after checking browser storage access.",
+        translate("Item fields could not be loaded"),
+        translate("Close this window and try again after checking browser storage access."),
         { className: "item-entry-status item-entry-error" }
       );
     } finally {
@@ -301,7 +309,7 @@ export function createItemEntryDialog({
     }
 
     clearButton.dataset.confirming = "true";
-    clearButton.textContent = "Confirm clear";
+    clearButton.textContent = translate("Confirm clear");
     clearConfirmationTimer = globalThis.setTimeout(resetClearConfirmation, 4000);
   });
   dialog.addEventListener("cancel", (event) => {

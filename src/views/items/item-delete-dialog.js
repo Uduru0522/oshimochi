@@ -1,4 +1,5 @@
 import { createActionButton } from "../../shared/action-button.js";
+import { translate } from "../../localization/translate.js";
 import { createElement } from "../../shared/dom.js";
 import { createIcon } from "../../shared/icons.js";
 import {
@@ -17,10 +18,14 @@ export function createItemDeleteDialog({ itemManagement, mutationController, onD
   const header = createElement("header", { className: "item-delete-header" });
   const heading = createElement("h3", {
     attributes: { id: "itemDeleteTitle" },
-    textContent: "Delete item?"
+    textContent: translate("Delete item?")
   });
   const closeButton = createElement("button", {
-    attributes: { "aria-label": "Close deletion confirmation", title: "Close", type: "button" },
+    attributes: {
+      "aria-label": translate("Close deletion confirmation"),
+      title: translate("Close"),
+      type: "button"
+    },
     className: "item-entry-close"
   });
   const body = createElement("div", { className: "item-delete-body" });
@@ -45,7 +50,9 @@ export function createItemDeleteDialog({ itemManagement, mutationController, onD
       textContent: activeItem.name
     });
     const explanation = createElement("p", {
-      textContent: "This item will leave the active collection. Its data and image are retained for future restoration."
+      textContent: translate(
+        "This item will leave the active collection. Its data and image are retained for future restoration."
+      )
     });
     const feedback = createElement("p", {
       attributes: { "aria-live": "polite" },
@@ -54,10 +61,12 @@ export function createItemDeleteDialog({ itemManagement, mutationController, onD
     });
     const actions = createElement("div", { className: "form-actions" });
     const summary = createElement("div", { className: "item-delete-summary" });
-    const cancelButton = createActionButton("Cancel");
-    const deleteButton = createActionButton(errorMessage ? "Try again" : "Delete item", {
+    const cancelButton = createActionButton(translate("Cancel"));
+    const deleteButton = createActionButton(
+      errorMessage ? translate("Try again") : translate("Delete item"), {
       className: "danger-action"
-    });
+      }
+    );
 
     cancelButton.addEventListener("click", requestClose);
     deleteButton.addEventListener("click", deleteItem);
@@ -74,8 +83,8 @@ export function createItemDeleteDialog({ itemManagement, mutationController, onD
     const status = createElement("div", { className: "item-delete-status" });
     status.append(
       createElement("progress", { className: "creation-progress" }),
-      createElement("strong", { textContent: "Deleting item..." }),
-      createElement("p", { textContent: "Updating local browser storage." })
+      createElement("strong", { textContent: translate("Deleting item...") }),
+      createElement("p", { textContent: translate("Updating local browser storage.") })
     );
     body.replaceChildren(status);
   }

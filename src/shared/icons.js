@@ -8,6 +8,11 @@ const ICON_PATHS = {
     "M8 12h8",
     "M8 16h5"
   ],
+  information: [
+    "M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z",
+    "M12 10v6",
+    "M12 7h.01"
+  ],
   grid: [
     "M4 4h6v6H4V4Z",
     "M14 4h6v6h-6V4Z",
@@ -25,6 +30,10 @@ const ICON_PATHS = {
   add: [
     "M12 5v14",
     "M5 12h14"
+  ],
+  arrowLeft: [
+    "M19 12H5",
+    "M12 19l-7-7 7-7"
   ],
   close: [
     "M6 6l12 12",

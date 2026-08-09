@@ -60,3 +60,35 @@ test("view router destroys replaced views and the active view on teardown", () =
     globalThis.matchMedia = originalMatchMedia;
   }
 });
+
+test("view router can highlight a primary navigation alias", () => {
+  const originalMatchMedia = globalThis.matchMedia;
+  const activeNavigationIds = [];
+  const overview = {
+    id: "goods:figures:overview",
+    navigationId: "goods:figures",
+    section: "Goods type",
+    title: "Figures overview"
+  };
+  const router = createViewRouter({
+    navigation: {
+      setActiveView: (viewId) => activeNavigationIds.push(viewId)
+    },
+    renderer: { render: () => ({}) },
+    views: [overview],
+    viewActions: createElement(),
+    viewPanel: createElement(),
+    viewSection: createElement(),
+    viewTitle: createElement()
+  });
+
+  globalThis.matchMedia = () => ({ matches: true });
+
+  try {
+    router.setActiveView(overview.id);
+    assert.deepEqual(activeNavigationIds, [overview.navigationId]);
+  } finally {
+    router.destroy();
+    globalThis.matchMedia = originalMatchMedia;
+  }
+});

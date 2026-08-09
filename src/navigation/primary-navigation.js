@@ -1,26 +1,21 @@
 import { createElement } from "../shared/dom.js";
+import { translate } from "../localization/translate.js";
 import { NAV_GROUPS, NAV_KINDS, VIEW_IDS } from "../views/view-metadata.js";
 import { bindDragScroll } from "../shared/drag-scroll.js";
 import { createNavButton, createNavSeparator } from "./nav-items.js";
 import { bindScrollableRow } from "./scrollable-row.js";
 
-const CHILD_NAV_BUTTON_CLASS = "nav-item nav-item-child";
-
 function createEmptyGoodsNotice() {
   const note = createElement("p", {
     className: "nav-empty-note",
-    textContent: "No goods types yet"
+    textContent: translate("No goods types yet")
   });
 
-  note.title = "Create a goods type in Administration, or open debug mode for sample types.";
+  note.title = translate(
+    "Create a goods type in Administration, or open debug mode for sample types."
+  );
 
   return note;
-}
-
-function getViewChildren(views, parentId) {
-  return views.filter(
-    (view) => view.nav?.kind === NAV_KINDS.goodsChild && view.nav.parentId === parentId
-  );
 }
 
 function groupViews(views) {
@@ -35,14 +30,10 @@ function groupViews(views) {
 
 export function createPrimaryNavigation({ container, onSelect, views }) {
   const buttons = new Map();
-  const childGroups = new Map();
-  let activeViewId = null;
-  let expandedGoodsTypeId = null;
 
-  function createTrackedButton(view, options = {}) {
+  function createTrackedButton(view) {
     const button = createNavButton(view, {
-      onSelect: handleSelect,
-      ...options
+      onSelect: (selectedView) => onSelect(selectedView.id)
     });
 
     buttons.set(view.id, button);
@@ -50,31 +41,11 @@ export function createPrimaryNavigation({ container, onSelect, views }) {
     return button;
   }
 
-  function renderGoodsType(view, fragment) {
-    const group = createElement("div", { className: "nav-group" });
-    const childList = createElement("div", { className: "nav-child-list" });
-    const button = createTrackedButton(view);
-
-    childGroups.set(view.id, childList);
-    group.append(button, childList);
-
-    getViewChildren(views, view.id).forEach((childView) => {
-      const childButton = createTrackedButton(childView, {
-        className: CHILD_NAV_BUTTON_CLASS
-      });
-
-      childList.append(childButton);
-    });
-
-    fragment.append(group);
-  }
-
   function render() {
     const fragment = document.createDocumentFragment();
     const { administration, dashboard, goodsTypes } = groupViews(views);
 
     buttons.clear();
-    childGroups.clear();
 
     if (dashboard) {
       fragment.append(createTrackedButton(dashboard));
@@ -86,7 +57,7 @@ export function createPrimaryNavigation({ container, onSelect, views }) {
       fragment.append(createEmptyGoodsNotice());
     }
 
-    goodsTypes.forEach((view) => renderGoodsType(view, fragment));
+    goodsTypes.forEach((view) => fragment.append(createTrackedButton(view)));
 
     if (administration) {
       fragment.append(createNavSeparator(), createTrackedButton(administration));
@@ -97,43 +68,10 @@ export function createPrimaryNavigation({ container, onSelect, views }) {
     bindScrollableRow(container);
   }
 
-  function syncActiveButtons(viewId) {
+  function setActiveView(viewId) {
     buttons.forEach((button, id) => {
       button.setAttribute("aria-current", id === viewId ? "page" : "false");
     });
-  }
-
-  function syncChildGroups() {
-    childGroups.forEach((childList, parentId) => {
-      const isExpanded = parentId === expandedGoodsTypeId;
-      childList.dataset.expanded = String(isExpanded);
-      childList.setAttribute("aria-hidden", String(!isExpanded));
-    });
-  }
-
-  function setActiveView(viewId) {
-    const activeView = views.find((view) => view.id === viewId);
-
-    activeViewId = viewId;
-    expandedGoodsTypeId =
-      activeView?.nav?.kind === NAV_KINDS.goodsChild ? activeView.nav.parentId : activeView?.id;
-
-    syncActiveButtons(viewId);
-    syncChildGroups();
-  }
-
-  function toggleActiveGoodsType(goodsTypeId) {
-    expandedGoodsTypeId = expandedGoodsTypeId === goodsTypeId ? null : goodsTypeId;
-    syncChildGroups();
-  }
-
-  function handleSelect(view) {
-    if (view.nav?.kind === NAV_KINDS.goodsType && activeViewId === view.id) {
-      toggleActiveGoodsType(view.id);
-      return;
-    }
-
-    onSelect(view.id);
   }
 
   return {

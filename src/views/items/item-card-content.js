@@ -1,4 +1,5 @@
 import { createElement } from "../../shared/dom.js";
+import { translate } from "../../localization/translate.js";
 import { createItemDisplayValue } from "./item-display-value.js";
 import { getItemDisplayData } from "./item-display-model.js";
 import { selectItemCardFields } from "./item-card-context.js";
@@ -25,16 +26,23 @@ function createCardValues(fieldValues) {
 
 function createFilteredFieldsDisclosure(item, fieldValues) {
   const popoverId = `itemCardFilters${++popoverSequence}`;
-  const fieldLabel = fieldValues.length === 1 ? "field" : "fields";
+  const fieldLabel = translate(fieldValues.length === 1 ? "field" : "fields");
   const button = createElement("button", {
     attributes: {
-      "aria-label": `Show ${fieldValues.length} more filtered ${fieldLabel} for ${item.name}`,
+      "aria-label": translate("Show {count} more filtered {fields} for {name}", {
+        count: fieldValues.length,
+        fields: fieldLabel,
+        name: item.name
+      }),
       popovertarget: popoverId,
       title: fieldValues.map(({ field }) => field.displayName).join(", "),
       type: "button"
     },
     className: "item-card-more",
-    textContent: `+${fieldValues.length} filtered ${fieldLabel}`
+    textContent: translate("+{count} filtered {fields}", {
+      count: fieldValues.length,
+      fields: fieldLabel
+    })
   });
   const popover = createElement("div", {
     attributes: { id: popoverId, popover: "auto" },
@@ -42,7 +50,9 @@ function createFilteredFieldsDisclosure(item, fieldValues) {
   });
 
   popover.append(
-    createElement("h5", { textContent: `Filtered values for ${item.name}` }),
+    createElement("h5", {
+      textContent: translate("Filtered values for {name}", { name: item.name })
+    }),
     createCardValues(fieldValues)
   );
   return [button, popover];
@@ -66,7 +76,9 @@ export function createItemCardContent(item, fields, queryContext) {
     content.push(createElement("span", {
       attributes: { title: message },
       className: "item-card-warning",
-      textContent: `${missingRequiredFields.length} missing field(s)`
+      textContent: translate("{count} missing field(s)", {
+        count: missingRequiredFields.length
+      })
     }));
   }
   if (visibleFieldValues.length > 0) {
@@ -77,7 +89,10 @@ export function createItemCardContent(item, fields, queryContext) {
   } else if (hiddenOtherFieldCount > 0) {
     content.push(createElement("p", {
       className: "item-card-more",
-      textContent: `+${hiddenOtherFieldCount} more ${hiddenOtherFieldCount === 1 ? "field" : "fields"}`
+      textContent: translate("+{count} more {fields}", {
+        count: hiddenOtherFieldCount,
+        fields: translate(hiddenOtherFieldCount === 1 ? "field" : "fields")
+      })
     }));
   }
 

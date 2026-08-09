@@ -1,4 +1,5 @@
 import { createActionButton } from "../../shared/action-button.js";
+import { translate } from "../../localization/translate.js";
 import { createElement } from "../../shared/dom.js";
 import {
   calculateContainedRectangle,
@@ -17,7 +18,7 @@ function clamp(value, minimum = 0, maximum = 1) {
 
 function createOrientationControl(source, onChange) {
   const control = createElement("div", {
-    attributes: { "aria-label": "Image orientation", role: "group" },
+    attributes: { "aria-label": translate("Image orientation"), role: "group" },
     className: "item-orientation-control"
   });
 
@@ -29,7 +30,9 @@ function createOrientationControl(source, onChange) {
   }
 
   ORIENTATIONS.forEach(({ label, value }) => {
-    const button = createActionButton(label, { className: "item-orientation-option" });
+    const button = createActionButton(translate(label), {
+      className: "item-orientation-option"
+    });
     button.dataset.value = value;
     button.addEventListener("click", () => {
       if (source.orientation === value) {
@@ -154,27 +157,29 @@ export function createItemCropEditor({ onChange, onRemove, source }) {
   const stage = createElement("div", { className: "item-crop-stage" });
   const image = createElement("img", {
     attributes: {
-      alt: "Selected source image",
+      alt: translate("Selected source image"),
       draggable: "false",
       src: source.previewUrl
     }
   });
   const cropBox = createElement("div", {
-    attributes: { "aria-label": "Crop selection" },
+    attributes: { "aria-label": translate("Crop selection") },
     className: "item-crop-box"
   });
   const controls = createElement("div", { className: "item-image-controls" });
   const sizeControl = createElement("label", { className: "item-crop-size" });
   const sizeSlider = createElement("input", {
     attributes: {
-      "aria-label": "Crop size",
+      "aria-label": translate("Crop size"),
       max: "100",
       min: String(MIN_CROP_SCALE * 100),
       type: "range",
       value: String(source.cropScale * 100)
     }
   });
-  const removeButton = createActionButton("Remove", { className: "secondary-action" });
+  const removeButton = createActionButton(translate("Remove"), {
+    className: "secondary-action"
+  });
 
   stage.append(image, cropBox);
   const cropBinding = bindCropStage({ cropBox, image, onChange, source, stage });
@@ -188,7 +193,10 @@ export function createItemCropEditor({ onChange, onRemove, source }) {
     cropBinding.update();
   });
   removeButton.addEventListener("click", onRemove, { once: true });
-  sizeControl.append(createElement("span", { textContent: "Crop size" }), sizeSlider);
+  sizeControl.append(
+    createElement("span", { textContent: translate("Crop size") }),
+    sizeSlider
+  );
   controls.append(orientationControl, sizeControl, removeButton);
 
   return {

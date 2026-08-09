@@ -4,14 +4,13 @@ export const NAV_GROUPS = {
 };
 
 export const NAV_KINDS = {
-  goodsChild: "goods-child",
   goodsType: "goods-type",
   view: "view"
 };
 
 export const RENDERERS = {
   administration: "administration",
-  goodsType: "goodsType",
+  goodsTypeOverview: "goodsTypeOverview",
   goodsTypeItems: "goodsTypeItems",
   options: "options",
   placeholder: "placeholder"

@@ -1,4 +1,5 @@
 import { createElement } from "../../shared/dom.js";
+import { translate } from "../../localization/translate.js";
 import { createRequiredMark } from "../../shared/ui-components.js";
 
 function createLabel(field, control) {
@@ -12,7 +13,7 @@ function createLabel(field, control) {
     })
   );
   if (field.isRequired) {
-    label.append(createRequiredMark());
+    label.append(createRequiredMark(translate("Required")));
   }
   element.append(label, control);
   return element;
@@ -23,7 +24,10 @@ function createSelect(field) {
     attributes: field.isRequired ? { required: "" } : {}
   });
 
-  select.append(createElement("option", { attributes: { value: "" }, textContent: "Not set" }));
+  select.append(createElement("option", {
+    attributes: { value: "" },
+    textContent: translate("Not set")
+  }));
   field.options.choices.forEach((choice) => {
     select.append(createElement("option", {
       attributes: { value: choice.id },

@@ -1,6 +1,10 @@
 export const APP_CONFIG = {
   debugQueryParam: "debug",
   defaultViewId: "dashboard",
+  language: {
+    storageKey: "language",
+    storageNamespace: "wotagoods"
+  },
   layout: {
     narrowQuery: "(max-width: 1100px)",
     transitionDurationMs: 180
@@ -11,7 +15,9 @@ export const APP_CONFIG = {
   serviceWorkerPath: "service-worker.js",
   selectors: {
     appShell: ".app-shell",
+    brandSubtitle: "#brandSubtitle",
     primaryNavList: "#primaryNavList",
+    sidebar: ".sidebar",
     utilityNavList: "#utilityNavList",
     viewActions: "#viewActions",
     viewPanel: "#viewPanel",

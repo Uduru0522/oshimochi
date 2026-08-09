@@ -1,4 +1,5 @@
 import { createActionButton } from "../../shared/action-button.js";
+import { translate } from "../../localization/translate.js";
 import { createElement } from "../../shared/dom.js";
 import { createRequiredMark } from "../../shared/ui-components.js";
 import { normalizeItemValues } from "../../application/items/item-values.js";
@@ -19,7 +20,7 @@ function createFieldLabel(field, input) {
     })
   );
   if (field.isRequired) {
-    labelRow.append(createRequiredMark());
+    labelRow.append(createRequiredMark(translate("Required")));
   }
   wrapper.append(labelRow, input);
   return wrapper;
@@ -30,7 +31,7 @@ export function createItemEntryForm({ draft, fields, onReview }) {
   const heading = createElement("div", { className: "form-heading" });
   const fieldGrid = createElement("div", { className: "item-form-fields" });
   const nameField = fields.find((field) => field.isBuiltIn && field.key === "name") ?? {
-    displayName: "Name",
+    displayName: translate("Name"),
     isRequired: true
   };
   const nameInput = createElement("input", {
@@ -43,7 +44,7 @@ export function createItemEntryForm({ draft, fields, onReview }) {
     attributes: { "aria-live": "polite" },
     className: "form-feedback"
   });
-  const reviewButton = createActionButton("Review item", {
+  const reviewButton = createActionButton(translate("Review item"), {
     className: "primary-action",
     type: "submit"
   });
@@ -86,7 +87,7 @@ export function createItemEntryForm({ draft, fields, onReview }) {
     } catch (error) {
       feedback.textContent = error instanceof Error
         ? error.message
-        : "One or more item values are invalid.";
+        : translate("One or more item values are invalid.");
       return;
     }
 
@@ -94,23 +95,27 @@ export function createItemEntryForm({ draft, fields, onReview }) {
     draft.customValues = customValues;
     feedback.textContent = "";
     reviewButton.disabled = true;
-    reviewButton.textContent = draft.imageSource ? "Processing image..." : "Preparing review...";
+    reviewButton.textContent = draft.imageSource
+      ? translate("Processing image...")
+      : translate("Preparing review...");
 
     try {
       await prepareItemImage(draft);
       onReview();
     } catch (error) {
-      feedback.textContent = "The selected image could not be processed. Choose another image and try again.";
+      feedback.textContent = translate(
+        "The selected image could not be processed. Choose another image and try again."
+      );
       reviewButton.disabled = false;
-      reviewButton.textContent = "Review item";
+      reviewButton.textContent = translate("Review item");
     }
   });
 
   actions.append(reviewButton);
   heading.append(
-    createElement("h4", { textContent: "Item information" }),
+    createElement("h4", { textContent: translate("Item information") }),
     createElement("p", {
-      textContent: "Required fields are marked with an asterisk."
+      textContent: translate("Required fields are marked with an asterisk.")
     })
   );
   form.append(

@@ -1,4 +1,5 @@
 import { createActionButton } from "../../shared/action-button.js";
+import { translate } from "../../localization/translate.js";
 import { createContentTransition } from "../../shared/content-transition.js";
 import { createElement } from "../../shared/dom.js";
 import {
@@ -42,7 +43,7 @@ function createEditorField({ description, id, label, required = false, multiline
   labelRow.append(createElement("strong", { textContent: label }));
 
   if (required) {
-    labelRow.append(createRequiredMark());
+    labelRow.append(createRequiredMark(translate("Required")));
   }
 
   field.append(
@@ -61,22 +62,23 @@ export function createGoodsTypeCreator({
   onCreated
 }) {
   const container = createElement("section", {
-    attributes: { "aria-label": "Create goods type" },
+    attributes: { "aria-label": translate("Create goods type") },
     className: "goods-type-creator"
   });
   const contentTransition = createContentTransition(container);
 
   function renderLanding() {
     const copy = createElement("div");
-    const addButton = createActionButton("Add goods type", {
+    const addButton = createActionButton(translate("Add goods type"), {
       className: "primary-action"
     });
 
     copy.append(
-      createElement("h3", { textContent: "Create a collection" }),
+      createElement("h3", { textContent: translate("Create a collection") }),
       createElement("p", {
-        textContent:
+        textContent: translate(
           "Define a goods type first. Its item fields can be customized afterward."
+        )
       })
     );
     addButton.addEventListener("click", renderEditor);
@@ -91,23 +93,23 @@ export function createGoodsTypeCreator({
     const form = createElement("form", { className: "goods-type-form" });
     const heading = createElement("div", { className: "form-heading" });
     const nameField = createEditorField({
-      description: "Shown in navigation and collection views.",
+      description: translate("Shown in navigation and collection views."),
       id: "goodsTypeDisplayName",
-      label: "Display name",
+      label: translate("Display name"),
       required: true
     });
     const descriptionField = createEditorField({
-      description: "Optional context about the goods stored in this collection.",
+      description: translate("Optional context about the goods stored in this collection."),
       id: "goodsTypeDescription",
-      label: "Description",
+      label: translate("Description"),
       multiline: true
     });
     const feedback = createElement("p", {
       attributes: { "aria-live": "polite" },
       className: "form-feedback"
     });
-    const cancelButton = createActionButton("Cancel");
-    const continueButton = createActionButton("Review", {
+    const cancelButton = createActionButton(translate("Cancel"));
+    const continueButton = createActionButton(translate("Review"), {
       className: "primary-action",
       type: "submit"
     });
@@ -125,9 +127,11 @@ export function createGoodsTypeCreator({
     syncNameValidity();
 
     heading.append(
-      createElement("h3", { textContent: "New goods type" }),
+      createElement("h3", { textContent: translate("New goods type") }),
       createElement("p", {
-        textContent: "Enter the collection details. No database change is made yet."
+        textContent: translate(
+          "Enter the collection details. No database change is made yet."
+        )
       })
     );
     cancelButton.addEventListener("click", renderLanding);
@@ -145,7 +149,7 @@ export function createGoodsTypeCreator({
 
       if (!nextDraft.displayName) {
         syncNameValidity();
-        feedback.textContent = "Enter a display name before continuing.";
+        feedback.textContent = translate("Enter a display name before continuing.");
         nameField.input.focus();
         return;
       }
@@ -178,23 +182,27 @@ export function createGoodsTypeCreator({
       attributes: { "aria-live": "polite" },
       className: "creation-status"
     });
-    const backButton = createActionButton("Back");
-    const confirmButton = createActionButton("Create goods type", {
+    const backButton = createActionButton(translate("Back"));
+    const confirmButton = createActionButton(translate("Create goods type"), {
       className: "primary-action"
     });
 
     heading.append(
-      createElement("h3", { textContent: "Review goods type" }),
+      createElement("h3", { textContent: translate("Review goods type") }),
       createElement("p", {
-        textContent:
+        textContent: translate(
           "Confirm these details before saving. Default fields are added automatically; custom fields can be configured afterward."
+        )
       })
     );
     review.append(
       heading,
       createMetaList([
-        { label: "Display name", value: draft.displayName },
-        { label: "Description", value: draft.description || "No description" }
+        { label: translate("Display name"), value: draft.displayName },
+        {
+          label: translate("Description"),
+          value: draft.description || translate("No description")
+        }
       ])
     );
 
@@ -202,7 +210,10 @@ export function createGoodsTypeCreator({
       review.append(
         createElement("p", {
           className: "form-warning",
-          textContent: `A goods type named "${similarGoodsType.displayName}" already exists. You can still create another.`
+          textContent: translate(
+            "A goods type named \"{name}\" already exists. You can still create another.",
+            { name: similarGoodsType.displayName }
+          )
         })
       );
     }
@@ -213,11 +224,11 @@ export function createGoodsTypeCreator({
 
       backButton.disabled = true;
       confirmButton.disabled = true;
-      confirmButton.textContent = "Creating...";
+      confirmButton.textContent = translate("Creating...");
       review.toggleAttribute("aria-busy", true);
       status.replaceChildren(
         createElement("progress", { className: "creation-progress" }),
-        createElement("span", { textContent: "Saving to this browser..." })
+        createElement("span", { textContent: translate("Saving to this browser...") })
       );
 
       try {
@@ -231,7 +242,7 @@ export function createGoodsTypeCreator({
         review.removeAttribute("aria-busy");
 
         if (wasSaved) {
-          const reloadButton = createActionButton("Reload application", {
+          const reloadButton = createActionButton(translate("Reload application"), {
             className: "primary-action"
           });
 
@@ -240,15 +251,15 @@ export function createGoodsTypeCreator({
         } else {
           backButton.disabled = false;
           confirmButton.disabled = false;
-          confirmButton.textContent = "Try again";
+          confirmButton.textContent = translate("Try again");
         }
 
         status.replaceChildren(
           createElement("p", {
             className: "form-error",
             textContent: wasSaved
-              ? "The goods type was saved, but the screen could not refresh. Reload the application to continue."
-              : "The goods type could not be created. Your entries are still here; check browser storage access and try again."
+              ? translate("The goods type was saved, but the screen could not refresh. Reload the application to continue.")
+              : translate("The goods type could not be created. Your entries are still here; check browser storage access and try again.")
           })
         );
       }

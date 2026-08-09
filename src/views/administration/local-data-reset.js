@@ -1,4 +1,5 @@
 import { createActionButton } from "../../shared/action-button.js";
+import { translate } from "../../localization/translate.js";
 import { createContentTransition } from "../../shared/content-transition.js";
 import { createElement } from "../../shared/dom.js";
 
@@ -6,22 +7,23 @@ const CONFIRMATION_TEXT = "RESET";
 
 export function createLocalDataReset({ mutationController, onReset, resetLocalData }) {
   const container = createElement("section", {
-    attributes: { "aria-label": "Reset local data" },
+    attributes: { "aria-label": translate("Reset local data") },
     className: "local-data-reset"
   });
   const contentTransition = createContentTransition(container);
 
   function renderLanding() {
     const copy = createElement("div", { className: "local-reset-copy" });
-    const resetButton = createActionButton("Reset local data", {
+    const resetButton = createActionButton(translate("Reset local data"), {
       className: "danger-action"
     });
 
     copy.append(
-      createElement("h3", { textContent: "Reset local data" }),
+      createElement("h3", { textContent: translate("Reset local data") }),
       createElement("p", {
-        textContent:
+        textContent: translate(
           "Clear all collections, fields, items, and images currently loaded by this app. Exported files, offline app files, and appearance settings are not affected."
+        )
       })
     );
     resetButton.addEventListener("click", renderConfirmation);
@@ -54,23 +56,27 @@ export function createLocalDataReset({ mutationController, onReset, resetLocalDa
       className: "creation-status"
     });
     const actions = createElement("div", { className: "form-actions" });
-    const cancelButton = createActionButton("Cancel");
-    const confirmButton = createActionButton("Reset everything", {
+    const cancelButton = createActionButton(translate("Cancel"));
+    const confirmButton = createActionButton(translate("Reset everything"), {
       className: "danger-action",
       type: "submit"
     });
 
     confirmButton.disabled = true;
     heading.append(
-      createElement("h3", { textContent: "Reset everything?" }),
+      createElement("h3", { textContent: translate("Reset everything?") }),
       createElement("p", {
-        textContent: "This cannot be undone inside the app. Type RESET to continue."
+        textContent: translate(
+          "This cannot be undone inside the app. Type RESET to continue."
+        )
       })
     );
     field.append(
-      createElement("strong", { textContent: "Confirmation" }),
+      createElement("strong", { textContent: translate("Confirmation") }),
       input,
-      createElement("small", { textContent: `Enter ${CONFIRMATION_TEXT} exactly.` })
+      createElement("small", {
+        textContent: translate("Enter {text} exactly.", { text: CONFIRMATION_TEXT })
+      })
     );
     input.addEventListener("input", () => {
       confirmButton.disabled = input.value !== CONFIRMATION_TEXT;
@@ -86,11 +92,13 @@ export function createLocalDataReset({ mutationController, onReset, resetLocalDa
       input.disabled = true;
       cancelButton.disabled = true;
       confirmButton.disabled = true;
-      confirmButton.textContent = "Resetting...";
+      confirmButton.textContent = translate("Resetting...");
       form.setAttribute("aria-busy", "true");
       status.replaceChildren(
         createElement("progress", { className: "creation-progress" }),
-        createElement("span", { textContent: "Clearing local application data..." })
+        createElement("span", {
+          textContent: translate("Clearing local application data...")
+        })
       );
 
       try {
@@ -104,12 +112,13 @@ export function createLocalDataReset({ mutationController, onReset, resetLocalDa
         input.disabled = false;
         cancelButton.disabled = false;
         confirmButton.disabled = input.value !== CONFIRMATION_TEXT;
-        confirmButton.textContent = "Try reset again";
+        confirmButton.textContent = translate("Try reset again");
         status.replaceChildren(
           createElement("p", {
             className: "form-error",
-            textContent:
+            textContent: translate(
               "The reset could not be completed. Existing local data has been left available."
+            )
           })
         );
       }

@@ -1,6 +1,8 @@
+import { translate } from "../../localization/translate.js";
+
 export function formatItemFieldValue(field, value) {
   if (value === undefined) {
-    return "Not set";
+    return translate("Not set");
   }
 
   if (field.dataType === "boolean") {
@@ -8,7 +10,8 @@ export function formatItemFieldValue(field, value) {
   }
 
   if (field.dataType === "select") {
-    return field.options.choices.find(({ id }) => id === value)?.label ?? "Unknown option";
+    return field.options.choices.find(({ id }) => id === value)?.label
+      ?? translate("Unknown option");
   }
 
   return String(value);

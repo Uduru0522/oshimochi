@@ -46,7 +46,7 @@ export function createViewRouter({
 
     activeViewId = view.id;
     clearTimeout(viewSwitchTimer);
-    navigation.setActiveView(view.id);
+    navigation.setActiveView(view.navigationId ?? view.id);
 
     if (!viewPanel.hasChildNodes() || prefersReducedMotion()) {
       viewPanel.classList.remove("is-switching");

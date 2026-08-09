@@ -1,4 +1,5 @@
 import { createActionButton } from "../../shared/action-button.js";
+import { translate } from "../../localization/translate.js";
 import { createElement } from "../../shared/dom.js";
 import { createRequiredMark } from "../../shared/ui-components.js";
 import { createItemCropEditor } from "./item-crop-editor.js";
@@ -68,8 +69,8 @@ export function createItemImageField({ draft, field }) {
   let selectionVersion = 0;
 
   heading.append(
-    createElement("strong", { textContent: field?.displayName ?? "Image" }),
-    createRequiredMark()
+    createElement("strong", { textContent: field?.displayName ?? translate("Image") }),
+    createRequiredMark(translate("Required"))
   );
 
   function render() {
@@ -78,7 +79,7 @@ export function createItemImageField({ draft, field }) {
     content.replaceChildren();
 
     if (!draft.imageSource && !draft.existingImageUrl) {
-      const chooseButton = createActionButton("Choose image", {
+      const chooseButton = createActionButton(translate("Choose image"), {
         className: "item-image-choose secondary-action"
       });
       chooseButton.addEventListener("click", () => input.click());
@@ -88,13 +89,16 @@ export function createItemImageField({ draft, field }) {
 
     if (!draft.imageSource) {
       const existing = createElement("div", { className: "item-image-existing" });
-      const replaceButton = createActionButton("Replace image", {
+      const replaceButton = createActionButton(translate("Replace image"), {
         className: "secondary-action"
       });
       replaceButton.addEventListener("click", () => input.click());
       existing.append(
         createElement("img", {
-          attributes: { alt: "Current item image", src: draft.existingImageUrl }
+          attributes: {
+            alt: translate("Current item image"),
+            src: draft.existingImageUrl
+          }
         }),
         replaceButton
       );
@@ -125,7 +129,7 @@ export function createItemImageField({ draft, field }) {
 
     if (!file.type.startsWith("image/")) {
       input.value = "";
-      feedback.textContent = "Choose a supported image file.";
+      feedback.textContent = translate("Choose a supported image file.");
       return;
     }
 
@@ -135,7 +139,7 @@ export function createItemImageField({ draft, field }) {
       orientation = await readImageOrientation(file);
     } catch {
       input.value = "";
-      feedback.textContent = "This image format could not be opened.";
+      feedback.textContent = translate("This image format could not be opened.");
       return;
     }
 
@@ -171,7 +175,7 @@ export function createItemImageField({ draft, field }) {
         return true;
       }
 
-      feedback.textContent = "Choose an image before reviewing this item.";
+      feedback.textContent = translate("Choose an image before reviewing this item.");
       content.querySelector("button")?.focus();
       element.scrollIntoView({ behavior: "smooth", block: "center" });
       return false;

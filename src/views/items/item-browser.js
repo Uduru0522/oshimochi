@@ -1,4 +1,5 @@
 import { filterItems } from "../../application/items/filter-items.js";
+import { translate } from "../../localization/translate.js";
 import { DEFAULT_ITEM_SORT, sortItems } from "../../application/items/sort-items.js";
 import { createContentTransition } from "../../shared/content-transition.js";
 import { createElement } from "../../shared/dom.js";
@@ -6,6 +7,7 @@ import { createItemCards } from "./item-cards.js";
 import { createItemFilterPanel } from "./item-filter-panel.js";
 import { createItemList } from "./item-list.js";
 import {
+  DEFAULT_ITEM_PRESENTATION,
   ITEM_PRESENTATIONS,
   createItemPresentationControl
 } from "./item-presentation-control.js";
@@ -22,7 +24,7 @@ export function createItemBrowser({ goodsTypeId, itemManagement, onDeleteItem, o
   const element = createElement("div", { className: "item-browser" });
   const transition = createContentTransition(element, { animateInitial: true });
   let activeFilter = { query: "", rules: [] };
-  let activeMode = ITEM_PRESENTATIONS.list;
+  let activeMode = DEFAULT_ITEM_PRESENTATION;
   let activeSort = DEFAULT_ITEM_SORT;
   let activePresentation = null;
   let destroyed = false;
@@ -102,7 +104,10 @@ export function createItemBrowser({ goodsTypeId, itemManagement, onDeleteItem, o
     }
 
     const requestedVersion = ++loadVersion;
-    replacePresentation(() => createMessage("items-loading", "Loading items..."));
+    replacePresentation(() => createMessage(
+      "items-loading",
+      translate("Loading items...")
+    ));
 
     try {
       const [loadedItems, loadedFields] = await Promise.all([
@@ -137,7 +142,9 @@ export function createItemBrowser({ goodsTypeId, itemManagement, onDeleteItem, o
       console.error("Items could not be loaded:", error);
       replacePresentation(() => createMessage(
         "items-load-error",
-        "Items could not be loaded. Check browser storage access and reopen this view."
+        translate(
+          "Items could not be loaded. Check browser storage access and reopen this view."
+        )
       ));
     }
   }

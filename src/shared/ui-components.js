@@ -1,9 +1,9 @@
 import { createElement } from "./dom.js";
 import { bindDragScroll } from "./drag-scroll.js";
 
-export function createRequiredMark() {
+export function createRequiredMark(requiredLabel = "Required") {
   return createElement("span", {
-    attributes: { "aria-label": "Required" },
+    attributes: { "aria-label": requiredLabel },
     className: "required-mark",
     textContent: "*"
   });

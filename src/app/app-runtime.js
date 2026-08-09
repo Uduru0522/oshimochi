@@ -12,25 +12,30 @@ export function mountAppRuntime({
   elements,
   goodsTypes,
   initialViewId = APP_CONFIG.defaultViewId,
+  languageController,
   mutationController,
   onGoodsTypeCreated,
   onLocalDataReset,
+  onLanguageChanged,
   storage,
   themeController
 }) {
   const views = createViewDefinitions(goodsTypes);
+  let router;
   const renderer = createViewRenderer({
     createGoodsType: createGoodsTypeCreationOperation({ storage }),
     fieldManagement: createFieldManagementOperations({ storage }),
     goodsTypes,
     itemManagement: createItemManagementOperations({ storage }),
     mutationController,
+    onNavigate: (viewId) => router.setActiveView(viewId),
     onGoodsTypeCreated,
     onLocalDataReset,
+    onLanguageChanged,
     resetLocalData: createResetLocalDataOperation({ storage }),
+    languageController,
     themeController
   });
-  let router;
 
   const navigation = createNavigation({
     primaryContainer: elements.primaryNavList,

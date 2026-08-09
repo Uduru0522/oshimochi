@@ -1,4 +1,5 @@
 import { createElement } from "../../shared/dom.js";
+import { translate } from "../../localization/translate.js";
 
 export function formatMissingFields(fields, visibleCount = fields.length) {
   const visibleNames = fields
@@ -6,14 +7,16 @@ export function formatMissingFields(fields, visibleCount = fields.length) {
     .map(({ displayName }) => displayName)
     .join(", ");
   const hiddenCount = fields.length - visibleCount;
-  const names = visibleNames ? ` ${visibleNames}` : "";
-  const remainder = hiddenCount > 0 ? ` +${hiddenCount} more` : "";
-
-  return `Missing value at field(s):${names}${remainder}.`;
+  return translate("Missing value at field(s):{names}{remainder}.", {
+    names: visibleNames ? ` ${visibleNames}` : "",
+    remainder: hiddenCount > 0
+      ? ` ${translate("+{count} more", { count: hiddenCount })}`
+      : ""
+  });
 }
 
 export function formatMissingFieldCount(fields) {
-  return `${fields.length} Missing field(s)`;
+  return translate("{count} Missing field(s)", { count: fields.length });
 }
 
 export function createMissingFieldsWarning(fields, title, itemName) {

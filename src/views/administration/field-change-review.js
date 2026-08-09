@@ -1,14 +1,17 @@
 import { CUSTOM_FIELD_TYPES } from "../../application/fields/field-configuration.js";
 import { FIELD_CHANGE_KINDS } from "../../application/fields/manage-fields.js";
+import { translate } from "../../localization/translate.js";
 import { createActionButton } from "../../shared/action-button.js";
 import { createElement } from "../../shared/dom.js";
 import { createSchemaTable } from "../../shared/ui-components.js";
 
-const REVIEW_COLUMNS = Object.freeze([
-  { key: "action", label: "Change" },
-  { key: "field", label: "Field" },
-  { key: "details", label: "Details" }
-]);
+function getReviewColumns() {
+  return [
+    { key: "action", label: translate("Change") },
+    { key: "field", label: translate("Field") },
+    { key: "details", label: translate("Details") }
+  ];
+}
 
 const TYPE_LABELS = new Map(CUSTOM_FIELD_TYPES.map(({ label, value }) => [value, label]));
 
@@ -20,30 +23,32 @@ function describeChange(change, fieldsById) {
       ? `: ${change.falseLabel} / ${change.trueLabel}`
       : "";
     return {
-      action: "Add",
+      action: translate("Add"),
       field: change.displayName,
-      details: `${TYPE_LABELS.get(change.dataType)}${binaryDetails}${change.isRequired ? ", required" : ""}`
+      details: `${translate(TYPE_LABELS.get(change.dataType))}${binaryDetails}${change.isRequired ? `, ${translate("required")}` : ""}`
     };
   }
 
   if (change.kind === FIELD_CHANGE_KINDS.delete) {
     return {
-      action: "Remove",
+      action: translate("Remove"),
       field: field?.displayName ?? change.fieldId,
-      details: "Soft deletion"
+      details: translate("Soft deletion")
     };
   }
 
   const details = [];
 
   if (change.displayName && change.displayName !== field?.displayName) {
-    details.push(`Rename to ${change.displayName}`);
+    details.push(translate("Rename to {name}", { name: change.displayName }));
   }
   if (change.isRequired === false && field?.isRequired) {
-    details.push("Make optional");
+    details.push(translate("Make optional"));
   }
   if (change.addOptionLabels?.length) {
-    details.push(`Add ${change.addOptionLabels.length} options`);
+    details.push(translate("Add {count} options", {
+      count: change.addOptionLabels.length
+    }));
   }
   if (change.selectOptions) {
     const previousLabels = new Map(
@@ -54,22 +59,25 @@ function describeChange(change, fieldsById) {
     ).length;
 
     if (renameCount > 0) {
-      details.push(`Rename ${renameCount} option${renameCount === 1 ? "" : "s"}`);
+      details.push(translate("Rename {count} option(s)", { count: renameCount }));
     }
   }
   if (change.booleanOptions) {
     details.push(
-      `Change options to ${change.booleanOptions.falseLabel} / ${change.booleanOptions.trueLabel}`
+      translate("Change options to {first} / {second}", {
+        first: change.booleanOptions.falseLabel,
+        second: change.booleanOptions.trueLabel
+      })
     );
   }
   if (change.position !== undefined && change.position !== field?.position) {
-    details.push("Reorder");
+    details.push(translate("Reorder"));
   }
 
   return {
-    action: "Modify",
+    action: translate("Modify"),
     field: field?.displayName ?? change.fieldId,
-    details: details.join(", ") || "Metadata update"
+    details: details.join(", ") || translate("Metadata update")
   };
 }
 
@@ -89,22 +97,24 @@ export function createFieldChangeReview({
     className: "creation-status"
   });
   const actions = createElement("div", { className: "form-actions" });
-  const backButton = createActionButton("Back");
-  const applyButton = createActionButton("Apply staged changes", {
+  const backButton = createActionButton(translate("Back"));
+  const applyButton = createActionButton(translate("Apply staged changes"), {
     className: "primary-action"
   });
   const heading = createElement("div", { className: "form-heading" });
 
   heading.append(
-    createElement("h3", { textContent: "Review field changes" }),
+    createElement("h3", { textContent: translate("Review field changes") }),
     createElement("p", {
-      textContent: "All listed changes will be written together to this browser."
+      textContent: translate(
+        "All listed changes will be written together to this browser."
+      )
     })
   );
   review.append(
     heading,
     createSchemaTable({
-      columns: REVIEW_COLUMNS,
+      columns: getReviewColumns(),
       rows: changes.map((change) => describeChange(change, fieldsById))
     })
   );
@@ -114,11 +124,11 @@ export function createFieldChangeReview({
 
     backButton.disabled = true;
     applyButton.disabled = true;
-    applyButton.textContent = "Applying...";
+    applyButton.textContent = translate("Applying...");
     review.setAttribute("aria-busy", "true");
     status.replaceChildren(
       createElement("progress", { className: "creation-progress" }),
-      createElement("span", { textContent: "Saving field changes..." })
+      createElement("span", { textContent: translate("Saving field changes...") })
     );
 
     try {
@@ -132,7 +142,7 @@ export function createFieldChangeReview({
       review.removeAttribute("aria-busy");
 
       if (wasSaved) {
-        const reloadButton = createActionButton("Reload application", {
+        const reloadButton = createActionButton(translate("Reload application"), {
           className: "primary-action"
         });
         reloadButton.addEventListener("click", () => window.location.reload());
@@ -140,15 +150,15 @@ export function createFieldChangeReview({
       } else {
         backButton.disabled = false;
         applyButton.disabled = false;
-        applyButton.textContent = "Try again";
+        applyButton.textContent = translate("Try again");
       }
 
       status.replaceChildren(
         createElement("p", {
           className: "form-error",
           textContent: wasSaved
-            ? "The changes were saved, but the screen could not refresh. Reload the application to continue."
-            : "The staged changes could not be applied. They remain available for review or editing."
+            ? translate("The changes were saved, but the screen could not refresh. Reload the application to continue.")
+            : translate("The staged changes could not be applied. They remain available for review or editing.")
         })
       );
     }

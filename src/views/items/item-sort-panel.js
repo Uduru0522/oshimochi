@@ -4,6 +4,7 @@ import {
   ITEM_SORT_METADATA,
   cloneItemSort
 } from "../../application/items/sort-items.js";
+import { translate } from "../../localization/translate.js";
 import { createActionButton } from "../../shared/action-button.js";
 import { createElement } from "../../shared/dom.js";
 import { createIcon } from "../../shared/icons.js";
@@ -41,10 +42,14 @@ function isDefaultSort(sort) {
 
 export function createItemSortPanel({ onApply }) {
   const button = createElement("button", {
-    attributes: { "aria-label": "Sort items", title: "Sort items", type: "button" },
+    attributes: {
+      "aria-label": translate("Sort items"),
+      title: translate("Sort items"),
+      type: "button"
+    },
     className: "secondary-action items-sort-action"
   });
-  const buttonLabel = createElement("span", { textContent: "Sort" });
+  const buttonLabel = createElement("span", { textContent: translate("Sort") });
   const dialog = createElement("dialog", {
     attributes: { "aria-labelledby": "itemSortTitle" },
     className: "item-sort-dialog"
@@ -52,17 +57,26 @@ export function createItemSortPanel({ onApply }) {
   const header = createElement("header", { className: "item-sort-header" });
   const heading = createElement("h3", {
     attributes: { id: "itemSortTitle" },
-    textContent: "Sort items"
+    textContent: translate("Sort items")
   });
   const closeButton = createElement("button", {
-    attributes: { "aria-label": "Close item sorting", title: "Close", type: "button" },
+    attributes: {
+      "aria-label": translate("Close item sorting"),
+      title: translate("Close"),
+      type: "button"
+    },
     className: "item-entry-close"
   });
   const form = createElement("form", { className: "item-sort-form" });
   const fieldLabel = createElement("div", { className: "item-sort-field" });
-  const fieldSelect = createSelectMenu({ ariaLabel: "Sort field" });
+  const fieldSelect = createSelectMenu({
+    ariaLabel: translate("Sort field"),
+    emptyLabel: translate("Select...")
+  });
   const directionGroup = createElement("fieldset", { className: "item-sort-direction" });
-  const directionLegend = createElement("legend", { textContent: "Direction" });
+  const directionLegend = createElement("legend", {
+    textContent: translate("Direction")
+  });
   const ascendingLabel = createElement("label");
   const ascendingInput = createElement("input", {
     attributes: { name: "itemSortDirection", type: "radio", value: ITEM_SORT_DIRECTIONS.ASCENDING }
@@ -72,9 +86,9 @@ export function createItemSortPanel({ onApply }) {
     attributes: { name: "itemSortDirection", type: "radio", value: ITEM_SORT_DIRECTIONS.DESCENDING }
   });
   const footer = createElement("footer", { className: "item-sort-footer" });
-  const resetButton = createActionButton("Reset");
-  const cancelButton = createActionButton("Cancel");
-  const applyButton = createActionButton("Apply sort", {
+  const resetButton = createActionButton(translate("Reset"));
+  const cancelButton = createActionButton(translate("Cancel"));
+  const applyButton = createActionButton(translate("Apply sort"), {
     className: "primary-action",
     type: "submit"
   });
@@ -88,9 +102,18 @@ export function createItemSortPanel({ onApply }) {
   button.disabled = true;
   button.append(createIcon("sort"), buttonLabel);
   closeButton.append(createIcon("close"));
-  fieldLabel.append(createElement("strong", { textContent: "Sort by" }), fieldSelect.element);
-  ascendingLabel.append(ascendingInput, createElement("span", { textContent: "Ascending" }));
-  descendingLabel.append(descendingInput, createElement("span", { textContent: "Descending" }));
+  fieldLabel.append(
+    createElement("strong", { textContent: translate("Sort by") }),
+    fieldSelect.element
+  );
+  ascendingLabel.append(
+    ascendingInput,
+    createElement("span", { textContent: translate("Ascending") })
+  );
+  descendingLabel.append(
+    descendingInput,
+    createElement("span", { textContent: translate("Descending") })
+  );
   directionGroup.append(directionLegend, ascendingLabel, descendingLabel);
   const footerActions = createElement("div", { className: "item-sort-footer-actions" });
   footerActions.append(cancelButton, applyButton);
@@ -101,8 +124,8 @@ export function createItemSortPanel({ onApply }) {
 
   function renderOptions() {
     fieldSelect.setOptions([
-      { value: UPDATED_AT_VALUE, label: "Last updated" },
-      { value: CREATED_AT_VALUE, label: "Date created" },
+      { value: UPDATED_AT_VALUE, label: translate("Last updated") },
+      { value: CREATED_AT_VALUE, label: translate("Date created") },
       ...fields.filter(isSortableField).map((field) => ({
         value: `field:${field.id}`,
         label: field.displayName
@@ -112,9 +135,12 @@ export function createItemSortPanel({ onApply }) {
 
   function updateButton() {
     const currentValue = serializeSort(activeSort);
-    const label = fieldSelect.getLabel(currentValue) || "Sort";
+    const label = fieldSelect.getLabel(currentValue) || translate("Sort");
     button.dataset.active = String(!isDefaultSort(activeSort));
-    button.title = `Sort items: ${label}, ${activeSort.direction}`;
+    button.title = translate("Sort items: {field}, {direction}", {
+      field: label,
+      direction: translate(activeSort.direction)
+    });
     button.setAttribute("aria-label", button.title);
   }
 

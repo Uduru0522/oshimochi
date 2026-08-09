@@ -1,4 +1,5 @@
 import { createAppMode } from "./app-mode.js";
+import { applyAppLanguage } from "./app-language.js";
 import { getAppElements } from "./app-elements.js";
 import { mountAppRuntime } from "./app-runtime.js";
 import { bindLayoutTransition } from "./layout-transition.js";
@@ -8,12 +9,16 @@ import { renderStartupError, renderStartupLoading } from "./startup-state.js";
 import { bindViewScrollState } from "./view-scroll-state.js";
 import { createAppStorage } from "../data/create-storage.js";
 import { createThemeController } from "../services/theme.js";
+import { createLanguageController } from "../services/language.js";
 import { registerServiceWorker } from "../services/service-worker-registration.js";
 import { bindDragScroll } from "../shared/drag-scroll.js";
+import { getGoodsTypeItemsViewId } from "../views/goods-types/goods-type-view-ids.js";
+import { VIEW_IDS } from "../views/view-metadata.js";
 
 export function createApp({ storageFactory = createAppStorage } = {}) {
   const elements = getAppElements();
   const appMode = createAppMode();
+  const languageController = createLanguageController();
   const themeController = createThemeController();
   const mutationController = createMutationController(elements.appShell);
   let unmountRuntime = null;
@@ -31,9 +36,16 @@ export function createApp({ storageFactory = createAppStorage } = {}) {
         initialViewId,
         mutationController,
         onGoodsTypeCreated: (goodsTypeId) =>
-          startupCoordinator.refresh({ initialViewId: `goods:${goodsTypeId}` }),
+          startupCoordinator.refresh({
+            initialViewId: getGoodsTypeItemsViewId(goodsTypeId)
+          }),
         onLocalDataReset: () => startupCoordinator.refresh(),
+        onLanguageChanged: () => {
+          applyAppLanguage(elements);
+          startupCoordinator.refresh({ initialViewId: VIEW_IDS.options });
+        },
         storage,
+        languageController,
         themeController
       });
     },
@@ -66,6 +78,8 @@ export function createApp({ storageFactory = createAppStorage } = {}) {
     }
 
     hasStarted = true;
+    languageController.initialize();
+    applyAppLanguage(elements);
     themeController.initialize();
     bindLayoutTransition();
     bindDragScroll(elements.viewPanel, { axis: "y" });

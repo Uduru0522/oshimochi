@@ -4,7 +4,7 @@ export function describeItemSaveError(error) {
 
   while (current instanceof Error) {
     if (current.name === "QuotaExceededError") {
-      return "The item could not be saved because browser storage is full.";
+      return translate("The item could not be saved because browser storage is full.");
     }
 
     if (current.message) {
@@ -13,5 +13,6 @@ export function describeItemSaveError(error) {
     current = current.cause;
   }
 
-  return deepestMessage || "The browser rejected the item save operation.";
+  return deepestMessage || translate("The browser rejected the item save operation.");
 }
+import { translate } from "../../localization/translate.js";
