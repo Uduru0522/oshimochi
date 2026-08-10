@@ -6,37 +6,10 @@ import {
   prefersReducedMotion
 } from "../../shared/motion.js";
 import { createItemCardContent } from "./item-card-content.js";
+import { animateItemCardMembership } from "./item-card-motion.js";
 import { createItemEmptyState } from "./item-empty-state.js";
 import { createItemThumbnail } from "./item-thumbnail.js";
 import { createKeyedLayoutMotion } from "./keyed-layout-motion.js";
-
-const CARD_MEMBERSHIP_FALLBACK_MS = 120;
-
-function getCardAnimationOptions(element, direction) {
-  return {
-    duration: getCustomPropertyDurationMs(
-      element,
-      direction === "enter"
-        ? "--item-card-enter-duration"
-        : "--item-card-exit-duration",
-      CARD_MEMBERSHIP_FALLBACK_MS
-    ),
-    easing: "cubic-bezier(0.2, 0.8, 0.2, 1)",
-    fill: "both"
-  };
-}
-
-function animateCard(element, direction) {
-  if (prefersReducedMotion() || typeof element.animate !== "function") {
-    return null;
-  }
-  const visible = { opacity: 1, scale: 1 };
-  const hidden = { opacity: 0, scale: 0.96 };
-  return element.animate(
-    direction === "enter" ? [hidden, visible] : [visible, hidden],
-    getCardAnimationOptions(element, direction)
-  );
-}
 
 function createItemCard(
   item,
@@ -119,7 +92,14 @@ function createItemCard(
       if (itemChanged && !prefersReducedMotion() && typeof element.animate === "function") {
         element.animate(
           [{ opacity: 0.55 }, { opacity: 1 }],
-          getCardAnimationOptions(element, "enter")
+          {
+            duration: getCustomPropertyDurationMs(
+              element,
+              "--item-card-enter-duration",
+              120
+            ),
+            easing: "cubic-bezier(0.2, 0.8, 0.2, 1)"
+          }
         );
       }
     }
@@ -174,7 +154,7 @@ export function createItemCards(
       onClearFilters
     });
     element.append(emptyState);
-    animateCard(emptyState, "enter");
+    animateItemCardMembership(emptyState, "enter");
   }
 
   function reorderCards(nextItems) {
@@ -212,7 +192,7 @@ export function createItemCards(
 
   async function runMembershipPhase(cardEntries, direction) {
     const animations = cardEntries
-      .map(({ card }) => animateCard(card.element, direction))
+      .map(({ card }) => animateItemCardMembership(card.element, direction))
       .filter(Boolean);
     animations.forEach((animation) => membershipAnimations.add(animation));
     await Promise.all(animations.map((animation) => animation.finished.catch(() => {})));
@@ -226,12 +206,12 @@ export function createItemCards(
 
   function hideIncomingCard(card) {
     card.element.style.opacity = "0";
-    card.element.style.scale = "0.96";
+    card.element.style.transform = "scale(0.96)";
   }
 
   function revealIncomingCard(card) {
     card.element.style.removeProperty("opacity");
-    card.element.style.removeProperty("scale");
+    card.element.style.removeProperty("transform");
   }
 
   async function applyUpdate({
