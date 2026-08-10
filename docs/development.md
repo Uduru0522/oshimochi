@@ -30,7 +30,18 @@ npm run check
 
 `npm run check` validates JavaScript syntax, browser import reachability,
 dependency cycles and layer boundaries, referenced assets, and offline-cache
-coverage, then runs the dependency-free `node:test` suite in `test/`.
+coverage. It also rejects disabled, focused, duplicate, or accidentally discovered
+tests, then runs the dependency-free `node:test` suite in `test/`.
+
+Run the scoped data-layer coverage guard with:
+
+```powershell
+npm run test:coverage:data
+```
+
+See [Testing Strategy](testing.md) for ownership rules, the meaning of one
+behavior per test, known browser-automation gaps, and milestone-specific test
+matrices.
 
 After runtime or layout changes, start the server and verify:
 
@@ -80,6 +91,24 @@ For item-browser presentation changes:
 - filter, clear, sort, add, edit, and delete while scrolled; retained entries must move from their previous positions instead of being rebuilt
 - confirm card filtering completes exits before grid movement and movement before entrances
 - verify the item toolbar remains aligned in its full and compact title-bar states
+
+For lifecycle and persistence changes:
+
+- use `RECORD_SCOPES.active`, `RECORD_SCOPES.deleted`, or `RECORD_SCOPES.all`;
+  do not introduce `includeDeleted` booleans
+- keep editable item writes in `updateItemContent` and deletion/restoration in
+  `updateItemLifecycle`
+- confirm soft deletion and restoration do not rewrite or remove the image asset
+- confirm permanent purge removes the item and owned image in one transaction
+- exercise equivalent behavior through both `IndexedDbStorage` and `DebugStorage`
+
+For future backup transfer changes:
+
+- map storage records into a storage-neutral snapshot outside view modules
+- export complete scopes, including soft-deleted records and retained assets
+- validate the complete import and all relationships before opening a transaction
+- keep the original database unchanged on parse, validation, or write failure
+- test unsupported versions, duplicate IDs, broken references, and malformed assets
 
 ## Browser Storage
 
@@ -245,6 +274,11 @@ Presentation switching replaces only the renderer and retains applied query stat
   rejected everywhere.
 
 These constraints are enforced by `scripts/verify-static.js`.
+
+Browser views receive operations from
+`src/application/create-application-operations.js`. Register new application
+capabilities there instead of importing feature operations individually in
+`app-runtime.js` or calling storage adapters from views.
 
 ## Drag Scrolling
 

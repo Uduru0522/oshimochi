@@ -84,10 +84,25 @@ collection.
 - [ ] restore selected items to their active collection
 - [ ] permanently purge selected items and retained images with explicit confirmation
 
+The underlying adapters already distinguish active, deleted, and complete
+catalogs and separate content writes from lifecycle transitions. This is
+refactoring readiness, not a user-facing recovery feature.
+
+## Next Product Milestone: Backup Export And Import
+
+- [ ] export one versioned local snapshot containing all records and assets
+- [ ] include soft-deleted records so a backup represents the complete collection
+- [ ] validate the complete snapshot before any import mutation
+- [ ] review and explicitly confirm replacement of browser-local data
+- [ ] replace all user-data stores atomically and preserve existing data on failure
+
+The first import strategy is full replacement. Merge behavior remains deferred
+until identity and conflict rules are designed.
+
 ## Later Milestones
 
-1. Export and validated import.
-2. Optional Google Drive snapshots.
+1. Optional Google Drive upload and download of the same snapshot format.
+2. Backup reminders and bounded snapshot retention.
 3. Evaluate live synchronization only after conflict semantics exist.
 
 ## Deliberate Non-Goals

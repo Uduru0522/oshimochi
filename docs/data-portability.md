@@ -30,14 +30,50 @@ Every export includes:
 - application identity
 - goods types, field definitions, items, and assets
 
+A first-version envelope should keep transport metadata separate from domain
+records:
+
+```js
+{
+  application: "wotagoods-manager",
+  exportFormatVersion: 1,
+  domainModelVersion: 1,
+  createdAt: "2026-08-10T00:00:00.000Z",
+  data: {
+    goodsTypes: [],
+    fieldDefinitions: [],
+    items: [],
+    assets: []
+  }
+}
+```
+
+Export reads complete `all` record scopes. Soft-deleted records and assets
+retained for recovery are part of the collection and must not be omitted.
+
 ## Import Contract
 
-Import validates the complete file before opening a mutation. The user chooses
-an explicit strategy such as replace or, once designed, controlled merge. The
+Import validates the complete file before opening a mutation. Validation covers:
+
+- application identity and supported export/domain versions
+- each record through its domain parser
+- unique record, field-key, and selection-option identities
+- goods-type, field, item, and asset relationships
+- image media type, dimensions, byte size, and encoded payload
+- lifecycle consistency for active and soft-deleted records
+
+The first implementation supports replacement only. It stages a fully validated
+storage-neutral snapshot, presents a review, and replaces all user-data stores in
+one transaction after explicit confirmation. Invalid, unsupported, or partial
+files leave the current collection untouched.
+
+Controlled merge may be added only after identity collisions, option changes,
+deleted records, and asset ownership have deterministic conflict rules. The
 application must never silently combine collections.
 
 Before destructive replacement or future migrations, the UI should offer an
-export of the existing collection.
+export of the existing collection. This is preferable to automatically retaining
+an opaque database copy that the user cannot inspect or manage.
 
 ## Google Drive
 
@@ -55,8 +91,9 @@ Live multi-device synchronization is deferred until these are designed:
 
 ## Retention Direction
 
-1. Implement explicit local export and validated import.
-2. Add backup reminders before destructive operations.
-3. Add optional Google Drive snapshot upload and download.
-4. Consider bounded automatic retention only after storage costs and conflict
+1. Complete deleted-item recovery and purge semantics.
+2. Implement explicit local export and validated replacement import.
+3. Add backup reminders before destructive operations.
+4. Add optional Google Drive snapshot upload and download.
+5. Consider bounded automatic retention only after storage costs and conflict
    behavior are understood.

@@ -48,11 +48,13 @@ Implemented capabilities:
 initialize
 listGoodsTypes
 createGoodsType
-createItem
-getAsset
 listFieldDefinitions
-listItems
 saveFieldDefinitions
+listItems
+createItem
+updateItemContent
+updateItemLifecycle
+getAsset
 resetData
 close
 ```
@@ -60,9 +62,29 @@ close
 `createGoodsType` accepts a validated goods-type record and its field definitions.
 Field management reads definitions by goods type and saves a validated record set
 atomically. Item management lists items by goods type, retrieves image assets,
-and writes validated item-plus-asset bundles atomically. The contract grows only
-when an application operation needs it. Planned capabilities include versioned
-transfer operations. Do not add speculative adapter methods.
+and writes validated item-plus-asset bundles atomically.
+
+Catalog reads require one explicit record scope from
+`src/data/models/record-lifecycle.js`:
+
+```text
+active   records available to ordinary workflows
+deleted  records available to recovery workflows
+all      complete records for integrity checks and backup export
+```
+
+Do not replace these scopes with booleans such as `includeDeleted`; a caller must
+state which catalog it intends to read.
+
+`updateItemContent` owns editable item data and optional image replacement.
+`updateItemLifecycle` owns only `isDeleted`, `deletedAt`, and `updatedAt` while
+preserving the item payload and retained image reference. The same lifecycle
+boundary can support restoration, but no restore application operation or UI is
+implemented yet.
+
+The contract grows only when an application operation needs it. Planned
+capabilities include deleted-record purge and versioned snapshot transfer. Do not
+add generic or speculative adapter methods.
 
 ## Transactions
 
@@ -74,10 +96,19 @@ Examples:
 
 - creating a goods type uses one `goods_types` + `field_definitions` transaction
 - creating an item and its image uses one `assets` + `items` transaction
+- editing item content without a new image uses one `items` transaction
+- replacing an item image uses one `assets` + `items` transaction and removes the
+  superseded asset in that transaction
+- deleting, and later restoring, an item uses one lifecycle-only `items`
+  transaction and retains the referenced asset
 - applying field changes uses one `field_definitions` transaction
 - resetting local data clears `goods_types`, `field_definitions`, `items`, and
   `assets` in one transaction while preserving `app_metadata`
 - future type-changing field migrations include `items` in the same transaction
+- future permanent item purge removes the item and its retained asset in one
+  `items` + `assets` transaction
+- future backup replacement validates outside IndexedDB, then replaces all user
+  data stores in one transaction
 
 Application-level busy state prevents conflicting UI operations. IndexedDB
 transaction atomicity protects committed data.
@@ -123,6 +154,11 @@ Records are validated at storage boundaries:
 Invalid persisted data produces a domain storage error. It is not silently
 discarded or repaired. Recovery and import tools can be added deliberately later.
 
+Shared primitive validation lives in `src/data/models/record-validation.js`.
+Deletion-state parsing and record scopes live in
+`src/data/models/record-lifecycle.js`; record-specific models own the remaining
+shape and relationship-independent invariants.
+
 ## Version Responsibilities
 
 Three independent versions are required:
@@ -137,6 +173,10 @@ Three independent versions are required:
 { key: "domainModelVersion", value: 1 }
 ```
 
+The domain-model constant is owned by `src/data/models/domain-model.js` and is
+reused by the physical schema. IndexedDB schema code must not define domain
+meaning.
+
 Upgrades must be deterministic and remain inside the IndexedDB upgrade
 transaction. Data migrations that cannot safely complete there require a
 separate, resumable migration design.
@@ -146,7 +186,7 @@ separate, resumable migration design.
 ```text
 src/application/       Storage-neutral operations that request adapter writes
 src/data/contracts/    Adapter contract and storage errors
-src/data/debug/        In-memory fixtures and debug adapter
+src/data/debug/        In-memory fixtures, repositories, and debug adapter
 src/data/indexeddb/    Schema, connection, requests, repositories, adapter
 src/data/models/       Domain record construction and validation
 src/data/transfer/     Future versioned import/export mapping

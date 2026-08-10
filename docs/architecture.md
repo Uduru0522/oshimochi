@@ -47,6 +47,8 @@ Owns application assembly and app-level behavior.
 
 Owns storage-neutral use cases that coordinate domain records and adapter calls.
 
+- `create-application-operations.js`: the single composition point for
+  feature-owned operations exposed to browser views.
 - `goods-types/create-goods-type.js`: constructs one goods type and its protected
   field definitions, then requests one atomic storage write.
 - `fields/manage-fields.js`: validates staged field changes and converts them into
@@ -60,7 +62,8 @@ Owns storage-neutral use cases that coordinate domain records and adapter calls.
   record-access contract used by item queries.
 - `items/sort-items.js`: performs stable, typed item ordering and keeps missing values last.
 - `items/manage-items.js`: loads active field definitions, constructs validated
-  item and image records, and requests atomic persistence.
+  item and image records, requests atomic content persistence, and performs
+  lifecycle-only soft deletion.
 
 Application operations may depend on domain models and storage contracts. They
 must not depend on DOM elements, IndexedDB object-store names, or view modules.
@@ -94,9 +97,10 @@ boundary between application operations and physical browser storage.
 
 - `contracts/`: adapter capabilities and storage error definitions.
 - `create-storage.js`: mode-aware adapter selection.
-- `debug/`: in-memory debug fixtures and adapter.
+- `debug/`: in-memory fixtures, feature repositories, and the debug adapter.
 - `indexeddb/`: physical schema, database lifecycle, and persistent adapter.
-- `models/`: domain record construction and validation.
+- `models/`: domain record construction, shared validation, lifecycle semantics,
+  and the storage-independent domain-model version.
 
 User mode opens the versioned IndexedDB database and persists created goods types.
 Debug mode starts from hardcoded records, accepts the same creation operation in
@@ -254,6 +258,11 @@ Current storage adapters:
 - `IndexedDbStorage`: persistent browser-local user data.
 - `DebugStorage`: in-memory fixtures that never write user data.
 
+Both adapters expose explicit `active`, `deleted`, and `all` record scopes. Item
+content updates and item lifecycle transitions are separate capabilities. A
+delete or future restore therefore cannot accidentally replace custom values or
+image ownership, while image replacement remains an atomic content operation.
+
 Views, navigation, and renderers must not import IndexedDB APIs or object-store
 names. They consume plain domain records and call application operations. This
 also keeps versioned file import/export and a future Google Drive snapshot adapter
@@ -275,6 +284,10 @@ application operation; they do not open transactions or independently manage
 global busy state. `mutation-controller.js` prevents overlapping writes while
 storage adapters provide transaction atomicity and return plain records or
 domain errors.
+
+`create-application-operations.js` is the browser-facing capability registry.
+New recovery and transfer workflows should be composed there rather than adding
+more feature imports to `app-runtime.js` or allowing views to call adapters.
 
 Rendered views may return an optional `destroy()` function alongside `content`
 and `topbarAction`. The router calls it before replacing that view, and runtime

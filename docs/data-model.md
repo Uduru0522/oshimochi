@@ -237,6 +237,28 @@ and audit UI. Deleting a goods type leaves dependent fields, items, and assets
 recoverable. Permanent purge is a separate destructive operation that must
 explicitly traverse dependent records.
 
+Application and repository reads use one explicit lifecycle scope:
+
+- `active` for ordinary browsing and editing
+- `deleted` for recovery interfaces
+- `all` for integrity checks and complete backup snapshots
+
+Lifecycle transitions preserve every non-lifecycle property. Item deletion and
+future restoration therefore retain the same item ID, custom values, creation
+timestamp, and `imageAssetId`. Content edits and lifecycle transitions are
+separate storage operations.
+
+An asset referenced by a soft-deleted item is retained. Permanent purge must
+delete the item and its owned image asset atomically. A future import must
+validate every item-to-asset reference and asset metadata before replacing local
+data.
+
+## Model Version
+
+The storage-independent domain model currently has version `1`, owned by
+`src/data/models/domain-model.js`. This version describes record meaning and is
+separate from the IndexedDB schema version and future export-format version.
+
 ## Invariants
 
 - IDs and creation timestamps never change after creation.

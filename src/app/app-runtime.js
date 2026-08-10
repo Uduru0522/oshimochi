@@ -3,10 +3,7 @@ import { createViewRouter } from "./view-router.js";
 import { createNavigation } from "../navigation/navigation.js";
 import { createViewDefinitions } from "../views/view-definitions.js";
 import { createViewRenderer } from "../views/view-renderer.js";
-import { createGoodsTypeCreationOperation } from "../application/goods-types/create-goods-type.js";
-import { createFieldManagementOperations } from "../application/fields/manage-fields.js";
-import { createResetLocalDataOperation } from "../application/data/reset-local-data.js";
-import { createItemManagementOperations } from "../application/items/manage-items.js";
+import { createApplicationOperations } from "../application/create-application-operations.js";
 
 export function mountAppRuntime({
   elements,
@@ -21,18 +18,16 @@ export function mountAppRuntime({
   themeController
 }) {
   const views = createViewDefinitions(goodsTypes);
+  const operations = createApplicationOperations({ storage });
   let router;
   const renderer = createViewRenderer({
-    createGoodsType: createGoodsTypeCreationOperation({ storage }),
-    fieldManagement: createFieldManagementOperations({ storage }),
     goodsTypes,
-    itemManagement: createItemManagementOperations({ storage }),
     mutationController,
     onNavigate: (viewId) => router.setActiveView(viewId),
     onGoodsTypeCreated,
     onLocalDataReset,
     onLanguageChanged,
-    resetLocalData: createResetLocalDataOperation({ storage }),
+    operations,
     languageController,
     themeController
   });

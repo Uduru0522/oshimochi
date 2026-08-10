@@ -1,5 +1,6 @@
 import { createAssetRecord } from "../../data/models/asset.js";
 import { createItemRecord, parseItemRecord } from "../../data/models/item.js";
+import { createDeletionTransition } from "../../data/models/record-lifecycle.js";
 import { normalizeItemValues } from "./item-values.js";
 
 function defaultIdGenerator() {
@@ -17,7 +18,8 @@ export function createItemManagementOperations({
     "listFieldDefinitions",
     "listGoodsTypes",
     "listItems",
-    "updateItem"
+    "updateItemContent",
+    "updateItemLifecycle"
   ];
 
   if (requiredMethods.some((methodName) => typeof storage?.[methodName] !== "function")) {
@@ -45,16 +47,11 @@ export function createItemManagementOperations({
       throw new TypeError("The selected goods type is not active.");
     }
 
-    const timestamp = now();
-    const deletedItem = parseItemRecord({
-      ...existingItem,
-      deletedAt: timestamp,
-      isDeleted: true,
-      updatedAt: timestamp
-    });
-    const change = { asset: null, item: deletedItem, previousImageAssetId: null };
+    const deletedItem = parseItemRecord(
+      createDeletionTransition(existingItem, true, { now })
+    );
 
-    await storage.updateItem(change);
+    await storage.updateItemLifecycle(deletedItem);
     return structuredClone(deletedItem);
   }
 
@@ -116,7 +113,7 @@ export function createItemManagementOperations({
       throw new TypeError("Image is required.");
     }
 
-    await storage.updateItem(change);
+    await storage.updateItemContent(change);
     return structuredClone(change);
   }
 

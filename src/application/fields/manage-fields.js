@@ -1,4 +1,5 @@
 import { createFieldDefinitionRecord } from "../../data/models/field-definition.js";
+import { RECORD_SCOPES } from "../../data/models/record-lifecycle.js";
 import {
   appendSelectOptions,
   assertCustomFieldType,
@@ -75,7 +76,7 @@ export function createFieldManagementOperations({
 
     const timestamp = now();
     const allCurrentFields = await storage.listFieldDefinitions(canonicalGoodsTypeId, {
-      includeDeleted: true
+      scope: RECORD_SCOPES.all
     });
     const currentFields = allCurrentFields.filter(({ isDeleted }) => !isDeleted);
     const currentById = new Map(allCurrentFields.map((field) => [field.id, field]));

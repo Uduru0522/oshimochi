@@ -83,9 +83,14 @@ export function createIndexedDbStorage({
     return itemRepository.create(item);
   }
 
-  async function updateItem(change) {
+  async function updateItemContent(change) {
     assertInitialized();
-    return itemRepository.update(change);
+    return itemRepository.updateContent(change);
+  }
+
+  async function updateItemLifecycle(item) {
+    assertInitialized();
+    return itemRepository.updateLifecycle(item);
   }
 
   async function listItems(goodsTypeId, options) {
@@ -118,6 +123,7 @@ export function createIndexedDbStorage({
     listItems,
     resetData,
     saveFieldDefinitions,
-    updateItem
+    updateItemContent,
+    updateItemLifecycle
   };
 }

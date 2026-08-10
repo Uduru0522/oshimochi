@@ -1,7 +1,8 @@
-const CACHE_NAME = "wotagoods-manager-v111";
+const CACHE_NAME = "wotagoods-manager-v112";
 
 const ASSET_GROUPS = {
   app: [
+    "./src/application/create-application-operations.js",
     "./src/application/data/reset-local-data.js",
     "./src/application/fields/field-configuration.js",
     "./src/application/fields/manage-fields.js",
@@ -35,7 +36,12 @@ const ASSET_GROUPS = {
   data: [
     "./src/data/create-storage.js",
     "./src/data/contracts/storage-contract.js",
+    "./src/data/debug/debug-catalog.js",
+    "./src/data/debug/debug-field-definition-repository.js",
     "./src/data/debug/debug-fixtures.js",
+    "./src/data/debug/debug-goods-type-repository.js",
+    "./src/data/debug/debug-item-repository.js",
+    "./src/data/debug/debug-local-data-repository.js",
     "./src/data/debug/debug-storage.js",
     "./src/data/indexeddb/connection.js",
     "./src/data/indexeddb/database-schema.js",
@@ -47,9 +53,12 @@ const ASSET_GROUPS = {
     "./src/data/indexeddb/requests.js",
     "./src/data/models/asset.js",
     "./src/data/models/built-in-fields.js",
+    "./src/data/models/domain-model.js",
     "./src/data/models/field-definition.js",
     "./src/data/models/goods-type.js",
-    "./src/data/models/item.js"
+    "./src/data/models/item.js",
+    "./src/data/models/record-lifecycle.js",
+    "./src/data/models/record-validation.js"
   ],
   install: [
     "./manifest.webmanifest",

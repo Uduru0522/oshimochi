@@ -3,7 +3,15 @@ import {
   StorageError
 } from "../contracts/storage-contract.js";
 import { parseAssetRecord } from "../models/asset.js";
-import { parseItemRecord } from "../models/item.js";
+import {
+  assertItemContentUpdate,
+  assertItemLifecycleUpdate,
+  parseItemRecord
+} from "../models/item.js";
+import {
+  filterRecordsByScope,
+  requireRecordScope
+} from "../models/record-lifecycle.js";
 import { INDEXES, OBJECT_STORES } from "./database-schema.js";
 import { requestToPromise, transactionToPromise } from "./requests.js";
 
@@ -84,7 +92,7 @@ export function createItemRepository(database) {
     }
   }
 
-  async function update({ asset = null, item, previousImageAssetId = null }) {
+  async function updateContent({ asset = null, item, previousImageAssetId = null }) {
     let parsedAsset;
     let parsedItem;
 
@@ -113,6 +121,15 @@ export function createItemRepository(database) {
         ? [OBJECT_STORES.assets, OBJECT_STORES.items]
         : OBJECT_STORES.items;
       const transaction = database.transaction(storeNames, "readwrite");
+      const itemStore = transaction.objectStore(OBJECT_STORES.items);
+      const existingItem = await requestToPromise(itemStore.get(parsedItem.id));
+
+      assertItemContentUpdate(existingItem, parsedItem);
+
+      if (parsedAsset && existingItem.imageAssetId !== previousImageAssetId) {
+        throw new TypeError("The replacement image does not belong to the current item.");
+      }
+
       const requests = [
         ...(parsedAsset
           ? [
@@ -124,7 +141,7 @@ export function createItemRepository(database) {
                 : [])
             ]
           : []),
-        requestToPromise(transaction.objectStore(OBJECT_STORES.items).put(parsedItem))
+        requestToPromise(itemStore.put(parsedItem))
       ];
 
       await Promise.all([...requests, transactionToPromise(transaction)]);
@@ -138,7 +155,43 @@ export function createItemRepository(database) {
     return structuredClone(parsedItem);
   }
 
-  async function list(goodsTypeId, { includeDeleted = false } = {}) {
+  async function updateLifecycle(item) {
+    let parsedItem;
+
+    try {
+      parsedItem = parseItemRecord(item);
+    } catch (error) {
+      throw new StorageError("The item lifecycle update contains invalid data.", {
+        cause: error,
+        code: STORAGE_ERROR_CODES.invalidData
+      });
+    }
+
+    try {
+      const transaction = database.transaction(OBJECT_STORES.items, "readwrite");
+      const itemStore = transaction.objectStore(OBJECT_STORES.items);
+      const existingItem = await requestToPromise(itemStore.get(parsedItem.id));
+
+      assertItemLifecycleUpdate(existingItem, parsedItem);
+
+      const request = itemStore.put(parsedItem);
+
+      await Promise.all([
+        requestToPromise(request),
+        transactionToPromise(transaction)
+      ]);
+    } catch (error) {
+      throw new StorageError("The item lifecycle could not be saved to the local database.", {
+        cause: error,
+        code: STORAGE_ERROR_CODES.operationFailed
+      });
+    }
+
+    return structuredClone(parsedItem);
+  }
+
+  async function list(goodsTypeId, { scope } = {}) {
+    const requestedScope = requireRecordScope(scope);
     let records;
 
     try {
@@ -157,10 +210,10 @@ export function createItemRepository(database) {
     }
 
     try {
-      const parsedRecords = records.map(parseItemRecord);
-      const visibleRecords = includeDeleted
-        ? parsedRecords
-        : parsedRecords.filter((record) => !record.isDeleted);
+      const visibleRecords = filterRecordsByScope(
+        records.map(parseItemRecord),
+        requestedScope
+      );
 
       return structuredClone(sortByUpdatedTime(visibleRecords));
     } catch (error) {
@@ -171,5 +224,5 @@ export function createItemRepository(database) {
     }
   }
 
-  return { create, getAsset, list, update };
+  return { create, getAsset, list, updateContent, updateLifecycle };
 }

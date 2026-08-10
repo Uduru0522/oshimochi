@@ -7,6 +7,9 @@ import {
 } from "../../src/application/fields/manage-fields.js";
 import { createBuiltInFieldDefinitions } from "../../src/data/models/built-in-fields.js";
 import { createFieldDefinitionRecord } from "../../src/data/models/field-definition.js";
+import {
+  filterRecordsByScope
+} from "../../src/data/models/record-lifecycle.js";
 
 const FIXED_TIME = "2026-07-20T00:00:00.000Z";
 const NEXT_TIME = "2026-07-21T00:00:00.000Z";
@@ -50,10 +53,10 @@ function createHarness() {
   let id = 0;
   const operations = createFieldManagementOperations({
     storage: {
-      async listFieldDefinitions(goodsTypeId, { includeDeleted = false } = {}) {
-        return fields.filter(
-          (field) =>
-            field.goodsTypeId === goodsTypeId && (includeDeleted || !field.isDeleted)
+      async listFieldDefinitions(goodsTypeId, { scope } = {}) {
+        return filterRecordsByScope(
+          fields.filter((field) => field.goodsTypeId === goodsTypeId),
+          scope
         );
       },
       async saveFieldDefinitions(changeSet) {

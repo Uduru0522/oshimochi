@@ -74,34 +74,31 @@ export function renderOptionsView({ languageController, onLanguageChanged, theme
 }
 
 export function createViewRenderer({
-  createGoodsType,
-  fieldManagement,
   goodsTypes,
-  itemManagement,
   languageController,
   mutationController,
   onNavigate,
   onGoodsTypeCreated,
   onLocalDataReset,
   onLanguageChanged,
-  resetLocalData,
+  operations,
   themeController
 }) {
   const renderers = {
     [RENDERERS.administration]: () => renderAdministrationView({
-      createGoodsType,
-      fieldManagement,
+      createGoodsType: operations.goodsTypes.create,
+      fieldManagement: operations.fields,
       goodsTypes,
       mutationController,
       onGoodsTypeCreated,
       onLocalDataReset,
-      resetLocalData
+      resetLocalData: operations.localData.reset
     }),
     [RENDERERS.goodsTypeOverview]: (view) => renderGoodsTypeOverview(view, {
       onOpenItems: () => onNavigate(view.itemsViewId)
     }),
     [RENDERERS.goodsTypeItems]: (view) => renderItemsView(view, {
-      itemManagement,
+      itemManagement: operations.items,
       mutationController,
       onOpenOverview: () => onNavigate(view.overviewViewId)
     }),

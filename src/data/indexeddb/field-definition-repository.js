@@ -3,6 +3,10 @@ import {
   StorageError
 } from "../contracts/storage-contract.js";
 import { parseFieldDefinitionRecord } from "../models/field-definition.js";
+import {
+  filterRecordsByScope,
+  requireRecordScope
+} from "../models/record-lifecycle.js";
 import { INDEXES, OBJECT_STORES } from "./database-schema.js";
 import { requestToPromise, transactionToPromise } from "./requests.js";
 
@@ -13,7 +17,8 @@ function sortFields(records) {
 }
 
 export function createFieldDefinitionRepository(database) {
-  async function list(goodsTypeId, { includeDeleted = false } = {}) {
+  async function list(goodsTypeId, { scope } = {}) {
+    const requestedScope = requireRecordScope(scope);
     let records;
 
     try {
@@ -32,10 +37,10 @@ export function createFieldDefinitionRepository(database) {
     }
 
     try {
-      const parsedRecords = records.map(parseFieldDefinitionRecord);
-      const visibleRecords = includeDeleted
-        ? parsedRecords
-        : parsedRecords.filter((record) => !record.isDeleted);
+      const visibleRecords = filterRecordsByScope(
+        records.map(parseFieldDefinitionRecord),
+        requestedScope
+      );
 
       return structuredClone(sortFields(visibleRecords));
     } catch (error) {

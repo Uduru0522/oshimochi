@@ -1,111 +1,53 @@
-function requireRecord(value, fieldName = "Item") {
-  if (!value || typeof value !== "object" || Array.isArray(value)) {
-    throw new TypeError(`${fieldName} must be an object.`);
-  }
-
-  return value;
-}
-
-function requireCanonicalString(value, fieldName) {
-  if (typeof value !== "string" || value.trim() === "") {
-    throw new TypeError(`${fieldName} must be a non-empty string.`);
-  }
-
-  if (value.trim() !== value) {
-    throw new TypeError(`${fieldName} cannot have leading or trailing whitespace.`);
-  }
-
-  return value;
-}
-
-function requireBoolean(value, fieldName) {
-  if (typeof value !== "boolean") {
-    throw new TypeError(`${fieldName} must be a boolean.`);
-  }
-
-  return value;
-}
-
-function requireTimestamp(value, fieldName) {
-  if (
-    typeof value !== "string" ||
-    Number.isNaN(Date.parse(value)) ||
-    new Date(value).toISOString() !== value
-  ) {
-    throw new TypeError(`${fieldName} must be an ISO 8601 UTC timestamp.`);
-  }
-
-  return value;
-}
-
-function requireJsonValue(value, fieldName) {
-  if (
-    value === null ||
-    typeof value === "string" ||
-    typeof value === "boolean" ||
-    (typeof value === "number" && Number.isFinite(value))
-  ) {
-    return value;
-  }
-
-  if (Array.isArray(value)) {
-    return value.map((entry) => requireJsonValue(entry, fieldName));
-  }
-
-  if (value && Object.getPrototypeOf(value) === Object.prototype) {
-    return Object.fromEntries(
-      Object.entries(value).map(([key, entry]) => [key, requireJsonValue(entry, fieldName)])
-    );
-  }
-
-  throw new TypeError(`${fieldName} must be JSON-compatible.`);
-}
+import {
+  createDeletionLifecycle,
+  parseDeletionLifecycle
+} from "./record-lifecycle.js";
+import {
+  areJsonValuesEqual,
+  requireJsonValue,
+  requireRecord,
+  requireString
+} from "./record-validation.js";
 
 function requireCustomValues(value) {
   const customValues = requireRecord(value, "customValues");
   return requireJsonValue(customValues, "customValues");
 }
 
+function getLifecycleNeutralItem(item) {
+  const { deletedAt, isDeleted, updatedAt, ...content } = item;
+  return content;
+}
+
+function requireForwardTimestamp(currentItem, nextItem) {
+  if (nextItem.updatedAt < currentItem.updatedAt) {
+    throw new TypeError("Item updates cannot move updatedAt backwards.");
+  }
+}
+
 export function parseItemRecord(value) {
-  const input = requireRecord(value);
-  const isDeleted = requireBoolean(input.isDeleted, "isDeleted");
-  const createdAt = requireTimestamp(input.createdAt, "createdAt");
-  const updatedAt = requireTimestamp(input.updatedAt, "updatedAt");
-
-  if (updatedAt < createdAt) {
-    throw new TypeError("updatedAt cannot be earlier than createdAt.");
-  }
-
-  if (isDeleted !== (input.deletedAt !== null)) {
-    throw new TypeError("deletedAt must match the item deletion state.");
-  }
-
-  const deletedAt = isDeleted ? requireTimestamp(input.deletedAt, "deletedAt") : null;
-
-  if (deletedAt && (deletedAt < createdAt || deletedAt > updatedAt)) {
-    throw new TypeError("deletedAt must be between createdAt and updatedAt.");
-  }
+  const input = requireRecord(value, "Item");
+  const lifecycle = parseDeletionLifecycle(input, "Item");
 
   return {
-    id: requireCanonicalString(input.id, "id"),
-    goodsTypeId: requireCanonicalString(input.goodsTypeId, "goodsTypeId"),
-    name: requireCanonicalString(input.name, "name"),
+    id: requireString(input.id, "id", { allowEmpty: false, canonical: true }),
+    goodsTypeId: requireString(input.goodsTypeId, "goodsTypeId", {
+      allowEmpty: false,
+      canonical: true
+    }),
+    name: requireString(input.name, "name", { allowEmpty: false, canonical: true }),
     imageAssetId: input.imageAssetId === null
       ? null
-      : requireCanonicalString(input.imageAssetId, "imageAssetId"),
+      : requireString(input.imageAssetId, "imageAssetId", {
+        allowEmpty: false,
+        canonical: true
+      }),
     customValues: requireCustomValues(input.customValues),
-    isDeleted,
-    deletedAt,
-    createdAt,
-    updatedAt
+    ...lifecycle
   };
 }
 
 export function createItemRecord(input, { now = () => new Date().toISOString() } = {}) {
-  const timestamp = now();
-  const isDeleted = input.isDeleted ?? false;
-  const updatedAt = input.updatedAt ?? timestamp;
-
   return parseItemRecord({
     ...input,
     id: input.id?.trim(),
@@ -113,9 +55,40 @@ export function createItemRecord(input, { now = () => new Date().toISOString() }
     name: input.name?.trim(),
     imageAssetId: input.imageAssetId?.trim() || null,
     customValues: input.customValues ?? {},
-    isDeleted,
-    deletedAt: isDeleted ? (input.deletedAt ?? updatedAt) : null,
-    createdAt: input.createdAt ?? timestamp,
-    updatedAt
+    ...createDeletionLifecycle(input, { entityName: "Item", now })
   });
+}
+
+export function assertItemContentUpdate(currentValue, nextValue) {
+  const currentItem = parseItemRecord(currentValue);
+  const nextItem = parseItemRecord(nextValue);
+
+  if (
+    currentItem.id !== nextItem.id ||
+    currentItem.goodsTypeId !== nextItem.goodsTypeId ||
+    currentItem.createdAt !== nextItem.createdAt ||
+    currentItem.isDeleted ||
+    nextItem.isDeleted
+  ) {
+    throw new TypeError("Item content updates require the same active item identity.");
+  }
+
+  requireForwardTimestamp(currentItem, nextItem);
+}
+
+export function assertItemLifecycleUpdate(currentValue, nextValue) {
+  const currentItem = parseItemRecord(currentValue);
+  const nextItem = parseItemRecord(nextValue);
+
+  if (
+    currentItem.isDeleted === nextItem.isDeleted ||
+    !areJsonValuesEqual(
+      getLifecycleNeutralItem(currentItem),
+      getLifecycleNeutralItem(nextItem)
+    )
+  ) {
+    throw new TypeError("Item lifecycle updates may only change deletion state.");
+  }
+
+  requireForwardTimestamp(currentItem, nextItem);
 }

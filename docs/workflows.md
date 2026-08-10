@@ -249,6 +249,24 @@ Restoration and permanent purge controls are separate future work. Until those
 controls exist, soft-deleted records are retained but intentionally omitted from
 the active collection UI.
 
+## Recover Deleted Items
+
+Status: planned next.
+
+1. User opens a dedicated deleted-items view for one collection.
+2. The view reads the `deleted` item scope and shows the deletion state without
+   mixing those records into active browsing.
+3. User selects an item and chooses **Restore**.
+4. Confirmation enters the shared mutation state and applies a lifecycle-only
+   transition.
+5. The restored item returns to active browsing with the same values, image, ID,
+   and creation timestamp.
+
+Permanent purge is a separate command within the recovery area. It requires
+explicit destructive confirmation and removes the item plus its retained image
+asset in one transaction. Restoration and purge must not reuse the ordinary item
+editor because that editor owns content changes rather than lifecycle changes.
+
 ## Manage Fields
 
 Status: implemented.
@@ -324,6 +342,37 @@ Status: implemented.
 
 The operation does not remove theme settings, cached application files, or any
 backup previously exported outside the application.
+
+## Export Backup
+
+Status: planned after deleted-item recovery.
+
+1. User starts an export from the data-management area.
+2. The application reads complete `all` scopes, including soft-deleted records
+   and retained assets.
+3. It validates and maps those records into one versioned snapshot.
+4. The browser downloads the snapshot as a local file.
+
+Export is read-only and does not enter the global mutation state. A failed export
+must leave local data untouched and report its actionable cause.
+
+## Import Backup
+
+Status: planned after deleted-item recovery.
+
+1. User chooses a supported backup file.
+2. The application parses and validates the complete snapshot without changing
+   local data.
+3. A review identifies the snapshot, record counts, creation time, versions, and
+   the replacement effect.
+4. The user explicitly confirms replacing the current local collection.
+5. The application enters the shared mutation state and replaces all user-data
+   stores atomically.
+6. Navigation and the active view remount only after commit succeeds.
+
+The first import strategy is replacement, not merge. Invalid or unsupported
+files never open a write transaction. Before replacement, the interface offers
+an export of the current collection rather than creating a hidden database copy.
 
 ## Mutation State
 

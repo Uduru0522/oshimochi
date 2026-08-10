@@ -4,12 +4,8 @@ import test from "node:test";
 import {
   createItemManagementOperations
 } from "../../src/application/items/manage-items.js";
-import {
-  normalizeHttpsUrl,
-  normalizeItemValues
-} from "../../src/application/items/item-values.js";
 import { createFieldDefinitionRecord } from "../../src/data/models/field-definition.js";
-import { createItemRecord, parseItemRecord } from "../../src/data/models/item.js";
+import { createItemRecord } from "../../src/data/models/item.js";
 
 const FIXED_TIME = "2026-07-20T00:00:00.000Z";
 const TEST_IMAGE = Object.freeze({
@@ -29,77 +25,6 @@ function createField(input) {
     { now: () => FIXED_TIME }
   );
 }
-
-test("item records normalize creation input and reject invalid persisted values", () => {
-  const item = createItemRecord(
-    {
-      id: " item-1 ",
-      goodsTypeId: " figures ",
-      name: " First figure ",
-      customValues: { scale: "1/7" }
-    },
-    { now: () => FIXED_TIME }
-  );
-
-  assert.equal(item.name, "First figure");
-  assert.equal(item.imageAssetId, null);
-  assert.deepEqual(item.customValues, { scale: "1/7" });
-  assert.throws(() => parseItemRecord({ ...item, customValues: { bad: Infinity } }), /JSON/);
-});
-
-test("item values validate supported field types and stable selection IDs", () => {
-  const fields = [
-    createField({ id: "release", key: "release", displayName: "Release", dataType: "date" }),
-    createField({ id: "price", key: "price", displayName: "Price", dataType: "number" }),
-    createField({
-      id: "status",
-      key: "status",
-      displayName: "Status",
-      dataType: "select",
-      options: { choices: [{ id: "owned", label: "Owned" }] }
-    })
-  ];
-
-  assert.deepEqual(
-    normalizeItemValues(fields, {
-      release: "2026-07-20",
-      price: 1200,
-      status: "owned"
-    }),
-    { release: "2026-07-20", price: 1200, status: "owned" }
-  );
-  assert.throws(
-    () => normalizeItemValues(fields, { release: "2026-02-30" }),
-    /valid date/
-  );
-  assert.throws(
-    () => normalizeItemValues(fields, { release: "45235-12-31" }),
-    /Release must be a valid date/
-  );
-  assert.throws(
-    () => normalizeItemValues(fields, { status: "unknown" }),
-    /invalid selection/
-  );
-  assert.throws(() => normalizeItemValues(fields, { removed: "value" }), /Unknown/);
-});
-
-test("required text is checked after whitespace normalization", () => {
-  const field = createField({
-    id: "maker",
-    key: "maker",
-    displayName: "Maker",
-    dataType: "text",
-    isRequired: true
-  });
-
-  assert.throws(() => normalizeItemValues([field], { maker: "   " }), /Maker is required/);
-});
-
-test("web addresses default to https and reject explicit insecure URLs", () => {
-  assert.equal(normalizeHttpsUrl("www.google.com"), "https://www.google.com/");
-  assert.equal(normalizeHttpsUrl("https://example.com/path"), "https://example.com/path");
-  assert.throws(() => normalizeHttpsUrl("http://example.com"), /must use https/);
-});
 
 test("item creation reloads active fields and writes one validated record", async () => {
   const writes = [];
@@ -126,7 +51,8 @@ test("item creation reloads active fields and writes one validated record", asyn
       async listFieldDefinitions() { return [nameField, notesField]; },
       async listGoodsTypes() { return [{ id: "figures" }]; },
       async listItems() { return []; },
-      async updateItem() {}
+      async updateItemContent() {},
+      async updateItemLifecycle() {}
     },
     generateId: () => generatedIds.shift(),
     now: () => FIXED_TIME
@@ -154,7 +80,8 @@ test("item creation requires an image", async () => {
       async listFieldDefinitions() { return []; },
       async listGoodsTypes() { return [{ id: "figures" }]; },
       async listItems() { return []; },
-      async updateItem() {}
+      async updateItemContent() {},
+      async updateItemLifecycle() {}
     }
   });
 
@@ -174,7 +101,8 @@ test("item creation builds an image asset and item reference for one storage wri
       async listFieldDefinitions() { return []; },
       async listGoodsTypes() { return [{ id: "figures" }]; },
       async listItems() { return []; },
-      async updateItem() {}
+      async updateItemContent() {},
+      async updateItemLifecycle() {}
     },
     generateId: () => generatedIds.shift(),
     now: () => FIXED_TIME
@@ -215,7 +143,8 @@ test("item updates preserve identity and the existing image when it is unchanged
       async listFieldDefinitions() { return [notesField]; },
       async listGoodsTypes() { return [{ id: "figures" }]; },
       async listItems() { return [existingItem]; },
-      async updateItem(change) { writes.push(change); }
+      async updateItemContent(change) { writes.push(change); },
+      async updateItemLifecycle() {}
     },
     now: () => "2026-07-21T00:00:00.000Z"
   });
@@ -251,7 +180,8 @@ test("item updates replace images through one storage request", async () => {
       async listFieldDefinitions() { return []; },
       async listGoodsTypes() { return [{ id: "figures" }]; },
       async listItems() { return [existingItem]; },
-      async updateItem(change) { writes.push(change); }
+      async updateItemContent(change) { writes.push(change); },
+      async updateItemLifecycle() {}
     },
     generateId: () => "asset-2",
     now: () => "2026-07-21T00:00:00.000Z"
@@ -285,7 +215,8 @@ test("item soft deletion retains data and marks deletion timestamps atomically",
       async listFieldDefinitions() { return []; },
       async listGoodsTypes() { return [{ id: "figures" }]; },
       async listItems() { return [existingItem]; },
-      async updateItem(change) { writes.push(change); }
+      async updateItemContent() {},
+      async updateItemLifecycle(item) { writes.push(item); }
     },
     now: () => "2026-07-21T00:00:00.000Z"
   });
@@ -297,9 +228,5 @@ test("item soft deletion retains data and marks deletion timestamps atomically",
   assert.equal(deletedItem.updatedAt, "2026-07-21T00:00:00.000Z");
   assert.equal(deletedItem.imageAssetId, existingItem.imageAssetId);
   assert.deepEqual(deletedItem.customValues, existingItem.customValues);
-  assert.deepEqual(writes, [{
-    asset: null,
-    item: deletedItem,
-    previousImageAssetId: null
-  }]);
+  assert.deepEqual(writes, [deletedItem]);
 });

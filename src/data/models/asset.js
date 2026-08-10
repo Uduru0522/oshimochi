@@ -1,44 +1,17 @@
-function requireRecord(value) {
-  if (!value || typeof value !== "object" || Array.isArray(value)) {
-    throw new TypeError("Asset must be an object.");
-  }
-
-  return value;
-}
-
-function requireCanonicalString(value, fieldName) {
-  if (typeof value !== "string" || value.trim() === "" || value.trim() !== value) {
-    throw new TypeError(`${fieldName} must be a canonical non-empty string.`);
-  }
-
-  return value;
-}
-
-function requirePositiveInteger(value, fieldName) {
-  if (!Number.isSafeInteger(value) || value <= 0) {
-    throw new TypeError(`${fieldName} must be a positive integer.`);
-  }
-
-  return value;
-}
-
-function requireTimestamp(value, fieldName) {
-  if (
-    typeof value !== "string" ||
-    Number.isNaN(Date.parse(value)) ||
-    new Date(value).toISOString() !== value
-  ) {
-    throw new TypeError(`${fieldName} must be an ISO 8601 UTC timestamp.`);
-  }
-
-  return value;
-}
+import { parseRecordTimestamps } from "./record-lifecycle.js";
+import {
+  requirePositiveInteger,
+  requireRecord,
+  requireString
+} from "./record-validation.js";
 
 export function parseAssetRecord(value) {
-  const input = requireRecord(value);
-  const mediaType = requireCanonicalString(input.mediaType, "mediaType");
-  const createdAt = requireTimestamp(input.createdAt, "createdAt");
-  const updatedAt = requireTimestamp(input.updatedAt, "updatedAt");
+  const input = requireRecord(value, "Asset");
+  const mediaType = requireString(input.mediaType, "mediaType", {
+    allowEmpty: false,
+    canonical: true
+  });
+  const timestamps = parseRecordTimestamps(input);
 
   if (!(input.data instanceof Blob) || !mediaType.startsWith("image/")) {
     throw new TypeError("Asset data must be an image Blob.");
@@ -48,10 +21,6 @@ export function parseAssetRecord(value) {
     throw new TypeError("Asset Blob type must match mediaType.");
   }
 
-  if (updatedAt < createdAt) {
-    throw new TypeError("updatedAt cannot be earlier than createdAt.");
-  }
-
   const byteSize = requirePositiveInteger(input.byteSize, "byteSize");
 
   if (byteSize !== input.data.size) {
@@ -59,14 +28,13 @@ export function parseAssetRecord(value) {
   }
 
   return {
-    id: requireCanonicalString(input.id, "id"),
+    id: requireString(input.id, "id", { allowEmpty: false, canonical: true }),
     data: input.data,
     mediaType,
     width: requirePositiveInteger(input.width, "width"),
     height: requirePositiveInteger(input.height, "height"),
     byteSize,
-    createdAt,
-    updatedAt
+    ...timestamps
   };
 }
 

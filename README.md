@@ -39,6 +39,11 @@ Item list management and visual card browsing are complete. Restore and purge
 controls for soft-deleted items are the next application feature; backup transfer
 remains planned afterward.
 
+The data layer already separates active, deleted, and complete record queries,
+and it keeps item-content writes separate from lifecycle transitions. These are
+internal contracts for the upcoming recovery and backup milestones; no recovery
+or file-transfer interface is exposed yet.
+
 ## Run Locally
 
 This project has no external runtime dependencies.
@@ -69,7 +74,9 @@ npm run check
 ```
 
 This checks JavaScript syntax, import boundaries and cycles, static asset
-references, and offline coverage, then runs the dependency-free `node:test` suite.
+references, offline coverage, and test-suite hygiene, then runs the
+dependency-free `node:test` suite. Data-layer coverage can be checked separately
+with `npm run test:coverage:data`.
 
 ## Hosted Application
 

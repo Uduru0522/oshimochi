@@ -123,22 +123,34 @@ test("date filters support exact, comparison, and bounded ranges", () => {
   assert.deepEqual(ids({ rules: [{ fieldId: "released", from: "2026-06-01", to: "2026-06-01" }] }), ["item-1"]);
 });
 
-test("two-option, selection, URL, and image filters use typed values", () => {
+test("two-option filters match selected Boolean values", () => {
   assert.deepEqual(ids({ rules: [{ fieldId: "edition", values: [false] }] }), ["item-2"]);
   assert.deepEqual(ids({ rules: [{ fieldId: "edition", values: [] }] }), ["item-3"]);
+});
+
+test("selection filters match any selected option", () => {
   assert.deepEqual(ids({ rules: [{ fieldId: "condition", values: ["sealed", "opened"] }] }), ["item-1", "item-2"]);
   assert.deepEqual(ids({ rules: [{ fieldId: "condition", includeMissing: true, values: ["sealed"] }] }), ["item-1", "item-3"]);
+});
+
+test("URL filters compare normalized domains", () => {
   assert.deepEqual(ids({ rules: [{ fieldId: "source", operator: OP.DOMAIN_EQUALS, value: "shop.example.com" }] }), ["item-1"]);
+});
+
+test("image filters can select records without an image", () => {
   assert.deepEqual(ids({ rules: [{ fieldId: "field-image", values: [] }] }), ["item-3"]);
 });
 
-test("different field filters combine with AND and deleted field rules match nothing", () => {
+test("different field filters combine with AND", () => {
   assert.deepEqual(ids({
     rules: [
       { fieldId: "price", operator: OP.RANGE, min: 1000 },
       { fieldId: "edition", values: [true] }
     ]
   }), ["item-1"]);
+});
+
+test("rules for deleted fields match no items", () => {
   assert.deepEqual(ids({ rules: [{ fieldId: "deleted-field", values: [true] }] }), []);
 });
 

@@ -5,6 +5,10 @@ import {
 import { OBJECT_STORES } from "./database-schema.js";
 import { parseFieldDefinitionRecord } from "../models/field-definition.js";
 import { parseGoodsTypeRecord } from "../models/goods-type.js";
+import {
+  filterRecordsByScope,
+  requireRecordScope
+} from "../models/record-lifecycle.js";
 import { requestToPromise, transactionToPromise } from "./requests.js";
 
 function sortByCreationTime(records) {
@@ -57,7 +61,8 @@ export function createGoodsTypeRepository(database) {
     return structuredClone(parsedGoodsType);
   }
 
-  async function list({ includeDeleted = false } = {}) {
+  async function list({ scope } = {}) {
+    const requestedScope = requireRecordScope(scope);
     let records;
 
     try {
@@ -78,10 +83,10 @@ export function createGoodsTypeRepository(database) {
     }
 
     try {
-      const parsedRecords = records.map(parseGoodsTypeRecord);
-      const visibleRecords = includeDeleted
-        ? parsedRecords
-        : parsedRecords.filter((record) => !record.isDeleted);
+      const visibleRecords = filterRecordsByScope(
+        records.map(parseGoodsTypeRecord),
+        requestedScope
+      );
 
       return structuredClone(sortByCreationTime(visibleRecords));
     } catch (error) {
