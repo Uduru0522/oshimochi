@@ -5,6 +5,7 @@ import { createItemBrowser } from "./item-browser.js";
 import { createItemEntryDialog } from "./item-entry-dialog.js";
 import { createItemEditDialog } from "./item-edit-dialog.js";
 import { createItemDeleteDialog } from "./item-delete-dialog.js";
+import { createItemRecoveryDialog } from "./item-recovery-dialog.js";
 import { createGoodsTypeViewAction } from "../goods-types/goods-type-view-action.js";
 
 export function renderItemsView(
@@ -42,6 +43,13 @@ export function renderItemsView(
     mutationController,
     onDeleted: browser.removeItem
   });
+  const itemRecovery = createItemRecoveryDialog({
+    goodsTypeId: goodsType.id,
+    goodsTypeName: goodsType.displayName,
+    itemManagement,
+    mutationController,
+    onRestored: (item) => browser.addItems([item])
+  });
 
   addButton.append(
     createIcon("add"),
@@ -54,6 +62,11 @@ export function renderItemsView(
     browser.sortButton,
     addButton,
     createGoodsTypeViewAction({
+      icon: "archiveRestore",
+      label: translate("Deleted items"),
+      onSelect: itemRecovery.open
+    }),
+    createGoodsTypeViewAction({
       icon: "information",
       label: translate("Collection overview"),
       onSelect: onOpenOverview
@@ -65,7 +78,8 @@ export function renderItemsView(
     browser.sortDialog,
     itemEntry.dialog,
     itemEditor.dialog,
-    itemDelete.dialog
+    itemDelete.dialog,
+    itemRecovery.dialog
   );
   browser.refresh();
   return {
@@ -75,6 +89,7 @@ export function renderItemsView(
       itemEntry.destroy();
       itemEditor.destroy();
       itemDelete.destroy();
+      itemRecovery.destroy();
     },
     topbarAction: viewActions
   };

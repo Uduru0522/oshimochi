@@ -260,8 +260,10 @@ Current storage adapters:
 
 Both adapters expose explicit `active`, `deleted`, and `all` record scopes. Item
 content updates and item lifecycle transitions are separate capabilities. A
-delete or future restore therefore cannot accidentally replace custom values or
-image ownership, while image replacement remains an atomic content operation.
+delete or restore therefore cannot accidentally replace custom values or image
+ownership, while image replacement remains an atomic content operation. Permanent
+item purge is a separate adapter capability that atomically removes a deleted item
+and its owned image asset.
 
 Views, navigation, and renderers must not import IndexedDB APIs or object-store
 names. They consume plain domain records and call application operations. This
@@ -286,8 +288,9 @@ storage adapters provide transaction atomicity and return plain records or
 domain errors.
 
 `create-application-operations.js` is the browser-facing capability registry.
-New recovery and transfer workflows should be composed there rather than adding
-more feature imports to `app-runtime.js` or allowing views to call adapters.
+Recovery is composed through its item operations; future transfer workflows
+should be composed there rather than adding feature imports to `app-runtime.js`
+or allowing views to call adapters.
 
 Rendered views may return an optional `destroy()` function alongside `content`
 and `topbarAction`. The router calls it before replacing that view, and runtime

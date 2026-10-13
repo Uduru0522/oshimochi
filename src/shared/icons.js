@@ -46,6 +46,12 @@ const ICON_PATHS = {
     "M10 11v6",
     "M14 11v6"
   ],
+  archiveRestore: [
+    "M3 8h18v12H3V8Z",
+    "M1 4h22v4H1V4Z",
+    "M9 14l3-3 3 3",
+    "M12 11v6"
+  ],
   edit: [
     "M12 20h9",
     "M16.5 3.5a2.12 2.12 0 0 1 3 3L8 18l-4 1 1-4 11.5-11.5Z"

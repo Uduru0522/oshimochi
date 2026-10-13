@@ -244,7 +244,7 @@ Application and repository reads use one explicit lifecycle scope:
 - `all` for integrity checks and complete backup snapshots
 
 Lifecycle transitions preserve every non-lifecycle property. Item deletion and
-future restoration therefore retain the same item ID, custom values, creation
+restoration therefore retain the same item ID, custom values, creation
 timestamp, and `imageAssetId`. Content edits and lifecycle transitions are
 separate storage operations.
 

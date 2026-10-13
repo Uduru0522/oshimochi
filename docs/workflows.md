@@ -245,27 +245,27 @@ Closing or cancelling the confirmation does not change the item. A failed write
 keeps the item visible and presents the actionable storage error for another
 attempt. Active filters and sorting are retained while the row is removed.
 
-Restoration and permanent purge controls are separate future work. Until those
-controls exist, soft-deleted records are retained but intentionally omitted from
-the active collection UI.
+Soft-deleted records remain omitted from active browsing and are available through
+the collection's title-bar deleted-items action.
 
 ## Recover Deleted Items
 
-Status: planned next.
+Status: implemented.
 
-1. User opens a dedicated deleted-items view for one collection.
-2. The view reads the `deleted` item scope and shows the deletion state without
+1. User opens **Deleted items** from the collection title bar.
+2. A modal recovery area reads the `deleted` item scope without
    mixing those records into active browsing.
-3. User selects an item and chooses **Restore**.
-4. Confirmation enters the shared mutation state and applies a lifecycle-only
+3. User chooses the restore action for an item.
+4. The app enters the shared mutation state and applies a lifecycle-only
    transition.
 5. The restored item returns to active browsing with the same values, image, ID,
-   and creation timestamp.
+   and creation timestamp, while current filtering and sorting remain active.
 
-Permanent purge is a separate command within the recovery area. It requires
+Permanent purge is a separate row action within the recovery area. It opens an
 explicit destructive confirmation and removes the item plus its retained image
-asset in one transaction. Restoration and purge must not reuse the ordinary item
-editor because that editor owns content changes rather than lifecycle changes.
+asset in one transaction. Failures keep both records available. Restoration and
+purge do not reuse the ordinary item editor because that editor owns content
+changes rather than lifecycle changes.
 
 ## Manage Fields
 
@@ -345,7 +345,7 @@ backup previously exported outside the application.
 
 ## Export Backup
 
-Status: planned after deleted-item recovery.
+Status: planned next.
 
 1. User starts an export from the data-management area.
 2. The application reads complete `all` scopes, including soft-deleted records
@@ -358,7 +358,7 @@ must leave local data untouched and report its actionable cause.
 
 ## Import Backup
 
-Status: planned after deleted-item recovery.
+Status: planned after backup export.
 
 1. User chooses a supported backup file.
 2. The application parses and validates the complete snapshot without changing

@@ -55,6 +55,7 @@ createItem
 updateItemContent
 updateItemLifecycle
 getAsset
+purgeItem
 resetData
 close
 ```
@@ -79,12 +80,13 @@ state which catalog it intends to read.
 `updateItemContent` owns editable item data and optional image replacement.
 `updateItemLifecycle` owns only `isDeleted`, `deletedAt`, and `updatedAt` while
 preserving the item payload and retained image reference. The same lifecycle
-boundary can support restoration, but no restore application operation or UI is
-implemented yet.
+boundary supports both soft deletion and restoration. `purgeItem` accepts only
+deleted item identity, rereads the authoritative item inside one write transaction,
+and removes that item plus its retained image asset together.
 
 The contract grows only when an application operation needs it. Planned
-capabilities include deleted-record purge and versioned snapshot transfer. Do not
-add generic or speculative adapter methods.
+capabilities include versioned snapshot transfer. Do not add generic or speculative
+adapter methods.
 
 ## Transactions
 
@@ -99,14 +101,14 @@ Examples:
 - editing item content without a new image uses one `items` transaction
 - replacing an item image uses one `assets` + `items` transaction and removes the
   superseded asset in that transaction
-- deleting, and later restoring, an item uses one lifecycle-only `items`
+- deleting and restoring an item uses one lifecycle-only `items`
   transaction and retains the referenced asset
+- permanently purging a deleted item removes the item and its retained asset in
+  one `items` + `assets` transaction
 - applying field changes uses one `field_definitions` transaction
 - resetting local data clears `goods_types`, `field_definitions`, `items`, and
   `assets` in one transaction while preserving `app_metadata`
 - future type-changing field migrations include `items` in the same transaction
-- future permanent item purge removes the item and its retained asset in one
-  `items` + `assets` transaction
 - future backup replacement validates outside IndexedDB, then replaces all user
   data stores in one transaction
 

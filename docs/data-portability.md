@@ -91,7 +91,7 @@ Live multi-device synchronization is deferred until these are designed:
 
 ## Retention Direction
 
-1. Complete deleted-item recovery and purge semantics.
+1. Deleted-item recovery and purge semantics. Completed.
 2. Implement explicit local export and validated replacement import.
 3. Add backup reminders before destructive operations.
 4. Add optional Google Drive snapshot upload and download.

@@ -74,19 +74,21 @@ exercise the hosted-path build, real IndexedDB, service workers, keyboard input,
 pointer input, and representative wide/narrow screenshots. Until then, do not
 interpret Node coverage as end-to-end confidence.
 
-## Deleted-Item Milestone
+## Deleted-Item Coverage
 
-Develop recovery behavior from the inside out:
+Recovery behavior is covered from the inside out:
 
 1. model tests for valid restore transitions and immutable item content
 2. repository tests for `deleted` scope, restoration, and atomic item/asset purge
 3. shared adapter contract cases for DebugStorage and IndexedDB
-4. application tests for restore and purge confirmation boundaries
-5. view tests for deleted-item empty, failure, selection, and success states
-6. manual browser checks for retained filters, navigation, motion, and reload
+4. application tests for deleted-scope reads, restore invariants, and purge boundaries
+5. static interface checks for localization, module reachability, and offline caching
+6. manual browser checks for empty and failure states, confirmation, retained
+   filters, motion, and reload
 
-Every failure path must prove that the active item, deleted item, and asset
-catalogs remain unchanged.
+Repository and adapter failure paths prove that the active item, deleted item,
+and asset catalogs remain unchanged. Dialog state remains a manual browser-test
+gap until a browser harness is introduced.
 
 ## Backup Export And Import Milestone
 

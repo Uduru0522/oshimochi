@@ -78,17 +78,17 @@ List and card presentations consume the same loaded, filtered, and sorted item
 set. Both reconcile keyed items without reloading storage or replacing the whole
 collection.
 
-## Current Product Milestone: Deleted Item Management
+## Completed Deleted Item Management
 
-- [ ] provide a dedicated view of soft-deleted items
-- [ ] restore selected items to their active collection
-- [ ] permanently purge selected items and retained images with explicit confirmation
+- [x] provide a dedicated recovery area for soft-deleted items
+- [x] restore selected items to their active collection
+- [x] permanently purge selected items and retained images with explicit confirmation
 
-The underlying adapters already distinguish active, deleted, and complete
-catalogs and separate content writes from lifecycle transitions. This is
-refactoring readiness, not a user-facing recovery feature.
+Recovery preserves item identity, values, and retained image ownership through a
+lifecycle-only write. Permanent purge rereads deleted identity and removes the item
+and image atomically.
 
-## Next Product Milestone: Backup Export And Import
+## Current Product Milestone: Backup Export And Import
 
 - [ ] export one versioned local snapshot containing all records and assets
 - [ ] include soft-deleted records so a backup represents the complete collection
