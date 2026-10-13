@@ -190,6 +190,45 @@ export function createItemRepository(database) {
     return structuredClone(parsedItem);
   }
 
+  async function purge(itemId) {
+    let purgedItem;
+
+    try {
+      const transaction = database.transaction(
+        [OBJECT_STORES.assets, OBJECT_STORES.items],
+        "readwrite"
+      );
+      const itemStore = transaction.objectStore(OBJECT_STORES.items);
+      purgedItem = parseItemRecord(
+        await requestToPromise(itemStore.get(itemId))
+      );
+
+      if (!purgedItem.isDeleted) {
+        throw new TypeError("An item must already be deleted before permanent removal.");
+      }
+
+      const requests = [
+        ...(purgedItem.imageAssetId
+          ? [requestToPromise(
+              transaction.objectStore(OBJECT_STORES.assets).delete(
+                purgedItem.imageAssetId
+              )
+            )]
+          : []),
+        requestToPromise(itemStore.delete(purgedItem.id))
+      ];
+
+      await Promise.all([...requests, transactionToPromise(transaction)]);
+    } catch (error) {
+      throw new StorageError(
+        "The item could not be permanently removed from the local database.",
+        { cause: error, code: STORAGE_ERROR_CODES.operationFailed }
+      );
+    }
+
+    return structuredClone(purgedItem);
+  }
+
   async function list(goodsTypeId, { scope } = {}) {
     const requestedScope = requireRecordScope(scope);
     let records;
@@ -224,5 +263,5 @@ export function createItemRepository(database) {
     }
   }
 
-  return { create, getAsset, list, updateContent, updateLifecycle };
+  return { create, getAsset, list, purge, updateContent, updateLifecycle };
 }

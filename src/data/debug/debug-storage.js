@@ -61,6 +61,10 @@ export function createDebugStorage(options = {}) {
       assertInitialized();
       return itemRepository.list(goodsTypeId, options);
     },
+    async purgeItem(itemId) {
+      assertInitialized();
+      return itemRepository.purge(itemId);
+    },
     async resetData() {
       assertInitialized();
       return localDataRepository.reset();

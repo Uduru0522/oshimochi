@@ -1,6 +1,9 @@
 import { createAssetRecord } from "../../data/models/asset.js";
 import { createItemRecord, parseItemRecord } from "../../data/models/item.js";
-import { createDeletionTransition } from "../../data/models/record-lifecycle.js";
+import {
+  RECORD_SCOPES,
+  createDeletionTransition
+} from "../../data/models/record-lifecycle.js";
 import { normalizeItemValues } from "./item-values.js";
 
 function defaultIdGenerator() {
@@ -18,6 +21,7 @@ export function createItemManagementOperations({
     "listFieldDefinitions",
     "listGoodsTypes",
     "listItems",
+    "purgeItem",
     "updateItemContent",
     "updateItemLifecycle"
   ];
@@ -26,13 +30,16 @@ export function createItemManagementOperations({
     throw new TypeError("Item management requires readable and writable item storage.");
   }
 
-  async function getEntryFields(goodsTypeId) {
+  async function assertActiveGoodsType(goodsTypeId) {
     const goodsTypes = await storage.listGoodsTypes();
 
     if (!goodsTypes.some(({ id }) => id === goodsTypeId)) {
       throw new TypeError("The selected goods type is not active.");
     }
+  }
 
+  async function getEntryFields(goodsTypeId) {
+    await assertActiveGoodsType(goodsTypeId);
     return storage.listFieldDefinitions(goodsTypeId);
   }
 
@@ -42,10 +49,7 @@ export function createItemManagementOperations({
       throw new TypeError("This item is already deleted.");
     }
 
-    const goodsTypes = await storage.listGoodsTypes();
-    if (!goodsTypes.some(({ id }) => id === existingItem.goodsTypeId)) {
-      throw new TypeError("The selected goods type is not active.");
-    }
+    await assertActiveGoodsType(existingItem.goodsTypeId);
 
     const deletedItem = parseItemRecord(
       createDeletionTransition(existingItem, true, { now })
@@ -53,6 +57,30 @@ export function createItemManagementOperations({
 
     await storage.updateItemLifecycle(deletedItem);
     return structuredClone(deletedItem);
+  }
+
+  async function restoreItem(item) {
+    const existingItem = parseItemRecord(item);
+    if (!existingItem.isDeleted) {
+      throw new TypeError("This item is not deleted.");
+    }
+
+    await assertActiveGoodsType(existingItem.goodsTypeId);
+    const restoredItem = parseItemRecord(
+      createDeletionTransition(existingItem, false, { now })
+    );
+
+    await storage.updateItemLifecycle(restoredItem);
+    return structuredClone(restoredItem);
+  }
+
+  async function purgeItem(item) {
+    const existingItem = parseItemRecord(item);
+    if (!existingItem.isDeleted) {
+      throw new TypeError("An item must be deleted before it can be permanently removed.");
+    }
+
+    return structuredClone(await storage.purgeItem(existingItem.id));
   }
 
   async function createItem({ goodsTypeId, name, customValues = {}, image = null }) {
@@ -121,7 +149,12 @@ export function createItemManagementOperations({
     createItem,
     getAsset: (assetId) => storage.getAsset(assetId),
     getEntryFields,
+    listDeletedItems: (goodsTypeId) => storage.listItems(goodsTypeId, {
+      scope: RECORD_SCOPES.deleted
+    }),
     listItems: (goodsTypeId) => storage.listItems(goodsTypeId),
+    purgeItem,
+    restoreItem,
     softDeleteItem,
     updateItem
   };

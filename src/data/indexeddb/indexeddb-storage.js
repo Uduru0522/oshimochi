@@ -103,6 +103,11 @@ export function createIndexedDbStorage({
     return itemRepository.getAsset(assetId);
   }
 
+  async function purgeItem(itemId) {
+    assertInitialized();
+    return itemRepository.purge(itemId);
+  }
+
   function close() {
     database?.close();
     database = null;
@@ -121,6 +126,7 @@ export function createIndexedDbStorage({
     listFieldDefinitions,
     listGoodsTypes,
     listItems,
+    purgeItem,
     resetData,
     saveFieldDefinitions,
     updateItemContent,

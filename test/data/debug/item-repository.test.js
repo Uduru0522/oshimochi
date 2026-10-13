@@ -154,3 +154,37 @@ test("DebugStorage restores an item without changing its retained image", async 
   );
   assert.notEqual(await storage.getAsset(restoredItem.imageAssetId), null);
 });
+
+test("DebugStorage permanently deletes a soft-deleted item and its image", async () => {
+  const storage = createDebugStorage();
+  await storage.initialize();
+  const [existingItem] = await storage.listItems("tapestries");
+  const deletedItem = createDeletionTransition(existingItem, true, {
+    now: () => "2026-07-21T00:00:00.000Z"
+  });
+  await storage.updateItemLifecycle(deletedItem);
+
+  const result = await storage.purgeItem(deletedItem.id);
+
+  assert.deepEqual(result, deletedItem);
+  assert.equal(
+    (await storage.listItems("tapestries", { scope: RECORD_SCOPES.all }))
+      .some(({ id }) => id === deletedItem.id),
+    false
+  );
+  assert.equal(await storage.getAsset(deletedItem.imageAssetId), null);
+});
+
+test("DebugStorage rejects permanent deletion of active items without changing data", async () => {
+  const storage = createDebugStorage();
+  await storage.initialize();
+  const before = await storage.listItems("tapestries", { scope: RECORD_SCOPES.all });
+
+  await assert.rejects(storage.purgeItem(before[0].id), /must already be deleted/);
+
+  assert.deepEqual(
+    await storage.listItems("tapestries", { scope: RECORD_SCOPES.all }),
+    before
+  );
+  assert.notEqual(await storage.getAsset(before[0].imageAssetId), null);
+});

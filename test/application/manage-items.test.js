@@ -51,6 +51,7 @@ test("item creation reloads active fields and writes one validated record", asyn
       async listFieldDefinitions() { return [nameField, notesField]; },
       async listGoodsTypes() { return [{ id: "figures" }]; },
       async listItems() { return []; },
+      async purgeItem() {},
       async updateItemContent() {},
       async updateItemLifecycle() {}
     },
@@ -80,6 +81,7 @@ test("item creation requires an image", async () => {
       async listFieldDefinitions() { return []; },
       async listGoodsTypes() { return [{ id: "figures" }]; },
       async listItems() { return []; },
+      async purgeItem() {},
       async updateItemContent() {},
       async updateItemLifecycle() {}
     }
@@ -101,6 +103,7 @@ test("item creation builds an image asset and item reference for one storage wri
       async listFieldDefinitions() { return []; },
       async listGoodsTypes() { return [{ id: "figures" }]; },
       async listItems() { return []; },
+      async purgeItem() {},
       async updateItemContent() {},
       async updateItemLifecycle() {}
     },
@@ -143,6 +146,7 @@ test("item updates preserve identity and the existing image when it is unchanged
       async listFieldDefinitions() { return [notesField]; },
       async listGoodsTypes() { return [{ id: "figures" }]; },
       async listItems() { return [existingItem]; },
+      async purgeItem() {},
       async updateItemContent(change) { writes.push(change); },
       async updateItemLifecycle() {}
     },
@@ -180,6 +184,7 @@ test("item updates replace images through one storage request", async () => {
       async listFieldDefinitions() { return []; },
       async listGoodsTypes() { return [{ id: "figures" }]; },
       async listItems() { return [existingItem]; },
+      async purgeItem() {},
       async updateItemContent(change) { writes.push(change); },
       async updateItemLifecycle() {}
     },
@@ -215,6 +220,7 @@ test("item soft deletion retains data and marks deletion timestamps atomically",
       async listFieldDefinitions() { return []; },
       async listGoodsTypes() { return [{ id: "figures" }]; },
       async listItems() { return [existingItem]; },
+      async purgeItem() {},
       async updateItemContent() {},
       async updateItemLifecycle(item) { writes.push(item); }
     },
@@ -229,4 +235,119 @@ test("item soft deletion retains data and marks deletion timestamps atomically",
   assert.equal(deletedItem.imageAssetId, existingItem.imageAssetId);
   assert.deepEqual(deletedItem.customValues, existingItem.customValues);
   assert.deepEqual(writes, [deletedItem]);
+});
+
+test("deleted item listing requests only the recovery scope", async () => {
+  const reads = [];
+  const operations = createItemManagementOperations({
+    storage: {
+      async createItem() {},
+      async getAsset() { return null; },
+      async listFieldDefinitions() { return []; },
+      async listGoodsTypes() { return [{ id: "figures" }]; },
+      async listItems(goodsTypeId, options) {
+        reads.push({ goodsTypeId, options });
+        return [];
+      },
+      async purgeItem() {},
+      async updateItemContent() {},
+      async updateItemLifecycle() {}
+    }
+  });
+
+  await operations.listDeletedItems("figures");
+
+  assert.deepEqual(reads, [{ goodsTypeId: "figures", options: { scope: "deleted" } }]);
+});
+
+test("item restoration preserves content and retained image identity", async () => {
+  const writes = [];
+  const deletedItem = createItemRecord({
+    id: "item-1",
+    goodsTypeId: "figures",
+    name: "Original",
+    imageAssetId: "asset-1",
+    customValues: { notes: "Keep this" },
+    isDeleted: true,
+    deletedAt: "2026-07-21T00:00:00.000Z",
+    createdAt: FIXED_TIME,
+    updatedAt: "2026-07-21T00:00:00.000Z"
+  });
+  const operations = createItemManagementOperations({
+    storage: {
+      async createItem() {},
+      async getAsset() { return null; },
+      async listFieldDefinitions() { return []; },
+      async listGoodsTypes() { return [{ id: "figures" }]; },
+      async listItems() { return []; },
+      async purgeItem() {},
+      async updateItemContent() {},
+      async updateItemLifecycle(item) { writes.push(item); }
+    },
+    now: () => "2026-07-22T00:00:00.000Z"
+  });
+
+  const restoredItem = await operations.restoreItem(deletedItem);
+
+  assert.equal(restoredItem.isDeleted, false);
+  assert.equal(restoredItem.deletedAt, null);
+  assert.equal(restoredItem.updatedAt, "2026-07-22T00:00:00.000Z");
+  assert.equal(restoredItem.name, deletedItem.name);
+  assert.equal(restoredItem.imageAssetId, deletedItem.imageAssetId);
+  assert.deepEqual(restoredItem.customValues, deletedItem.customValues);
+  assert.deepEqual(writes, [restoredItem]);
+});
+
+test("permanent deletion delegates only deleted item identity", async () => {
+  const purges = [];
+  const deletedItem = createItemRecord({
+    id: "item-1",
+    goodsTypeId: "figures",
+    name: "Deleted",
+    isDeleted: true,
+    deletedAt: "2026-07-21T00:00:00.000Z",
+    createdAt: FIXED_TIME,
+    updatedAt: "2026-07-21T00:00:00.000Z"
+  });
+  const operations = createItemManagementOperations({
+    storage: {
+      async createItem() {},
+      async getAsset() { return null; },
+      async listFieldDefinitions() { return []; },
+      async listGoodsTypes() { return [{ id: "figures" }]; },
+      async listItems() { return []; },
+      async purgeItem(itemId) { purges.push(itemId); return deletedItem; },
+      async updateItemContent() {},
+      async updateItemLifecycle() {}
+    }
+  });
+
+  const purgedItem = await operations.purgeItem(deletedItem);
+
+  assert.deepEqual(purges, [deletedItem.id]);
+  assert.deepEqual(purgedItem, deletedItem);
+});
+
+test("permanent deletion rejects active items before storage is changed", async () => {
+  let purgeCount = 0;
+  const activeItem = createItemRecord({
+    id: "item-1",
+    goodsTypeId: "figures",
+    name: "Active"
+  }, { now: () => FIXED_TIME });
+  const operations = createItemManagementOperations({
+    storage: {
+      async createItem() {},
+      async getAsset() { return null; },
+      async listFieldDefinitions() { return []; },
+      async listGoodsTypes() { return [{ id: "figures" }]; },
+      async listItems() { return []; },
+      async purgeItem() { purgeCount += 1; },
+      async updateItemContent() {},
+      async updateItemLifecycle() {}
+    }
+  });
+
+  await assert.rejects(operations.purgeItem(activeItem), /must be deleted/);
+  assert.equal(purgeCount, 0);
 });

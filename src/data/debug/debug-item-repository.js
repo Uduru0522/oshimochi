@@ -141,6 +141,28 @@ export function createDebugItemRepository(catalog) {
     return structuredClone(parsedItem);
   }
 
+  async function purge(itemId) {
+    const itemIndex = catalog.items.findIndex(({ id }) => id === itemId);
+    const existingItem = itemIndex < 0 ? null : parseItemRecord(catalog.items[itemIndex]);
+
+    if (!existingItem?.isDeleted) {
+      throw new StorageError(
+        "An item must already be deleted before permanent removal.",
+        { code: STORAGE_ERROR_CODES.operationFailed }
+      );
+    }
+
+    const assetIndex = existingItem.imageAssetId
+      ? catalog.assets.findIndex(({ id }) => id === existingItem.imageAssetId)
+      : -1;
+
+    if (assetIndex >= 0) {
+      catalog.assets.splice(assetIndex, 1);
+    }
+    catalog.items.splice(itemIndex, 1);
+    return structuredClone(existingItem);
+  }
+
   async function list(goodsTypeId, { scope } = {}) {
     const matchingItems = filterRecordsByScope(
       catalog.items.filter((item) => item.goodsTypeId === goodsTypeId),
@@ -150,5 +172,5 @@ export function createDebugItemRepository(catalog) {
     return structuredClone(matchingItems);
   }
 
-  return { create, getAsset, list, updateContent, updateLifecycle };
+  return { create, getAsset, list, purge, updateContent, updateLifecycle };
 }

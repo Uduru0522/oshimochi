@@ -7,6 +7,7 @@ import {
 } from "../../../src/data/contracts/storage-contract.js";
 import { createDebugStorage } from "../../../src/data/debug/debug-storage.js";
 import { createItemRecord } from "../../../src/data/models/item.js";
+import { RECORD_SCOPES } from "../../../src/data/models/record-lifecycle.js";
 
 test("DebugStorage rejects reads before initialization", async () => {
   const storage = createDebugStorage();
@@ -93,6 +94,19 @@ test("DebugStorage fixtures cover item-management test dimensions", async () => 
   assert.equal(Object.hasOwn(optionalItem.customValues, "tapestries-notes"), false);
   assert.equal(tapestryAssets.every(({ mediaType }) => mediaType === "image/svg+xml"), true);
   assert.equal(tapestryAssets.every(({ data }) => data.size > 0), true);
+});
+
+test("DebugStorage fixtures include a retained item for recovery testing", async () => {
+  const storage = createDebugStorage();
+
+  await storage.initialize();
+  const deletedItems = await storage.listItems("figures", {
+    scope: RECORD_SCOPES.deleted
+  });
+
+  assert.equal(deletedItems.length, 1);
+  assert.equal(deletedItems[0].name, "Retired Prototype Figure");
+  assert.notEqual(await storage.getAsset(deletedItems[0].imageAssetId), null);
 });
 
 test("DebugStorage reset clears all temporary domain records", async () => {

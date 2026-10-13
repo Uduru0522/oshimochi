@@ -176,6 +176,58 @@ test("item repository rejects lifecycle writes that change item content", async 
   assert.deepEqual(database.writes, []);
 });
 
+test("item repository permanently deletes a soft-deleted item and image atomically", async () => {
+  const item = createItemFixture({
+    imageAssetId: "asset-1",
+    isDeleted: true,
+    deletedAt: "2026-07-21T00:00:00.000Z",
+    updatedAt: "2026-07-21T00:00:00.000Z"
+  });
+  const database = createWriteDatabase({ existingItems: [item] });
+  const repository = createItemRepository(database);
+
+  const result = await repository.purge(item.id);
+
+  assert.deepEqual(database.transactions, [{
+    mode: "readwrite",
+    storeNames: [OBJECT_STORES.assets, OBJECT_STORES.items]
+  }]);
+  assert.deepEqual(database.deletes, [
+    { id: "asset-1", storeName: OBJECT_STORES.assets },
+    { id: item.id, storeName: OBJECT_STORES.items }
+  ]);
+  assert.deepEqual(result, item);
+});
+
+test("item repository rejects permanent deletion of active items", async () => {
+  const item = createItemFixture();
+  const database = createWriteDatabase({ existingItems: [item] });
+  const repository = createItemRepository(database);
+
+  await assert.rejects(
+    repository.purge(item.id),
+    (error) => error instanceof StorageError && error.code === STORAGE_ERROR_CODES.operationFailed
+  );
+  assert.deepEqual(database.deletes, []);
+});
+
+test("item repository leaves item and image untouched when permanent deletion fails", async () => {
+  const item = createItemFixture({
+    imageAssetId: "asset-1",
+    isDeleted: true,
+    deletedAt: "2026-07-21T00:00:00.000Z",
+    updatedAt: "2026-07-21T00:00:00.000Z"
+  });
+  const database = createWriteDatabase({ existingItems: [item], failAt: 1 });
+  const repository = createItemRepository(database);
+
+  await assert.rejects(
+    repository.purge(item.id),
+    (error) => error instanceof StorageError && error.code === STORAGE_ERROR_CODES.operationFailed
+  );
+  assert.deepEqual(database.deletes, []);
+});
+
 test("item repository rejects invalid records before opening a transaction", async () => {
   const database = createWriteDatabase();
   const repository = createItemRepository(database);

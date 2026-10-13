@@ -19,6 +19,7 @@ const REQUIRED_STORAGE_METHODS = Object.freeze([
   "listFieldDefinitions",
   "saveFieldDefinitions",
   "listItems",
+  "purgeItem",
   "resetData",
   "close"
 ]);

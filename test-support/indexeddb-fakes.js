@@ -71,35 +71,40 @@ export function createWriteDatabase({ existingItems = [], failAt = -1 } = {}) {
       const transaction = {
         error: null,
         objectStore(storeName) {
+          function scheduleRequests() {
+            if (requests.length !== 1) {
+              return;
+            }
+
+            setTimeout(() => {
+              const failedRequest = requests[failAt];
+
+              if (failedRequest) {
+                const failure = new Error("write failed");
+                transaction.error = failure;
+                failedRequest.request.error = failure;
+                failedRequest.request.onerror();
+                transaction.onabort();
+                return;
+              }
+
+              requests.forEach((queued) => {
+                if (queued.operation === "delete") {
+                  deletes.push({ id: queued.record, storeName: queued.storeName });
+                } else {
+                  writes.push({ record: queued.record, storeName: queued.storeName });
+                }
+                queued.request.result = queued.record?.id;
+                queued.request.onsuccess();
+              });
+              transaction.oncomplete();
+            }, 0);
+          }
+
           function queueWrite(record) {
             const request = {};
             requests.push({ operation: "write", record, request, storeName });
-
-            if (requests.length === 1) {
-              setTimeout(() => {
-                const failedRequest = requests[failAt];
-
-                if (failedRequest) {
-                  const failure = new Error("write failed");
-                  transaction.error = failure;
-                  failedRequest.request.error = failure;
-                  failedRequest.request.onerror();
-                  transaction.onabort();
-                  return;
-                }
-
-                requests.forEach((queued) => {
-                  if (queued.operation === "delete") {
-                    deletes.push({ id: queued.record, storeName: queued.storeName });
-                  } else {
-                    writes.push({ record: queued.record, storeName: queued.storeName });
-                  }
-                  queued.request.result = queued.record?.id;
-                  queued.request.onsuccess();
-                });
-                transaction.oncomplete();
-              }, 0);
-            }
+            scheduleRequests();
 
             return request;
           }
@@ -109,6 +114,7 @@ export function createWriteDatabase({ existingItems = [], failAt = -1 } = {}) {
             delete(id) {
               const request = {};
               requests.push({ operation: "delete", record: id, request, storeName });
+              scheduleRequests();
               return request;
             },
             get(id) {

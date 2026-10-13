@@ -13,6 +13,7 @@ function createStorageStub() {
     async listFieldDefinitions() { return []; },
     async listGoodsTypes() { return []; },
     async listItems() { return []; },
+    async purgeItem() {},
     async resetData() {},
     async saveFieldDefinitions() {},
     async updateItemContent() {},
@@ -26,6 +27,8 @@ test("application operation composition exposes feature-owned capabilities", () 
   assert.equal(typeof operations.goodsTypes.create, "function");
   assert.equal(typeof operations.fields.applyChanges, "function");
   assert.equal(typeof operations.items.softDeleteItem, "function");
+  assert.equal(typeof operations.items.restoreItem, "function");
+  assert.equal(typeof operations.items.purgeItem, "function");
   assert.equal(typeof operations.localData.reset, "function");
   assert.equal(Object.isFrozen(operations), true);
 });

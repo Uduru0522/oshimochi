@@ -399,6 +399,21 @@ const OTHER_ITEM_CATALOG = Object.freeze([
     image: { label: "STANDARD", orientation: "portrait", color: "#486a82" }
   },
   {
+    id: "figure-retired-prototype",
+    goodsTypeId: "figures",
+    name: "Retired Prototype Figure",
+    customValues: {
+      "figures-manufacturer": "Archive Models",
+      "figures-scale": "non_scale",
+      "figures-edition": true
+    },
+    createdAt: "2026-01-11T09:00:00.000Z",
+    updatedAt: "2026-02-10T12:00:00.000Z",
+    isDeleted: true,
+    deletedAt: "2026-02-10T12:00:00.000Z",
+    image: { label: "RETIRED", orientation: "landscape", color: "#7b5e58" }
+  },
+  {
     id: "acrylic-anniversary-stand",
     goodsTypeId: "acrylic-goods",
     name: "Anniversary Acrylic Stand",
