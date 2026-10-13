@@ -11,6 +11,21 @@ import { createItemEmptyState } from "./item-empty-state.js";
 import { createItemThumbnail } from "./item-thumbnail.js";
 import { createKeyedLayoutMotion } from "./keyed-layout-motion.js";
 
+const ITEM_CARD_ROW_TONE_COUNT = 3;
+
+export function getItemCardRowTones(offsetTops, toneCount = ITEM_CARD_ROW_TONE_COUNT) {
+  let currentRowTop = null;
+  let rowIndex = -1;
+
+  return offsetTops.map((offsetTop) => {
+    if (currentRowTop === null || offsetTop !== currentRowTop) {
+      currentRowTop = offsetTop;
+      rowIndex += 1;
+    }
+    return rowIndex % toneCount;
+  });
+}
+
 function createItemCard(
   item,
   fields,
@@ -137,8 +152,40 @@ export function createItemCards(
   let emptyState = null;
   let pendingUpdate = null;
   let presentationContext = { filter, sort };
+  let rowToneFrame = 0;
   let sourceItemCount = sourceItems.length;
   let transitionRunning = false;
+
+  function updateRowTones() {
+    const cardElements = [...element.children].filter(
+      (child) => cards.has(child.dataset?.itemId)
+    );
+    const rowTones = getItemCardRowTones(
+      cardElements.map((cardElement) => cardElement.offsetTop)
+    );
+    cardElements.forEach((cardElement, index) => {
+      cardElement.dataset.rowTone = String(rowTones[index]);
+    });
+  }
+
+  function scheduleRowToneUpdate() {
+    if (destroyed || rowToneFrame) {
+      return;
+    }
+    if (typeof requestAnimationFrame !== "function") {
+      updateRowTones();
+      return;
+    }
+    rowToneFrame = requestAnimationFrame(() => {
+      rowToneFrame = 0;
+      updateRowTones();
+    });
+  }
+
+  const rowToneResizeObserver = typeof ResizeObserver === "function"
+    ? new ResizeObserver(scheduleRowToneUpdate)
+    : null;
+  rowToneResizeObserver?.observe(element);
 
   function removeEmptyState() {
     emptyState?.remove();
@@ -258,6 +305,7 @@ export function createItemCards(
       element.append(card.element);
     });
     reorderCards(nextItems);
+    updateRowTones();
     await layoutMotion.animate(previousPositions, retainedIds);
 
     if (destroyed) {
@@ -302,6 +350,7 @@ export function createItemCards(
     const card = createCard(item);
     element.append(card.element);
   });
+  scheduleRowToneUpdate();
   showEmptyState();
 
   return {
@@ -313,6 +362,11 @@ export function createItemCards(
       membershipAnimations.forEach((animation) => animation.cancel());
       membershipAnimations.clear();
       layoutMotion.destroy();
+      rowToneResizeObserver?.disconnect();
+      if (rowToneFrame && typeof cancelAnimationFrame === "function") {
+        cancelAnimationFrame(rowToneFrame);
+      }
+      rowToneFrame = 0;
       cards.forEach((card) => card.destroy());
       cards.clear();
       removeEmptyState();
