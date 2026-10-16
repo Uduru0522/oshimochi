@@ -6,30 +6,67 @@ const projectRoot = path.resolve(__dirname, "..");
 const sourceDirectory = path.join(projectRoot, "src");
 const MAX_MOTION_DURATION_MS = 200;
 const LAYER_DEPENDENCIES = Object.freeze({
+  app: new Set([
+    "app",
+    "application",
+    "data",
+    "localization",
+    "navigation",
+    "services",
+    "shared",
+    "views"
+  ]),
   application: new Set(["application", "data"]),
+  bootstrap: new Set(["bootstrap"]),
   data: new Set(["data"]),
-  shared: new Set(["shared"])
+  localization: new Set(["localization"]),
+  navigation: new Set(["localization", "navigation", "shared", "views"]),
+  root: new Set(["app"]),
+  services: new Set(["app", "localization", "services"]),
+  shared: new Set(["shared"]),
+  views: new Set(["application", "localization", "shared", "views"])
 });
 
-function collectJavaScriptFiles(directory) {
+function collectFilesByExtension(directory, extension) {
   return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
     const entryPath = path.join(directory, entry.name);
 
     if (entry.isDirectory()) {
-      return collectJavaScriptFiles(entryPath);
+      return collectFilesByExtension(entryPath, extension);
     }
 
-    return entry.isFile() && entry.name.endsWith(".js") ? [entryPath] : [];
+    return entry.isFile() && path.extname(entry.name) === extension ? [entryPath] : [];
   });
 }
 
+function collectJavaScriptFiles(directory) {
+  return collectFilesByExtension(directory, ".js");
+}
+
+function isPathWithin(directory, filePath) {
+  const relativePath = path.relative(directory, filePath);
+
+  return relativePath !== "" &&
+    relativePath !== ".." &&
+    !relativePath.startsWith(`..${path.sep}`) &&
+    !path.isAbsolute(relativePath);
+}
+
 function assertFileExists(relativePath, source) {
-  const normalizedPath = relativePath.replace(/^\.\//, "");
-  const absolutePath = path.join(projectRoot, normalizedPath);
+  const normalizedPath = relativePath
+    .replace(/^\.\//, "")
+    .split(/[?#]/, 1)[0];
+  const absolutePath = path.resolve(projectRoot, normalizedPath);
+
+  if (!isPathWithin(projectRoot, absolutePath)) {
+    throw new Error(`${source} references a path outside the repository: ${relativePath}`);
+  }
 
   if (!fs.existsSync(absolutePath)) {
     throw new Error(`${source} references missing file: ${relativePath}`);
   }
+
+  return absolutePath;
 }
 
 function toProjectAssetPath(absolutePath) {
@@ -37,8 +74,8 @@ function toProjectAssetPath(absolutePath) {
 }
 
 function getSourceLayer(filePath) {
-  const [layer] = path.relative(sourceDirectory, filePath).split(path.sep);
-  return layer;
+  const segments = path.relative(sourceDirectory, filePath).split(path.sep);
+  return segments.length === 1 ? "root" : segments[0];
 }
 
 function verifyLayerBoundaries(moduleGraph) {
@@ -47,7 +84,10 @@ function verifyLayerBoundaries(moduleGraph) {
     const allowedLayers = LAYER_DEPENDENCIES[sourceLayer];
 
     if (!allowedLayers) {
-      return;
+      throw new Error(
+        `${toProjectAssetPath(sourcePath)} belongs to unconfigured source layer ` +
+          `"${sourceLayer}".`
+      );
     }
 
     dependencies.forEach((dependencyPath) => {
@@ -111,10 +151,78 @@ function verifyJavaScriptSyntax() {
 function verifyDocumentAssets() {
   const indexHtml = fs.readFileSync(path.join(projectRoot, "index.html"), "utf8");
   const assetPattern = /(?:href|src)="(?!https?:|data:|#)([^"]+)"/g;
+  const assets = new Set();
 
   for (const match of indexHtml.matchAll(assetPattern)) {
-    assertFileExists(match[1], "index.html");
+    assets.add(toProjectAssetPath(assertFileExists(match[1], "index.html")));
   }
+
+  return assets;
+}
+
+function verifyStylesheetGraph() {
+  const indexHtml = fs.readFileSync(path.join(projectRoot, "index.html"), "utf8");
+  const linkPattern = /<link\b[^>]*\brel="stylesheet"[^>]*\bhref="([^"]+)"[^>]*>/g;
+  const visitedFiles = new Set();
+  const importPattern = /@import\s+(?:url\(\s*)?["']([^"']+)["']\s*\)?[^;]*;/g;
+
+  function resolveStylesheet(specifier, baseDirectory, source) {
+    if (/^[a-z][a-z\d+.-]*:/i.test(specifier)) {
+      throw new Error(`${source} has unsupported remote CSS import: ${specifier}`);
+    }
+
+    const cleanSpecifier = specifier.split(/[?#]/, 1)[0];
+    const filePath = path.resolve(baseDirectory, cleanSpecifier);
+
+    if (
+      !isPathWithin(projectRoot, filePath) ||
+      path.extname(filePath) !== ".css" ||
+      !fs.existsSync(filePath)
+    ) {
+      throw new Error(
+        `${source} references an invalid stylesheet: ${specifier}`
+      );
+    }
+
+    return filePath;
+  }
+
+  const pendingFiles = [...indexHtml.matchAll(linkPattern)].map((match) =>
+    resolveStylesheet(match[1], projectRoot, "index.html")
+  );
+
+  while (pendingFiles.length > 0) {
+    const filePath = pendingFiles.pop();
+
+    if (visitedFiles.has(filePath)) {
+      continue;
+    }
+
+    visitedFiles.add(filePath);
+    const sourceCode = fs.readFileSync(filePath, "utf8");
+
+    for (const match of sourceCode.matchAll(importPattern)) {
+      pendingFiles.push(resolveStylesheet(
+        match[1],
+        path.dirname(filePath),
+        toProjectAssetPath(filePath)
+      ));
+    }
+  }
+
+  const stylesheetDirectory = path.join(sourceDirectory, "styles");
+  const unreachableFiles = collectFilesByExtension(stylesheetDirectory, ".css")
+    .filter((filePath) => !visitedFiles.has(filePath));
+
+  if (unreachableFiles.length > 0) {
+    throw new Error(
+      `Stylesheets are unreachable from index.html: ${unreachableFiles
+        .map(toProjectAssetPath)
+        .join(", ")}`
+    );
+  }
+
+  return new Set([...visitedFiles].map(toProjectAssetPath));
 }
 
 function verifyMarkdownLinks() {
@@ -139,6 +247,12 @@ function verifyMarkdownLinks() {
 
       const relativePath = decodeURIComponent(target.split("#", 1)[0]);
       const linkedPath = path.resolve(path.dirname(markdownPath), relativePath);
+
+      if (!isPathWithin(projectRoot, linkedPath)) {
+        throw new Error(
+          `${toProjectAssetPath(markdownPath)} references a document outside the repository: ${target}`
+        );
+      }
 
       if (!fs.existsSync(linkedPath)) {
         throw new Error(
@@ -167,7 +281,6 @@ function getModuleSpecifiers(sourceCode) {
 
 function verifyModuleGraph() {
   const indexHtml = fs.readFileSync(path.join(projectRoot, "index.html"), "utf8");
-  const sourceRoot = `${sourceDirectory}${path.sep}`;
   const scriptPattern = /<script\b[^>]*\bsrc="(?!https?:)([^"]+)"[^>]*>/g;
   const pendingFiles = [...indexHtml.matchAll(scriptPattern)].map((match) =>
     path.resolve(projectRoot, match[1])
@@ -199,7 +312,7 @@ function verifyModuleGraph() {
       const cleanSpecifier = specifier.split(/[?#]/, 1)[0];
       const importedPath = path.resolve(path.dirname(filePath), cleanSpecifier);
 
-      if (!importedPath.startsWith(sourceRoot) || path.extname(importedPath) !== ".js") {
+      if (!isPathWithin(sourceDirectory, importedPath) || path.extname(importedPath) !== ".js") {
         throw new Error(
           `${toProjectAssetPath(filePath)} has unsupported browser import: ${specifier}`
         );
@@ -236,11 +349,17 @@ function verifyModuleGraph() {
 }
 
 function verifyManifestAssets() {
+  const manifestPath = path.join(projectRoot, "manifest.webmanifest");
   const manifest = JSON.parse(
-    fs.readFileSync(path.join(projectRoot, "manifest.webmanifest"), "utf8")
+    fs.readFileSync(manifestPath, "utf8")
   );
+  const assets = new Set([toProjectAssetPath(manifestPath)]);
 
-  manifest.icons.forEach((icon) => assertFileExists(icon.src, "manifest.webmanifest"));
+  manifest.icons.forEach((icon) => {
+    assets.add(toProjectAssetPath(assertFileExists(icon.src, "manifest.webmanifest")));
+  });
+
+  return assets;
 }
 
 function verifyServiceWorkerAssets() {
@@ -258,14 +377,14 @@ function verifyServiceWorkerAssets() {
   return assets;
 }
 
-function verifyOfflineModuleCoverage(runtimeModules, serviceWorkerAssets) {
-  const uncachedModules = [...runtimeModules].filter(
-    (modulePath) => !serviceWorkerAssets.has(modulePath)
+function verifyOfflineAssetCoverage(requiredAssets, serviceWorkerAssets, assetKind) {
+  const uncachedAssets = [...requiredAssets].filter(
+    (assetPath) => !serviceWorkerAssets.has(assetPath)
   );
 
-  if (uncachedModules.length > 0) {
+  if (uncachedAssets.length > 0) {
     throw new Error(
-      `Runtime modules are missing from the service-worker cache: ${uncachedModules.join(", ")}`
+      `${assetKind} are missing from the service-worker cache: ${uncachedAssets.join(", ")}`
     );
   }
 }
@@ -274,11 +393,12 @@ function toMilliseconds(value, unit) {
   return unit === "s" ? Number.parseFloat(value) * 1000 : Number.parseFloat(value);
 }
 
-function verifyMotionDurations() {
-  const stylesheet = fs.readFileSync(
-    path.join(projectRoot, "src", "styles", "app.css"),
-    "utf8"
-  );
+function verifyMotionDurations(stylesheetPaths) {
+  const stylesheet = [...stylesheetPaths]
+    .map((stylesheetPath) =>
+      fs.readFileSync(path.join(projectRoot, stylesheetPath.replace(/^\.\//, "")), "utf8")
+    )
+    .join("\n");
   const config = fs.readFileSync(path.join(projectRoot, "src", "app", "config.js"), "utf8");
   const tokenPattern = /--motion-[\w-]+:\s*([\d.]+)(ms|s)\s*;/g;
   const motionTokens = [...stylesheet.matchAll(tokenPattern)];
@@ -315,17 +435,38 @@ function verifyMotionDurations() {
   }
 }
 
-try {
+function runStaticVerification() {
   verifyJavaScriptSyntax();
-  verifyDocumentAssets();
+  const documentAssets = verifyDocumentAssets();
   verifyMarkdownLinks();
   const runtimeModules = verifyModuleGraph();
-  verifyManifestAssets();
+  const runtimeStylesheets = verifyStylesheetGraph();
+  const manifestAssets = verifyManifestAssets();
   const serviceWorkerAssets = verifyServiceWorkerAssets();
-  verifyOfflineModuleCoverage(runtimeModules, serviceWorkerAssets);
-  verifyMotionDurations();
+  verifyOfflineAssetCoverage(
+    new Set([...documentAssets, ...manifestAssets]),
+    serviceWorkerAssets,
+    "Document and manifest assets"
+  );
+  verifyOfflineAssetCoverage(runtimeModules, serviceWorkerAssets, "Runtime modules");
+  verifyOfflineAssetCoverage(runtimeStylesheets, serviceWorkerAssets, "Stylesheets");
+  verifyMotionDurations(runtimeStylesheets);
   console.log("Static app verification passed.");
-} catch (error) {
-  console.error(error.message);
-  process.exitCode = 1;
 }
+
+if (require.main === module) {
+  try {
+    runStaticVerification();
+  } catch (error) {
+    console.error(error.message);
+    process.exitCode = 1;
+  }
+}
+
+module.exports = {
+  LAYER_DEPENDENCIES,
+  runStaticVerification,
+  verifyLayerBoundaries,
+  verifyNoModuleCycles,
+  verifyStylesheetGraph
+};
