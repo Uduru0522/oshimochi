@@ -84,6 +84,26 @@ test("DebugStorage keeps image assets linked to their item", async () => {
   assert.equal((await storage.listItems("figures"))[0].imageAssetId, asset.id);
 });
 
+test("DebugStorage rejects a new item linked to a different image asset", async () => {
+  const storage = createDebugStorage();
+  const asset = createAsset("unlinked-asset");
+  const item = createFigureItem({
+    id: "figure-with-wrong-image",
+    imageAssetId: "different-asset"
+  });
+
+  await storage.initialize();
+  const before = await storage.listItems("figures", { scope: RECORD_SCOPES.all });
+
+  await assert.rejects(storage.createItem({ asset, item }), /invalid data/);
+
+  assert.deepEqual(
+    await storage.listItems("figures", { scope: RECORD_SCOPES.all }),
+    before
+  );
+  assert.equal(await storage.getAsset(asset.id), null);
+});
+
 test("DebugStorage replaces an edited item and image atomically", async () => {
   const storage = createDebugStorage();
   await storage.initialize();
@@ -109,6 +129,96 @@ test("DebugStorage replaces an edited item and image atomically", async () => {
     (await storage.getAsset(replacementAsset.id)).data.size,
     replacementAsset.data.size
   );
+});
+
+test("DebugStorage rejects content updates for missing items", async () => {
+  const storage = createDebugStorage();
+  const missingItem = createFigureItem({ id: "missing-item", name: "Updated name" });
+
+  await storage.initialize();
+  const before = await storage.listItems("figures", { scope: RECORD_SCOPES.all });
+
+  await assert.rejects(
+    storage.updateItemContent({
+      asset: null,
+      item: missingItem,
+      previousImageAssetId: null
+    }),
+    /conflicts with the debug catalog/
+  );
+
+  assert.deepEqual(
+    await storage.listItems("figures", { scope: RECORD_SCOPES.all }),
+    before
+  );
+});
+
+test("DebugStorage rejects replacement images with mismatched identity", async () => {
+  const storage = createDebugStorage();
+  const replacementTime = "2026-07-21T00:00:00.000Z";
+  const replacementAsset = createAsset(
+    "mismatched-replacement",
+    "replacement",
+    replacementTime
+  );
+
+  await storage.initialize();
+  const [existingItem] = await storage.listItems("tapestries");
+  const before = await storage.listItems("tapestries", { scope: RECORD_SCOPES.all });
+
+  await assert.rejects(
+    storage.updateItemContent({
+      asset: replacementAsset,
+      item: {
+        ...existingItem,
+        imageAssetId: "different-replacement",
+        updatedAt: replacementTime
+      },
+      previousImageAssetId: existingItem.imageAssetId
+    }),
+    /invalid data/
+  );
+
+  assert.deepEqual(
+    await storage.listItems("tapestries", { scope: RECORD_SCOPES.all }),
+    before
+  );
+  assert.equal(await storage.getAsset(replacementAsset.id), null);
+});
+
+test("DebugStorage rejects duplicate replacement asset identity atomically", async () => {
+  const storage = createDebugStorage();
+  const replacementTime = "2026-07-21T00:00:00.000Z";
+
+  await storage.initialize();
+  const [existingItem, itemOwningReplacementAsset] =
+    await storage.listItems("tapestries");
+  const replacementAsset = createAsset(
+    itemOwningReplacementAsset.imageAssetId,
+    "replacement",
+    replacementTime
+  );
+  const before = await storage.listItems("tapestries", { scope: RECORD_SCOPES.all });
+
+  await assert.rejects(
+    storage.updateItemContent({
+      asset: replacementAsset,
+      item: {
+        ...existingItem,
+        imageAssetId: replacementAsset.id,
+        updatedAt: replacementTime
+      },
+      previousImageAssetId: existingItem.imageAssetId
+    }),
+    /conflicts with the debug catalog/
+  );
+
+  assert.deepEqual(
+    await storage.listItems("tapestries", { scope: RECORD_SCOPES.all }),
+    before
+  );
+  assert.notEqual(await storage.getAsset(existingItem.imageAssetId), null);
+  assert.notEqual(await storage.getAsset(replacementAsset.id), null);
 });
 
 test("DebugStorage soft deletion retains item data and its image", async () => {
