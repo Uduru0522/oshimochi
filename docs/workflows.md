@@ -20,8 +20,9 @@ unchanged.
 
 1. Open **Options** and expand **Color theme**.
 2. Turn dark mode on or off.
-3. The app saves the choice and applies it at once.
-4. The next page load applies the theme before first paint.
+3. Choose an accent color from the color dots.
+4. The app saves both choices and applies them at once.
+5. The next page load applies them before first paint.
 
 ## Collections
 

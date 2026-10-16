@@ -6,7 +6,7 @@ views.
 
 ## Runtime Flow
 
-1. `index.html` runs the language and theme bootstrap scripts before CSS.
+1. `index.html` runs the language and appearance bootstrap scripts before CSS.
 2. `src/styles/app.css` imports the style layers in cascade order.
 3. `src/main.js` creates the app shell.
 4. The shell selects user or debug mode and creates shared services.
@@ -23,7 +23,7 @@ rebuilds data-based navigation. It does not reopen the database.
 
 | Area | Responsibility |
 | --- | --- |
-| `src/bootstrap/` | Apply saved language and theme before first paint |
+| `src/bootstrap/` | Apply saved language, theme, and accent before first paint |
 | `src/app/` | Compose the app, start storage, route views, and manage global UI state |
 | `src/services/` | Wrap browser language, theme, localStorage, and service-worker APIs |
 | `src/main.js` | Start the composition root |
@@ -80,6 +80,7 @@ The view layer is split by product area:
 - **Goods types:** collection overview and the matching view toolbar action
 - **Items:** browsing, filtering, sorting, registration, editing, deletion, and
   recovery
+- **Options:** theme, accent color, and interface language preferences
 
 The item area has smaller ownership groups:
 

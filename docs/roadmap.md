@@ -9,7 +9,7 @@ order of unfinished work. It does not set release dates.
 
 - Responsive local-first shell
 - User and debug modes
-- Light and dark themes
+- Light and dark themes with seven accent colors
 - Three interface languages
 - Offline app-shell cache
 - GitHub Pages deployment

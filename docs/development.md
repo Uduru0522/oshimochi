@@ -67,6 +67,7 @@ or mutation behavior changes.
 - In wide mode, confirm Administration, Options, and GitHub stay at the bottom.
 - In narrow mode, confirm More reveals those same controls and closes on Escape
   or an outside press.
+- Change theme, accent color, and language, then reload to confirm each persists.
 
 ### Goods Types And Fields
 
@@ -110,6 +111,7 @@ Interface settings use `localStorage`:
 | --- | --- |
 | `wotagoods.language` | `en`, `ja`, `zh-Hant` |
 | `wotagoods.theme` | `light`, `dark` |
+| `wotagoods.accent` | `red`, `orange`, `yellow`, `blue`, `green`, `pink`, `purple` |
 
 Useful console commands:
 
@@ -118,6 +120,8 @@ localStorage.getItem("wotagoods.language")
 localStorage.removeItem("wotagoods.language")
 localStorage.getItem("wotagoods.theme")
 localStorage.removeItem("wotagoods.theme")
+localStorage.getItem("wotagoods.accent")
+localStorage.removeItem("wotagoods.accent")
 ```
 
 Collection data uses IndexedDB. Debug mode uses a separate in-memory adapter and
@@ -169,6 +173,8 @@ Theme ownership:
 | Constants | `src/app/config.js` |
 | Runtime changes | `src/services/theme.js` |
 | First paint | `src/bootstrap/theme-bootstrap.js` |
+| Controls | `src/views/options/options-view.js` |
+| Palette tokens | `src/styles/foundation.css` |
 
 Language ownership:
 

@@ -60,6 +60,7 @@ Test paths mirror production ownership:
 | `test/data/models/` | Domain records and invariants |
 | `test/localization/` | Locale normalization and catalog parity |
 | `test/scripts/` | Executable architecture-policy regressions |
+| `test/services/` | Browser preference controllers with injected fakes |
 | `test/shared/` | Product-neutral utilities |
 | `test/views/` | Pure presentation logic and focused DOM contracts |
 | `test-support/` | Reusable fakes outside test discovery |

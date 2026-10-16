@@ -11,7 +11,7 @@ sample data and never writes to the user database.
 ### Interface
 
 - Responsive wide and narrow layouts
-- Light and dark themes
+- Light and dark themes with seven accent colors
 - English, Japanese, and Traditional Chinese
 - Direct navigation to each collection's item browser
 - Separate collection overview and application settings

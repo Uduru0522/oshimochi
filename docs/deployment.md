@@ -83,7 +83,7 @@ Stop the server with `Ctrl+C` after each check.
 
 ### Interface
 
-- Theme and language survive reload
+- Theme, accent color, and language survive reload
 - A goods type opens Items directly
 - The information action opens Overview
 - The return arrow opens Items again
@@ -101,4 +101,4 @@ The worker activates a new cache but does not reload an open page. This protects
 unfinished drafts.
 
 Create a milestone tag only after the deployed user and debug modes pass. Keep
-the package version and tag aligned, such as `0.4.0` and `v0.4.0`.
+the package version and tag aligned as `X.Y.Z` and `vX.Y.Z`.
