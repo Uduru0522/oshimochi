@@ -105,6 +105,14 @@
     align-self: start;
   }
 
+  .sidebar-footer {
+    display: none;
+  }
+
+  .project-settings-section {
+    display: block;
+  }
+
   .nav-separator {
     width: 1px;
     height: 32px;
@@ -442,6 +450,15 @@
   .language-setting {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .project-setting {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .project-repository-action {
+    align-self: flex-start;
   }
 
   .language-setting .select-menu {

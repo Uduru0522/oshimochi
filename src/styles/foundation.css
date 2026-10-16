@@ -198,6 +198,44 @@ textarea {
   background-clip: padding-box;
 }
 
+.sidebar-footer {
+  flex: 0 0 auto;
+  margin-top: auto;
+  padding: 14px 0 0;
+  border-top: 1px solid var(--line);
+  transition: border-color var(--motion-fast) ease;
+}
+
+.sidebar-project-link {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  min-height: 42px;
+  padding: 6px 10px;
+  color: var(--muted);
+  border-radius: var(--radius);
+  text-decoration: none;
+  transition:
+    background-color var(--motion-fast) ease,
+    color var(--motion-fast) ease,
+    transform var(--motion-fast) ease;
+}
+
+.sidebar-project-link:hover {
+  color: var(--text);
+  background: var(--accent-tint);
+}
+
+.sidebar-project-link:active {
+  transform: translateY(1px);
+}
+
+.sidebar-project-link:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
 .navigation-stack[data-dragging="true"],
 .view-panel[data-dragging="true"],
 .schema-table-wrap[data-dragging="true"] {

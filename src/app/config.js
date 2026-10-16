@@ -12,11 +12,16 @@ export const APP_CONFIG = {
   motion: {
     fastFallbackMs: 160
   },
+  project: {
+    repositoryUrl: "https://github.com/Uduru0522/wotagoods-manager"
+  },
   serviceWorkerPath: "service-worker.js",
   selectors: {
     appShell: ".app-shell",
     brandSubtitle: "#brandSubtitle",
     primaryNavList: "#primaryNavList",
+    projectRepositoryIcon: "#projectRepositoryIcon",
+    projectRepositoryLink: "#projectRepositoryLink",
     sidebar: ".sidebar",
     utilityNavList: "#utilityNavList",
     viewActions: "#viewActions",

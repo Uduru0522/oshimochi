@@ -28,6 +28,7 @@ export function mountAppRuntime({
     onLocalDataReset,
     onLanguageChanged,
     operations,
+    projectRepositoryUrl: APP_CONFIG.project.repositoryUrl,
     languageController,
     themeController
   });

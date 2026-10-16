@@ -740,13 +740,36 @@
   cursor: default;
 }
 
-.language-setting > span {
+.language-setting > span,
+.project-setting > span {
   min-width: 0;
 }
 
 .language-setting .select-menu {
   flex: 0 1 250px;
   width: min(250px, 46%);
+}
+
+.project-settings-section {
+  display: none;
+}
+
+.project-setting {
+  cursor: default;
+}
+
+.project-repository-action {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+}
+
+.project-repository-action .nav-svg {
+  width: 18px;
+  height: 18px;
 }
 
 .setting-row strong {

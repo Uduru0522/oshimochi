@@ -17,6 +17,8 @@ export function getAppElements() {
     appShell: queryRequiredElement(selectors.appShell),
     brandSubtitle: queryRequiredElement(selectors.brandSubtitle),
     primaryNavList: queryRequiredElement(selectors.primaryNavList),
+    projectRepositoryIcon: queryRequiredElement(selectors.projectRepositoryIcon),
+    projectRepositoryLink: queryRequiredElement(selectors.projectRepositoryLink),
     sidebar: queryRequiredElement(selectors.sidebar),
     utilityNavList: queryRequiredElement(selectors.utilityNavList),
     viewActions: queryRequiredElement(selectors.viewActions),

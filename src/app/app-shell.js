@@ -12,8 +12,10 @@ import { createThemeController } from "../services/theme.js";
 import { createLanguageController } from "../services/language.js";
 import { registerServiceWorker } from "../services/service-worker-registration.js";
 import { bindDragScroll } from "../shared/drag-scroll.js";
+import { createIcon } from "../shared/icons.js";
 import { getGoodsTypeItemsViewId } from "../views/goods-types/goods-type-view-ids.js";
 import { VIEW_IDS } from "../views/view-metadata.js";
+import { APP_CONFIG } from "./config.js";
 
 export function createApp({ storageFactory = createAppStorage } = {}) {
   const elements = getAppElements();
@@ -23,6 +25,9 @@ export function createApp({ storageFactory = createAppStorage } = {}) {
   const mutationController = createMutationController(elements.appShell);
   let unmountRuntime = null;
   let startupCoordinator;
+
+  elements.projectRepositoryLink.href = APP_CONFIG.project.repositoryUrl;
+  elements.projectRepositoryIcon.replaceChildren(createIcon("github"));
 
   startupCoordinator = createStartupCoordinator({
     createStorage: storageFactory,

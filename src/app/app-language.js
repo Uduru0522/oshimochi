@@ -1,6 +1,8 @@
 import { translate } from "../localization/translate.js";
 
 export function applyAppLanguage(elements) {
+  const projectLinkLabel = translate("View project on GitHub");
+
   document.title = translate("Wotagoods Manager");
   document
     .querySelector('meta[name="description"]')
@@ -13,6 +15,8 @@ export function applyAppLanguage(elements) {
   elements.sidebar.setAttribute("aria-label", translate("Main navigation"));
   elements.primaryNavList.setAttribute("aria-label", translate("Main views"));
   elements.utilityNavList.setAttribute("aria-label", translate("Application views"));
+  elements.projectRepositoryLink.setAttribute("aria-label", projectLinkLabel);
+  elements.projectRepositoryLink.setAttribute("title", projectLinkLabel);
   elements.brandSubtitle.textContent = translate("Goods manager");
   delete document.documentElement.dataset.languagePending;
 }
