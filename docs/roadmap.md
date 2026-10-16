@@ -1,114 +1,92 @@
 # Roadmap
 
-This document is the source of truth for implementation status and milestone
-order. It describes direction, not a release-date commitment.
+This is a planning document. It records delivered capability groups and the
+order of unfinished work. It does not set release dates.
 
-## Completed Foundations
+## Delivered
 
-- responsive application shell
-- primary and utility navigation
-- user and debug runtime modes
-- theme persistence without first-paint flash
-- offline app-shell service worker
-- GitHub Pages deployment under a repository subpath
-- domain goods-type records and storage errors
-- isolated `DebugStorage`
-- IndexedDB version-1 stores and indexes
-- asynchronous storage initialization and retryable failures
-- static checks and dependency-free unit tests
+### Platform
 
-## Completed Stabilization Milestone
+- Responsive local-first shell
+- User and debug modes
+- Light and dark themes
+- Three interface languages
+- Offline app-shell cache
+- GitHub Pages deployment
+- Static architecture checks and unit tests
 
-- restructured contributor documentation by ownership
-- separated IndexedDB connection, request, repository, and adapter responsibilities
-- separated startup coordination from runtime view assembly
-- added strict validation before persisted records reach views
-- added browser import-graph and offline-cache verification
-- broadened startup, lifecycle, corruption, and transaction-failure tests
+### Collection Setup
 
-## Completed Goods-Type Creation Milestone
+- Goods-type creation
+- Protected built-in fields
+- Staged custom-field management
+- Atomic schema writes
+- Navigation refresh after changes
+- Typed local-data reset
 
-- create goods types from Administration
-- create protected built-in field definitions atomically
-- validate user input and normalized duplicate names
-- refresh navigation after commit
-- retain debug-mode isolation
-- add mutation progress and recoverable failure UI
+### Item Entry
 
-## Completed Manage Custom Fields Milestone
+- Generated forms for all supported field types
+- Required image crop in two orientations
+- Review before save
+- Atomic item and image writes
+- Recoverable errors that keep the draft
 
-- list active field definitions for a selected goods type
-- add text, number, date, boolean, URL, and select fields
-- stage edits in memory and review them before applying
-- preserve built-in field protections
-- apply each reviewed change set atomically
-- retain staged input after recoverable failures
+### Item Browser
 
-## Completed Collection Workflow Shell
+- Shared query pipeline for card and list views
+- General and field-aware filtering
+- Typed sorting
+- Context-aware card fields
+- Keyed add, edit, filter, sort, and delete motion
 
-- open each goods type directly in its Items view
-- keep Overview available as a secondary title-bar action
-- launch item registration as a modal workflow from Items
-- reserve Overview for future per-collection summaries
-- reset all loaded collection data through typed confirmation
+### Item Lifecycle
 
-## Completed Item Registration
+- Modal editing with optional image replacement
+- Soft deletion
+- Per-collection deleted-item recovery
+- Permanent item and image purge
 
-- generate forms from active field definitions
-- validate built-in and custom values
-- keep form drafts in memory until confirmation
-- review the complete item before saving
-- write validated item records to user or debug storage
-- retain input after recoverable failures
-- choose and crop one image to a supported paper ratio
-- process a low-resolution browser-local image
-- require an image and write the item and image asset atomically
-- list newly registered items with thumbnails and custom values
+### Internal Structure
 
-## Completed Item List Management
+- Storage-neutral application operations
+- Validated domain records
+- IndexedDB and in-memory adapter parity
+- Explicit record scopes
+- Focused source and test ownership
 
-- [x] use cards as the default item view while retaining the compact list
-- [x] filter items by built-in and custom field values
-- [x] sort items by name, creation time, update time, and supported custom values
-- [x] edit items through the existing modal workflow
-- [x] soft-delete items with explicit confirmation
-- [x] add a cards view that shares the list query pipeline
+## Current Milestone: Backup Export And Import
 
-List and card presentations consume the same loaded, filtered, and sorted item
-set. Both reconcile keyed items without reloading storage or replacing the whole
-collection.
+- [ ] Export one versioned local snapshot.
+- [ ] Include active and soft-deleted records.
+- [ ] Include every retained image asset.
+- [ ] Validate the full file before a write starts.
+- [ ] Review and confirm replacement of local data.
+- [ ] Replace all user stores atomically.
+- [ ] Keep existing data unchanged after any failure.
 
-## Completed Deleted Item Management
+The first import mode is full replacement. Merge is outside this milestone.
 
-- [x] provide a dedicated recovery area for soft-deleted items
-- [x] restore selected items to their active collection
-- [x] permanently purge selected items and retained images with explicit confirmation
-
-Recovery preserves item identity, values, and retained image ownership through a
-lifecycle-only write. Permanent purge rereads deleted identity and removes the item
-and image atomically.
-
-## Current Product Milestone: Backup Export And Import
-
-- [ ] export one versioned local snapshot containing all records and assets
-- [ ] include soft-deleted records so a backup represents the complete collection
-- [ ] validate the complete snapshot before any import mutation
-- [ ] review and explicitly confirm replacement of browser-local data
-- [ ] replace all user-data stores atomically and preserve existing data on failure
-
-The first import strategy is full replacement. Merge behavior remains deferred
-until identity and conflict rules are designed.
+See [Data Portability](data-portability.md) for the file and workflow design.
 
 ## Later Milestones
 
-1. Optional Google Drive upload and download of the same snapshot format.
-2. Backup reminders and bounded snapshot retention.
-3. Evaluate live synchronization only after conflict semantics exist.
+### Cloud Snapshots
 
-## Deliberate Non-Goals
+- Upload and download the same snapshot format through Google Drive.
+- Add reminders before destructive operations.
+- Define bounded snapshot retention.
 
-- server-hosted user database
-- multi-user accounts or permissions
-- live Google Drive database access
-- one physical IndexedDB store per goods type
-- destructive field-type conversion in the initial field editor
+### Multi-Device Data
+
+Evaluate live synchronization only after identity, revision, conflict, and
+deletion rules are defined.
+
+## Outside Current Scope
+
+- Server-hosted user database
+- Multi-user accounts and permissions
+- Live Google Drive database access
+- One IndexedDB store per goods type
+- Destructive field-type conversion
+- Import merge without explicit conflict rules

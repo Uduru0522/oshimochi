@@ -1,37 +1,42 @@
 # Data Portability
 
-This document defines future export, import, backup, and cloud-snapshot behavior.
-No transfer feature is implemented yet.
+**Planning scope:** Export, import, and cloud snapshots are not implemented.
+This document defines their intended contract.
 
-## Why Export Is Required
+## Goals
 
-Browser storage belongs to one origin and browser profile:
+Browser data belongs to one origin and browser profile. Localhost, GitHub Pages,
+other browsers, and other devices do not share it.
 
-- localhost and GitHub Pages have separate databases
-- another browser or device cannot see the collection automatically
-- clearing site data removes the local collection
+The portability work must let users:
 
-Export is therefore a data-safety feature, not only a convenience.
+- keep a readable backup outside browser storage
+- move a collection between browser origins
+- restore a complete collection after data loss
+- inspect a file before replacing local data
 
-## Export Contract
+## Snapshot Format
 
-Exports use a versioned, storage-neutral representation. They must not expose raw
-IndexedDB transactions, index layouts, or browser-specific object identities.
+The snapshot is versioned and independent from IndexedDB. It must not expose
+transactions, indexes, or browser object identities.
 
-The first implementation may use one JSON file with encoded image content for
-portability. A later archive can store JSON metadata and binary image files while
-preserving the same domain records.
+The first format may use one JSON file with encoded image data.
 
-Every export includes:
+Every snapshot contains:
 
+### Envelope
+
+- application identity
 - export-format version
 - domain-model version
 - creation timestamp
-- application identity
-- goods types, field definitions, items, and assets
 
-A first-version envelope should keep transport metadata separate from domain
-records:
+### Records
+
+- goods types
+- field definitions
+- items
+- image assets
 
 ```js
 {
@@ -48,52 +53,88 @@ records:
 }
 ```
 
-Export reads complete `all` record scopes. Soft-deleted records and assets
-retained for recovery are part of the collection and must not be omitted.
+The snapshot includes active and soft-deleted records. It also includes assets
+retained for deleted items.
 
-## Import Contract
+## Export Plan
 
-Import validates the complete file before opening a mutation. Validation covers:
+1. Read complete record scopes.
+2. Validate every record.
+3. Map records into the storage-neutral snapshot.
+4. Serialize the snapshot.
+5. Download it as a local file.
 
-- application identity and supported export/domain versions
-- each record through its domain parser
-- unique record, field-key, and selection-option identities
-- goods-type, field, item, and asset relationships
-- image media type, dimensions, byte size, and encoded payload
-- lifecycle consistency for active and soft-deleted records
+Export is read-only. A failure must not change local data.
 
-The first implementation supports replacement only. It stages a fully validated
-storage-neutral snapshot, presents a review, and replaces all user-data stores in
-one transaction after explicit confirmation. Invalid, unsupported, or partial
-files leave the current collection untouched.
+## Import Plan
 
-Controlled merge may be added only after identity collisions, option changes,
-deleted records, and asset ownership have deterministic conflict rules. The
-application must never silently combine collections.
+### Validation
 
-Before destructive replacement or future migrations, the UI should offer an
-export of the existing collection. This is preferable to automatically retaining
-an opaque database copy that the user cannot inspect or manage.
+Validate the whole file before opening a transaction:
 
-## Google Drive
+- application identity and supported versions
+- record shapes and unique IDs
+- field keys and selection-option IDs
+- goods-type, field, item, and asset links
+- image type, size, dimensions, and encoded data
+- active and deleted lifecycle state
 
-The first Google Drive integration should upload and download complete export
-snapshots. It is not a live database.
+### Replacement
 
-Live multi-device synchronization is deferred until these are designed:
+1. Parse and validate the file.
+2. Show versions, date, counts, and replacement effect.
+3. Ask for explicit confirmation.
+4. Replace all user stores in one transaction.
+5. Remount navigation and the active view after commit.
+
+Invalid, unsupported, or partial files leave the current collection unchanged.
+
+The first import mode is replacement only. Silent merge is not allowed.
+
+## Google Drive Plan
+
+Google Drive will store and retrieve complete snapshot files. It will not act as
+a live database.
+
+Live synchronization needs separate rules for:
 
 - revision identity
-- concurrent-edit conflicts
+- concurrent edits
 - deletion propagation
-- authentication expiry
-- offline changes
-- user-visible recovery
+- expired authentication
+- offline edits
+- conflict review and recovery
 
-## Retention Direction
+## Verification Plan
 
-1. Deleted-item recovery and purge semantics. Completed.
-2. Implement explicit local export and validated replacement import.
-3. Add backup reminders before destructive operations.
-4. Add optional Google Drive snapshot upload and download.
-5. Consider bounded automatic retention only after storage costs and conflict
-   behavior are understood.
+### Pure Format Tests
+
+- deterministic serialization
+- supported and unsupported versions
+- duplicate identities
+- broken relationships
+- malformed image data
+- round trip from records to snapshot and back
+
+### Storage Tests
+
+- complete scopes include deleted records and retained assets
+- replacement uses one transaction
+- parse and validation failures do not write
+- transaction failure leaves existing records unchanged
+
+### Browser Checks
+
+- file selection and cancellation
+- export download
+- import review
+- replacement confirmation
+- readable failures
+
+## Delivery Order
+
+1. Define and test the snapshot model.
+2. Add local export.
+3. Add validated replacement import.
+4. Add backup reminders.
+5. Add optional Google Drive upload and download.

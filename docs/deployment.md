@@ -1,45 +1,47 @@
 # GitHub Pages Deployment
 
-The production app is a static site. GitHub Pages hosts the HTML, CSS, JavaScript, manifest, icons, and service worker. The local Node server remains a development tool only.
+GitHub Pages hosts the static app. The Node server is for local development only.
 
 ## Production URL
-
-For this repository, the expected project-site URL is:
 
 ```text
 https://uduru0522.github.io/wotagoods-manager/
 ```
 
-All runtime asset paths are relative so the app works under the `/wotagoods-manager/` project subpath.
+Runtime paths are relative so the app works under
+`/wotagoods-manager/`.
 
-## One-Time Repository Setup
+## Repository Setup
 
 In the GitHub repository:
 
 1. Open **Settings**.
 2. Open **Pages**.
-3. Under **Build and deployment**, choose **GitHub Actions** as the source.
+3. Set **Build and deployment** to **GitHub Actions**.
 
-The workflow in `.github/workflows/deploy-pages.yml` deploys the static site whenever `main` is pushed. It can also be run manually from the repository's **Actions** tab.
+`.github/workflows/deploy-pages.yml` deploys each push to `main`. It also
+supports manual runs from the **Actions** tab.
 
-The workflow uses Node 24 and the Node 24-based Pages action majors:
-`actions/configure-pages@v6`, `actions/upload-pages-artifact@v5`, and
-`actions/deploy-pages@v5`. Do not suppress runtime deprecation warnings with
-`FORCE_JAVASCRIPT_ACTIONS_TO_NODE24`; upgrade an affected action to a release
-that declares the current runtime instead.
+The workflow uses Node 24 and these Pages actions:
 
-## Pre-Push Verification
+- `actions/configure-pages@v6`
+- `actions/upload-pages-artifact@v5`
+- `actions/deploy-pages@v5`
 
-Run the static checks:
+Do not hide action runtime warnings with
+`FORCE_JAVASCRIPT_ACTIONS_TO_NODE24`.
+
+## Before Push
+
+### Automated Check
 
 ```powershell
 npm run check
 ```
 
-If PowerShell blocks `npm.ps1` because of its execution policy, use `npm.cmd` in
-the commands on this page, for example `npm.cmd run check`.
+If PowerShell blocks `npm.ps1`, use `npm.cmd run check`.
 
-Test the normal local root:
+### Root-Path Check
 
 ```powershell
 npm start
@@ -52,8 +54,9 @@ http://localhost:4173/
 http://localhost:4173/?debug=1
 ```
 
-Stop the server with `Ctrl+C`. Then test the same project subpath used by GitHub
-Pages:
+### Project-Path Check
+
+Stop the first server. Then run:
 
 ```powershell
 npm run start:pages
@@ -66,30 +69,36 @@ http://localhost:4173/wotagoods-manager/
 http://localhost:4173/wotagoods-manager/?debug=1
 ```
 
-Stop this server with `Ctrl+C` when testing is complete.
+Stop the server with `Ctrl+C` after each check.
 
-In browser DevTools, verify:
+## Browser Smoke Check
 
-- Console has no module, manifest, or service-worker errors.
-- Network requests remain under `/wotagoods-manager/`.
-- Application > Manifest loads successfully.
-- Application > Service Workers shows an active worker.
-- Reloading after enabling offline mode still opens the app shell.
-- Dark mode survives a reload.
-- Choosing a goods type opens Items directly, while the title-bar information
-  action opens its secondary Overview route.
+### Runtime
 
-Localhost and GitHub Pages are different browser origins. Their settings and
-IndexedDB databases are separate.
+- No module, manifest, or service-worker errors
+- All network requests stay under the project path
+- Manifest loads
+- Service worker is active
+- App shell opens while DevTools offline mode is enabled
+
+### Interface
+
+- Theme and language survive reload
+- A goods type opens Items directly
+- The information action opens Overview
+- The return arrow opens Items again
+
+Localhost and GitHub Pages use different browser origins. Their settings and
+IndexedDB data remain separate.
 
 ## After Push
 
-Open the repository's **Actions** tab and confirm the `Deploy to GitHub Pages` workflow succeeds. Then repeat the browser checks at the production URL.
+1. Confirm **Deploy to GitHub Pages** succeeds in **Actions**.
+2. Hard-refresh the production URL.
+3. Repeat the smoke check in user and debug mode.
 
-The service worker checks for a new deployment when the page loads, but it does
-not force a reload that could discard draft input. Use a hard refresh before
-testing a newly deployed build.
+The worker activates a new cache but does not reload an open page. This protects
+unfinished drafts.
 
-For a milestone release, create the version tag only after `main` is deployed and
-the hosted user and debug modes pass their smoke checks. Keep the package version
-and release tag aligned, for example package version `0.2.0` and tag `v0.2.0`.
+Create a milestone tag only after the deployed user and debug modes pass. Keep
+the package version and tag aligned, such as `0.4.0` and `v0.4.0`.

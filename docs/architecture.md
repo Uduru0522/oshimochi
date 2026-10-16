@@ -1,233 +1,171 @@
 # Architecture
 
-Wotagoods Manager is intentionally dependency-free for now. The code is organized
-so the app shell and IndexedDB boundary can stay stable while item-management
-workflows and alternate item presentations are added.
+Wotagoods Manager is a dependency-free browser app. Its main boundaries are the
+app shell, storage-neutral operations, domain and storage code, and browser
+views.
 
 ## Runtime Flow
 
-1. `index.html` loads the language and theme bootstrap scripts before CSS. They
-   apply saved display preferences before first paint and prevent incorrect
-   color-scheme and font-fallback flashes.
-2. `index.html` loads `src/styles/app.css`.
-3. `src/main.js` imports `src/app/app-shell.js`.
-4. `createApp()` creates the runtime mode, shell services, mutation controller,
-   and startup coordinator.
-5. `start()` initializes theme and shell behavior, selects the storage adapter,
-   awaits storage initialization and goods-type loading, then creates views,
-   navigation, and the router.
-6. Startup storage failures render a retryable state instead of being interpreted
-   as an empty collection.
-7. Successful mutations ask the startup coordinator to reload goods types from
-   the active adapter and rebuild data-dependent navigation without reopening the
-   database.
+1. `index.html` runs the language and theme bootstrap scripts before CSS.
+2. `src/styles/app.css` imports the style layers in cascade order.
+3. `src/main.js` creates the app shell.
+4. The shell selects user or debug mode and creates shared services.
+5. The startup coordinator initializes storage and loads goods types.
+6. The runtime creates views, navigation, and the router.
+7. A storage failure shows a retryable error instead of an empty collection.
 
-## Module Boundaries
+After a successful data change, the startup coordinator reloads goods types and
+rebuilds data-based navigation. It does not reopen the database.
 
-### `src/app/`
+## Code Ownership
 
-Owns application assembly and app-level behavior.
+### Shell And Browser Services
 
-- `app-shell.js`: composition root and browser lifecycle owner.
-- `app-language.js`: applies localized document and static shell labels.
-- `app-runtime.js`: builds data-dependent views, navigation, renderer, and router,
-  and returns the runtime teardown function.
-- `app-elements.js`: required DOM lookup for shell elements.
-- `app-mode.js`: user/debug mode detection.
-- `config.js`: shared constants for selectors, language, theme, layout, and defaults.
-- `layout-transition.js`: wide/narrow breakpoint transition state.
-- `mutation-controller.js`: one global database-mutation lock and busy state.
-- `startup-state.js`: storage loading and recoverable startup-error rendering.
-- `startup-coordinator.js`: storage lifecycle, retries, and race-safe mounting.
-- `view-router.js`: active view switching, title updates, transition timing, and
-  teardown of resources owned by the previous rendered view.
-- `view-scroll-state.js`: compact title-bar state based on view scroll position.
+| Area | Responsibility |
+| --- | --- |
+| `src/bootstrap/` | Apply saved language and theme before first paint |
+| `src/app/` | Compose the app, start storage, route views, and manage global UI state |
+| `src/services/` | Wrap browser language, theme, localStorage, and service-worker APIs |
+| `src/main.js` | Start the composition root |
 
-### `src/application/`
+Important app modules are grouped by task:
 
-Owns storage-neutral use cases that coordinate domain records and adapter calls.
+- **Startup:** `app-shell.js`, `startup-coordinator.js`, and
+  `startup-state.js`
+- **Runtime assembly:** `app-runtime.js`, `app-elements.js`, and
+  `create-application-operations.js`
+- **Navigation state:** `view-router.js`, `view-scroll-state.js`, and
+  `layout-transition.js`
+- **Shared state:** `mutation-controller.js`, `app-mode.js`, and `config.js`
 
-- `create-application-operations.js`: the single composition point for
-  feature-owned operations exposed to browser views.
-- `goods-types/create-goods-type.js`: constructs one goods type and its protected
-  field definitions, then requests one atomic storage write.
-- `fields/manage-fields.js`: validates staged field changes and converts them into
-  field-definition records for one atomic adapter write.
-- `data/reset-local-data.js`: requests one atomic clear of all user-data stores
-  while leaving application metadata and external backups intact.
-- `items/item-values.js`: normalizes and validates generated item-form values.
-- `items/filter-items.js`: parses general-search syntax and applies field-type-aware
-  filters to plain item records without depending on a presentation or storage adapter.
-- `items/item-field-value.js`: reads built-in and custom values through one shared
-  record-access contract used by item queries.
-- `items/sort-items.js`: performs stable, typed item ordering and keeps missing values last.
-- `items/manage-items.js`: loads active field definitions, constructs validated
-  item and image records, requests atomic content persistence, and performs
-  lifecycle-only soft deletion.
+The bootstrap scripts repeat a small part of the runtime language and theme
+services. They must run synchronously, so normal modules cannot replace them.
 
-Application operations may depend on domain models and storage contracts. They
-must not depend on DOM elements, IndexedDB object-store names, or view modules.
+### Domain And Storage
 
-### `src/bootstrap/`
+| Area | Responsibility |
+| --- | --- |
+| `src/application/` | Coordinate use cases without browser storage or DOM details |
+| `src/data/models/` | Build and validate domain records |
+| `src/data/contracts/` | Define adapter capabilities and stable storage errors |
+| `src/data/indexeddb/` | Own the physical database, repositories, and transactions |
+| `src/data/debug/` | Provide validated in-memory fixtures and repositories |
+| `src/data/create-storage.js` | Select the adapter for the active mode |
 
-Contains scripts that must run before normal app startup. Keep this folder small.
+Application operations are grouped by feature:
 
-- `language-bootstrap.js`: reads the saved locale and sets the root `lang` before CSS loads.
-- `theme-bootstrap.js`: reads the saved theme and sets `data-theme` before CSS loads.
+- **Goods types:** create one type and its protected fields atomically.
+- **Fields:** validate and apply one staged field change set.
+- **Items:** validate values, filter, sort, save content, and change lifecycle.
+- **Local data:** reset all user collection stores atomically.
 
-These duplicate a small part of their runtime services on purpose. Module
-services cannot run early enough to prevent first-paint preference flashes.
+Application code may use domain models and storage contracts. It must not use
+DOM elements, IndexedDB requests, or object-store names.
 
-### `src/localization/`
+User mode uses `IndexedDbStorage`. Debug mode uses `DebugStorage`, starts from
+sample records, and loses changes on reload. It never opens IndexedDB.
 
-Owns interface translation without knowing about storage or view lifecycles.
+### Interface
 
-- `translations.js`: Japanese and Traditional Chinese catalogs keyed by the
-  English source copy.
-- `translate.js`: supported-locale normalization, English fallback, and named
-  placeholder interpolation.
+| Area | Responsibility |
+| --- | --- |
+| `src/views/` | Define routes and render feature UI |
+| `src/navigation/` | Render primary and utility navigation |
+| `src/localization/` | Normalize locales and translate interface copy |
+| `src/shared/` | Provide product-neutral DOM and interaction helpers |
 
-Views translate interface-owned copy while rendering. User-defined goods-type,
-field, option, and item names are data and are never translated.
+The view layer is split by product area:
 
-### `src/data/`
+- **Administration:** goods-type creation, field management, and local-data
+  reset
+- **Goods types:** collection overview and the matching title-bar action
+- **Items:** browsing, filtering, sorting, registration, editing, deletion, and
+  recovery
 
-Owns domain records, storage contracts, and persistence adapters. It is the
-boundary between application operations and physical browser storage.
+The item area has smaller ownership groups:
 
-- `contracts/`: adapter capabilities and storage error definitions.
-- `create-storage.js`: mode-aware adapter selection.
-- `debug/`: in-memory fixtures, feature repositories, and the debug adapter.
-- `indexeddb/`: physical schema, database lifecycle, and persistent adapter.
-- `models/`: domain record construction, shared validation, lifecycle semantics,
-  and the storage-independent domain-model version.
+| Group | Main modules |
+| --- | --- |
+| Loading and query state | `item-browser.js`, application filter and sort operations |
+| Presentations | `item-list.js`, `item-cards.js`, `item-card-content.js` |
+| Layout motion | `keyed-layout-motion.js`, `item-card-motion.js` |
+| Entry and editing | Entry/edit dialogs, form fields, review, crop editor |
+| Lifecycle | Delete and recovery dialogs |
+| Display helpers | Values, thumbnails, warnings, and card field selection |
 
-User mode opens the versioned IndexedDB database and persists created goods types.
-Debug mode starts from hardcoded records, accepts the same creation operation in
-memory, and never opens IndexedDB; its changes disappear on reload.
+List and card presentations receive the same prepared item set. They reconcile
+entries by item ID instead of replacing the full collection.
 
-### `src/navigation/`
+Dialogs share `dialog-close-controller.js` for close timing and cancellation.
+Stateful content uses `content-transition.js`. Scroll surfaces use
+`drag-scroll.js`.
 
-Owns navigation rendering and navigation-specific scroll behavior.
+Interface text passes through `translate()`. User-entered names and values are
+data and are never translated.
 
-- `navigation.js`: combines primary and utility navigation.
-- `primary-navigation.js`: dashboard, direct-to-items goods types, and administration.
-- `utility-navigation.js`: Options gear in the app chrome.
-- `nav-items.js`: nav button/separator builders.
-- `scrollable-row.js`: horizontal scroll behavior for narrow navigation.
+### Styles
 
-Navigation is data-driven through each view's `nav` metadata.
-Vertical drag scrolling is shared through `src/shared/drag-scroll.js`. Drag
-starts originating from dialogs, form controls, buttons, and links are excluded
-so nested interactions cannot move their parent scroll surface.
+`src/styles/app.css` is an import-only entrypoint. Its import order defines the
+cascade.
 
-### `src/services/`
+| File | Ownership |
+| --- | --- |
+| `foundation.css` | Tokens, themes, shell, navigation, and shared controls |
+| `items.css` | Item browser, dialogs, filtering, sorting, and recovery |
+| `administration.css` | Administration and Options |
+| `responsive.css` | Narrow layout and reduced-motion overrides |
 
-Owns browser/platform services.
+Common timing tokens keep interaction motion below 200 ms:
 
-- `storage.js`: namespaced localStorage wrapper with safe fallbacks.
-- `language.js`: persisted language controller and localized document metadata.
-- `theme.js`: app theme controller and persisted theme changes.
-- `service-worker-registration.js`: service worker registration.
+- `--motion-phase` for workflow content replacement
+- `--motion-fast` for small state changes
+- `--motion-enter` for entry feedback
+- `--motion-layout` for shell layout changes
+- `--item-card-*-duration` for ordered card membership changes
+- `--item-layout-*` for item reordering
 
-### `src/shared/`
+The UI uses local Noto Sans and platform CJK font stacks. No font is fetched from
+a third-party host.
 
-Generic helpers that should not know about Wotagoods-specific features.
+## Dependency Direction
 
-- `dom.js`: small DOM creation helper.
-- `action-button.js`: consistent construction of text action buttons.
-- `content-transition.js`: reusable two-phase transitions for stateful workflow content.
-- `drag-scroll.js`: reusable pointer drag scrolling.
-- `icons.js`: icon creation.
-- `motion.js`: CSS timing parsing and reduced-motion helpers.
-- `select-menu.js`: app-styled listbox behavior with pointer and keyboard support.
-- `ui-components.js`: reusable view components and neutral required markers.
+`scripts/verify-static.js` builds the browser module graph. It rejects cycles,
+unreachable modules, and imports that break this matrix:
 
-### `src/styles/`
+| Source layer | Allowed direct dependencies |
+| --- | --- |
+| Root `src/main.js` | `app` |
+| `bootstrap` | `bootstrap` |
+| `shared` | `shared` |
+| `data` | `data` |
+| `application` | `application`, `data` |
+| `localization` | `localization` |
+| `views` | `views`, `application`, `localization`, `shared` |
+| `navigation` | `navigation`, `views`, `localization`, `shared` |
+| `services` | `services`, `app`, `localization` |
+| `app` | All runtime layers except `bootstrap` |
 
-Contains app-wide CSS. `app.css` currently holds design tokens, layout, view styling, responsive rules, scrollbar styling, and animations.
+Bootstrap scripts load before the module graph and stay isolated from it.
 
-Important tokens:
+## Views And Routes
 
-- `--motion-phase`: one half of an exit/enter content transition.
-- `--motion-fast`: fast UI state changes.
-- `--motion-enter`: lightweight feedback when workflow content is replaced.
-- `--motion-layout`: wide/narrow layout settle animation.
-- `--item-membership-duration`: item entrance and exit feedback.
-- `--item-card-exit-duration`, `--item-card-move-duration`, and
-  `--item-card-enter-duration`: ordered card collection transition phases.
-- `--item-layout-*`: distance-aware item reordering bounds and scaling.
-- `--scrollbar-*`: app scrollbar styling.
-- `--focus-ring`: keyboard focus outline color.
-- `--accent-tint`: low-emphasis icon background.
-- `--font-ui`: the locale-aware Noto Sans stack used throughout the interface.
+Each view definition contains an ID, title metadata, renderer key, and optional
+navigation metadata.
 
-Fonts are selected through local font stacks so the app remains dependency-free
-and works offline. Headings, controls, and body copy all use the same Sans family
-for a consistent application-oriented appearance. Systems without installed Noto
-CJK fonts use the listed Japanese or Traditional Chinese platform fallback.
-Bundled webfonts may be added later if exact cross-platform typography is worth
-the offline download size.
-
-### `src/views/`
-
-Owns view definitions and view rendering.
-
-- `view-definitions.js`: source of truth for view IDs, titles, sections, nav metadata, and renderer keys.
-- `view-metadata.js`: shared constants for view IDs, nav groups, nav kinds, and renderer keys.
-- `view-renderer.js`: renderer registry for dashboard, goods overview, items,
-  administration, and options views. It receives app-level navigation as a
-  callback instead of importing the router.
-- `goods-types/`: secondary collection Overview rendering and its compact
-  title-bar route action. Route-ID construction also lives here so startup,
-  definitions, and components do not duplicate route-string formats.
-- `administration/`: Administration rendering and the goods-type creation flow.
-  Its field manager separates staging state, list rendering, editing, review, and
-  orchestration into focused modules. Field editors expand within their owning
-  list rows, while stable field and selection-option IDs remain application-layer
-  concerns. Destructive local-data reset is isolated in its own typed-confirmation
-  component.
-- `items/`: collection browsing, staged filtering and sorting, keyed item editing
-  and deletion, responsive completeness warnings, fixed-stage image cropping,
-  and modal item workflows. `items-view.js` composes the page actions, browser,
-  and dialogs. `item-browser.js` owns asynchronous
-  loading, applied query state, and the active presentation. List/card mode lives
-  at this same boundary, while `item-list.js` and `item-cards.js` independently
-  reconcile keyed records from one filtered and sorted item set. Their shared
-  keyed-layout helper measures stable entries before DOM ordering changes, then
-  animates those entries from their previous positions without moving new entries
-  away from their final insertion points. Card collection reconciliation remains
-  separate from `item-card-content.js`, which renders one card body, and the pure
-  `item-card-context.js` selector, which chooses fields from applied query state.
-  Filter and sort dialogs remain separate from their pure application evaluators.
-  Display-model, typed-value, thumbnail, and warning helpers are presentation-neutral.
-  Add and edit dialogs own separate draft
-  lifecycles while sharing the entry form, crop editor, and review rendering. The
-  delete dialog owns explicit confirmation and delegates the actual soft-delete
-  operation to the application layer; it never mutates list state before storage
-  succeeds. Generated form-field controls, save-error translation, and dialog
-  orchestration remain separate so editing can reuse them without depending on
-  list markup. Dialog screens and routed views both expose explicit teardown for
-  observers, pending asynchronous work, and temporary image resources.
-
-## View Model
-
-Each view definition has an `id`, title metadata, a renderer key, and optional navigation metadata.
-
-Primary navigation uses:
+Primary destinations use:
 
 ```js
 nav: { group: "primary" }
 ```
 
-Each goods type's primary Items route uses:
+A collection's Items route also declares its kind:
 
 ```js
 nav: { group: "primary", kind: "goods-type" }
 ```
 
-Its secondary Overview route has no `nav` metadata. Instead it aliases the
-primary route for navigation highlighting and carries the return route ID:
+The secondary Overview route has no navigation entry. It points back to Items
+for highlighting and return navigation:
 
 ```js
 {
@@ -237,9 +175,8 @@ primary route for navigation highlighting and carries the return route ID:
 }
 ```
 
-The Items definition carries the matching `overviewViewId`. Renderers use these
-explicit links to create title-bar actions; the generic router and navigation do
-not derive or parse goods-type route strings.
+The Items definition carries the matching `overviewViewId`. Renderers receive
+these route IDs and do not parse route strings.
 
 Options uses:
 
@@ -247,62 +184,44 @@ Options uses:
 nav: { group: "utility" }
 ```
 
-## Data Persistence
+## Persistence Boundary
 
-User mode uses IndexedDB through an application-owned storage contract.
-Physical object stores remain stable; goods types, field definitions, and custom
-values are records rather than generated database tables.
+Views call application operations and receive plain domain records. They do not
+import IndexedDB APIs or physical store names.
 
-Current storage adapters:
+Both storage adapters expose `active`, `deleted`, and `all` record scopes.
+Item content writes are separate from lifecycle writes. This keeps deletion and
+restoration from changing values or image ownership.
 
-- `IndexedDbStorage`: persistent browser-local user data.
-- `DebugStorage`: in-memory fixtures that never write user data.
+Image replacement writes the item and asset together. Permanent purge removes a
+deleted item and its retained asset together.
 
-Both adapters expose explicit `active`, `deleted`, and `all` record scopes. Item
-content updates and item lifecycle transitions are separate capabilities. A
-delete or restore therefore cannot accidentally replace custom values or image
-ownership, while image replacement remains an atomic content operation. Permanent
-item purge is a separate adapter capability that atomically removes a deleted item
-and its owned image asset.
+The global mutation controller blocks overlapping writes. Storage transactions
+protect committed data.
 
-Views, navigation, and renderers must not import IndexedDB APIs or object-store
-names. They consume plain domain records and call application operations. This
-also keeps versioned file import/export and a future Google Drive snapshot adapter
-independent from UI components.
+See [Domain Model](data-model.md) for records and
+[Persistence](persistence.md) for physical storage rules.
 
-See `docs/data-model.md` for domain records, `docs/persistence.md` for object
-stores and transaction rules, and `docs/workflows.md` for mutation behavior.
+## Resource Cleanup
 
-### Persistence Integration Constraints
+A rendered view may return `destroy()` with its content and title-bar action.
+The router calls it before replacing the view.
 
-IndexedDB is asynchronous. The composition root selects the adapter from app
-mode, awaits adapter initialization, and then loads goods types before constructing
-data-dependent views and navigation. Startup renders an explicit loading state
-and a recoverable storage-error state rather than silently treating a failed
-database as an empty collection.
-
-Mutation coordination belongs at application level. Individual views request an
-application operation; they do not open transactions or independently manage
-global busy state. `mutation-controller.js` prevents overlapping writes while
-storage adapters provide transaction atomicity and return plain records or
-domain errors.
-
-`create-application-operations.js` is the browser-facing capability registry.
-Recovery is composed through its item operations; future transfer workflows
-should be composed there rather than adding feature imports to `app-runtime.js`
-or allowing views to call adapters.
-
-Rendered views may return an optional `destroy()` function alongside `content`
-and `topbarAction`. The router calls it before replacing that view, and runtime
-remounting destroys the previous router. Components that own observers, object
-URLs, timers, pending transitions, dialogs, or drafts must release them there.
+Components must release resources they own. This includes observers, object
+URLs, timers, dialogs, pending transitions, and asynchronous work.
 
 ## Service Worker
 
-`service-worker.js` caches app shell assets for local-first behavior. When paths
-change or cached app assets change, bump `CACHE_NAME` and update the asset lists.
-Registration bypasses the HTTP cache when checking for worker updates. A newly
-installed worker activates promptly, but the app does not force-reload an open
-page because doing so could discard an in-progress draft.
+`service-worker.js` caches the complete app shell. Its asset list is explicit.
 
-The service worker intentionally lists module paths explicitly. That makes moved files visible during review and avoids hidden build steps.
+Static verification follows JavaScript imports and CSS imports from
+`index.html`. Every reachable runtime asset must appear in the cache.
+
+When a cached runtime file changes or moves:
+
+1. update the service-worker asset list
+2. bump `CACHE_NAME`
+3. run `npm run check`
+
+The worker checks for updates without the HTTP cache. It does not reload an open
+page because that could discard a draft.

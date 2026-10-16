@@ -1,197 +1,171 @@
 # Persistence
 
-This document describes the current IndexedDB implementation and the boundaries
-that future mutations must preserve.
+This document describes the current storage adapters, IndexedDB schema, and
+transaction rules.
 
 ## Runtime Adapters
 
-Application startup selects one adapter:
+Startup selects one adapter:
 
-- `IndexedDbStorage` for user mode
-- `DebugStorage` for debug mode
+| Mode | Adapter | Lifetime |
+| --- | --- | --- |
+| User | `IndexedDbStorage` | Persists in the current browser origin |
+| Debug | `DebugStorage` | Resets to fixtures on reload |
 
-Both implement the contract in `src/data/contracts/storage-contract.js` and
-return plain domain records. Views must not receive `IDBRequest`,
-`IDBTransaction`, object-store names, or browser storage events.
+Both adapters implement `src/data/contracts/storage-contract.js` and return
+plain domain records.
 
-Debug mode uses cloned fixtures and performs writes only in memory. It never opens
-IndexedDB. User mode never falls back to debug data when storage fails.
+Views never receive IndexedDB requests, transactions, store names, or browser
+storage events. User mode also never falls back to debug data after a failure.
 
-## Database Identity
+## IndexedDB Schema
 
 ```text
 Name:    wotagoods-manager
 Version: 1
 ```
 
-Adding a goods type or custom field is normal data mutation and never changes the
-IndexedDB version. Version upgrades are reserved for physical stores and indexes.
+Goods types and custom fields are normal records. Creating them does not change
+the database version.
 
-## Object Stores
-
-| Store | Key path | Current indexes | Purpose |
+| Store | Key | Indexes | Content |
 | --- | --- | --- | --- |
 | `goods_types` | `id` | `by_updated_at` | Goods-type records |
-| `field_definitions` | `id` | `by_goods_type`, unique `by_goods_type_and_key` | Field metadata |
-| `items` | `id` | `by_goods_type`, `by_goods_type_and_updated_at` | Items for every type |
-| `assets` | `id` | none | Processed image Blobs |
-| `app_metadata` | `key` | none | Domain-level metadata |
+| `field_definitions` | `id` | `by_goods_type`, unique `by_goods_type_and_key` | Field records |
+| `items` | `id` | `by_goods_type`, `by_goods_type_and_updated_at` | Items for all goods types |
+| `assets` | `id` | none | Processed image blobs |
+| `app_metadata` | `key` | none | Domain metadata |
 
-Boolean values are not valid IndexedDB index keys. Active/deleted filtering is
-performed after an indexed parent query at the expected collection size.
+IndexedDB cannot use booleans as index keys. Repositories query by parent ID and
+then apply lifecycle scope in memory.
 
-## Current Storage Contract
+## Storage Contract
 
-Implemented capabilities:
+The adapter contract is grouped by responsibility:
 
-```text
-initialize
-listGoodsTypes
-createGoodsType
-listFieldDefinitions
-saveFieldDefinitions
-listItems
-createItem
-updateItemContent
-updateItemLifecycle
-getAsset
-purgeItem
-resetData
-close
-```
+| Group | Methods |
+| --- | --- |
+| Lifecycle | `initialize`, `close` |
+| Goods types | `listGoodsTypes`, `createGoodsType` |
+| Fields | `listFieldDefinitions`, `saveFieldDefinitions` |
+| Items | `listItems`, `createItem`, `updateItemContent` |
+| Item lifecycle | `updateItemLifecycle`, `purgeItem` |
+| Assets | `getAsset` |
+| Maintenance | `resetData` |
 
-`createGoodsType` accepts a validated goods-type record and its field definitions.
-Field management reads definitions by goods type and saves a validated record set
-atomically. Item management lists items by goods type, retrieves image assets,
-and writes validated item-plus-asset bundles atomically.
+### Record Scopes
 
-Catalog reads require one explicit record scope from
+Catalog reads require one explicit scope from
 `src/data/models/record-lifecycle.js`:
 
-```text
-active   records available to ordinary workflows
-deleted  records available to recovery workflows
-all      complete records for integrity checks and backup export
-```
+| Scope | Result |
+| --- | --- |
+| `active` | Records available to normal workflows |
+| `deleted` | Records available to recovery workflows |
+| `all` | Complete records for integrity checks |
 
-Do not replace these scopes with booleans such as `includeDeleted`; a caller must
-state which catalog it intends to read.
+Callers do not use flags such as `includeDeleted`. The scope states which
+catalog is being read.
 
-`updateItemContent` owns editable item data and optional image replacement.
-`updateItemLifecycle` owns only `isDeleted`, `deletedAt`, and `updatedAt` while
-preserving the item payload and retained image reference. The same lifecycle
-boundary supports both soft deletion and restoration. `purgeItem` accepts only
-deleted item identity, rereads the authoritative item inside one write transaction,
-and removes that item plus its retained image asset together.
+### Item Write Boundaries
 
-The contract grows only when an application operation needs it. Planned
-capabilities include versioned snapshot transfer. Do not add generic or speculative
-adapter methods.
+`updateItemContent` owns editable values and image replacement.
+`updateItemLifecycle` owns only `isDeleted`, `deletedAt`, and `updatedAt`.
+
+`purgeItem` accepts a deleted item ID. It rereads the item inside the write
+transaction and removes both the item and its retained image.
 
 ## Transactions
 
-Domain operations choose the complete object-store set before opening a
-transaction. Asynchronous image processing, confirmation, and validation happen
-before the transaction begins.
+Validation, image processing, and user confirmation finish before a transaction
+starts. Each operation chooses its full store set at the start.
 
-Examples:
+| Operation | Stores |
+| --- | --- |
+| Create goods type | `goods_types`, `field_definitions` |
+| Apply field changes | `field_definitions` |
+| Create item with image | `assets`, `items` |
+| Edit item without image | `items` |
+| Replace item image | `assets`, `items` |
+| Delete or restore item | `items` |
+| Purge deleted item | `items`, `assets` |
+| Reset local data | `goods_types`, `field_definitions`, `items`, `assets` |
 
-- creating a goods type uses one `goods_types` + `field_definitions` transaction
-- creating an item and its image uses one `assets` + `items` transaction
-- editing item content without a new image uses one `items` transaction
-- replacing an item image uses one `assets` + `items` transaction and removes the
-  superseded asset in that transaction
-- deleting and restoring an item uses one lifecycle-only `items`
-  transaction and retains the referenced asset
-- permanently purging a deleted item removes the item and its retained asset in
-  one `items` + `assets` transaction
-- applying field changes uses one `field_definitions` transaction
-- resetting local data clears `goods_types`, `field_definitions`, `items`, and
-  `assets` in one transaction while preserving `app_metadata`
-- future type-changing field migrations include `items` in the same transaction
-- future backup replacement validates outside IndexedDB, then replaces all user
-  data stores in one transaction
+Image replacement removes the old asset in the same transaction. Reset keeps
+`app_metadata`.
 
-Application-level busy state prevents conflicting UI operations. IndexedDB
-transaction atomicity protects committed data.
+The global mutation controller blocks overlapping writes. IndexedDB protects
+atomic commits. The debug adapter validates its full change before replacing
+its in-memory arrays.
 
-The debug adapter performs all validation and duplicate checks before mutating
-its arrays, preserving the same all-or-nothing behavior without persistence.
+## Errors And Startup
 
-## Errors
+Adapters translate browser failures into `StorageError` values. UI code uses
+the stable error code and never parses browser event text.
 
-Storage adapters translate browser failures into `StorageError` values with a
-stable code. Current codes cover unavailable storage, failed initialization,
-blocked upgrades, invalid adapters, uninitialized use, and failed operations.
+Current error groups cover:
 
-UI code may select a user message from the code. It must not depend on browser
-event types or parse error-message strings.
+- storage unavailable or not initialized
+- initialization or upgrade failure
+- invalid adapter or invalid persisted data
+- blocked upgrade
+- failed operation
 
-Startup behavior:
+Startup follows one sequence:
 
-1. render a loading state
+1. show loading state
 2. initialize the selected adapter
 3. load goods types
-4. construct data-dependent views
-5. render a retryable error if initialization fails
+4. build views and navigation
+5. show a retry action on failure
 
-A failed database must never look like a valid empty collection.
-
-## Connection Lifecycle
-
-- Repeated initialization is idempotent.
-- `close()` releases the active connection.
-- `versionchange` closes stale connections so another tab can upgrade.
-- blocked upgrades return an actionable error asking the user to close other tabs.
-- future application teardown must close storage without racing initialization.
+A failed database must not look like an empty collection.
 
 ## Record Validation
 
-Records are validated at storage boundaries:
+Storage boundaries validate records:
 
-- before a domain record is written
-- after untrusted persisted or imported data is read
-- before a record is returned to application code
+- before a write
+- after reading persisted data
+- before returning data to application code
 
-Invalid persisted data produces a domain storage error. It is not silently
-discarded or repaired. Recovery and import tools can be added deliberately later.
+Invalid data produces a storage error. It is not skipped or repaired.
 
-Shared primitive validation lives in `src/data/models/record-validation.js`.
-Deletion-state parsing and record scopes live in
-`src/data/models/record-lifecycle.js`; record-specific models own the remaining
-shape and relationship-independent invariants.
+Shared primitive checks live in
+`src/data/models/record-validation.js`. Lifecycle parsing and scopes live in
+`record-lifecycle.js`. Each record model owns its remaining shape rules.
 
-## Version Responsibilities
+## Connection Lifecycle
 
-Three independent versions are required:
+- Repeated initialization returns the same ready state.
+- `close()` releases the connection.
+- `versionchange` closes stale connections.
+- A blocked upgrade asks the user to close other tabs.
 
-1. **IndexedDB version** changes stores and indexes.
-2. **Domain-model version** changes record meaning or shape.
-3. **Export-format version** changes portable file representation.
+## Version Ownership
 
-`app_metadata` currently stores:
+Two versions are active in the current app:
+
+| Version | Meaning | Owner |
+| --- | --- | --- |
+| IndexedDB version | Physical stores and indexes | `database-schema.js` |
+| Domain-model version | Record shape and meaning | `domain-model.js` |
+
+`app_metadata` stores:
 
 ```js
 { key: "domainModelVersion", value: 1 }
 ```
 
-The domain-model constant is owned by `src/data/models/domain-model.js` and is
-reused by the physical schema. IndexedDB schema code must not define domain
+The physical schema imports the domain version. It does not define domain
 meaning.
-
-Upgrades must be deterministic and remain inside the IndexedDB upgrade
-transaction. Data migrations that cannot safely complete there require a
-separate, resumable migration design.
 
 ## Source Ownership
 
-```text
-src/application/       Storage-neutral operations that request adapter writes
-src/data/contracts/    Adapter contract and storage errors
-src/data/debug/        In-memory fixtures, repositories, and debug adapter
-src/data/indexeddb/    Schema, connection, requests, repositories, adapter
-src/data/models/       Domain record construction and validation
-src/data/transfer/     Future versioned import/export mapping
-```
-
-Do not create an empty directory before its first module exists.
+| Path | Responsibility |
+| --- | --- |
+| `src/application/` | Storage-neutral operations |
+| `src/data/contracts/` | Adapter interface and errors |
+| `src/data/debug/` | In-memory adapter and fixtures |
+| `src/data/indexeddb/` | Schema, connection, repositories, and adapter |
+| `src/data/models/` | Domain construction and validation |

@@ -1,106 +1,124 @@
-# Testing Strategy
+# Testing
 
-This document defines how automated tests are organized and how new behavior
-should be developed. Passing tests are necessary evidence, not proof that every
-browser workflow is correct.
+Automated tests cover domain, application, repository, adapter, and pure view
+behavior. Browser layout and full interaction flows are checked manually.
 
 ## Commands
 
-```powershell
-npm test
-npm run test:coverage:data
-npm run check
-```
+| Command | Purpose |
+| --- | --- |
+| `npm test` | Run the full dependency-free `node:test` suite |
+| `npm run test:coverage:data` | Enforce data-layer coverage thresholds |
+| `npm run check` | Run static checks, test hygiene, and all tests |
 
-`npm test` runs the dependency-free Node test suite. The scoped coverage command
-guards the data layer at 90% lines, 85% branches, and 85% functions. It is scoped
-because Node coverage omits browser modules that the test process never imports;
-presenting that result as project-wide coverage would be misleading.
+The data coverage guard requires:
 
-`npm run check` also rejects focused, skipped, todo, duplicate, or accidentally
-discovered helper files before running tests.
+- 90% line coverage
+- 85% branch coverage
+- 85% function coverage
 
-## Ownership
+This result covers `src/data/`, not the whole browser app.
+
+## Static Checks
+
+`npm run check` verifies four groups:
+
+### Source Graph
+
+- JavaScript syntax
+- reachable browser modules
+- allowed layer imports
+- import cycles
+
+### Runtime Assets
+
+- CSS import graph
+- HTML asset references
+- service-worker cache coverage
+
+### Test Hygiene
+
+- no focused, skipped, or todo tests
+- no duplicate test names
+- no helper files discovered as tests
+
+### Unit And Integration Tests
+
+- all `node:test` files under `test/`
+
+## Test Ownership
 
 Test paths mirror production ownership:
 
-```text
-test/app/                  Application runtime coordination
-test/application/          Storage-neutral use cases and queries
-test/data/contracts/       Adapter capability contracts
-test/data/debug/           In-memory adapter integration
-test/data/indexeddb/       Physical schema, connection, repositories, adapter
-test/data/models/          Domain records and invariants
-test/localization/         Locale normalization and catalog parity
-test/shared/               Domain-neutral utilities
-test/views/                Pure presentation logic and focused DOM contracts
-test-support/              Reusable fakes; kept outside test discovery
-```
+| Path | Scope |
+| --- | --- |
+| `test/app/` | Startup and runtime coordination |
+| `test/application/` | Storage-neutral use cases and queries |
+| `test/data/contracts/` | Shared adapter behavior |
+| `test/data/debug/` | In-memory adapter integration |
+| `test/data/indexeddb/` | Schema, connection, repositories, and adapter |
+| `test/data/models/` | Domain records and invariants |
+| `test/localization/` | Locale normalization and catalog parity |
+| `test/scripts/` | Executable architecture-policy regressions |
+| `test/shared/` | Product-neutral utilities |
+| `test/views/` | Pure presentation logic and focused DOM contracts |
+| `test-support/` | Reusable fakes outside test discovery |
 
-A test belongs beside the module whose public behavior it exercises. Broad
-adapter tests may cross repositories deliberately and are integration tests;
-model validation does not belong in those files.
+A test belongs to the module whose public behavior it checks. Adapter contract
+tests may cross repositories because they verify an integrated boundary.
 
-## Test Shape
+## Test Design
 
 Each test should have one reason to fail:
 
-1. arrange the smallest meaningful state
+1. arrange the smallest useful state
 2. perform one behavior
-3. assert the complete observable result of that behavior
+3. assert the full observable result
 
-One behavior may require several assertions. For example, an atomic image
-replacement test may assert its store set, write set, and deletion set. Combining
-normalization, validation errors, and persistence into one test is not acceptable
-because a failure would not identify which contract changed.
+One behavior may need several assertions. An atomic image replacement test can
+check written stores, new records, and removed records because they form one
+commit.
 
-Prefer public outputs and committed writes over internal call order. Use fixed
-IDs and timestamps. Avoid snapshots for domain records when explicit properties
-make the invariant clearer. A regression test must fail before its production
-fix and describe the user-visible or architectural behavior that failed.
+Do not combine unrelated normalization, validation, and persistence cases. Use
+table-driven subtests when one rule has several inputs.
+
+Prefer public outputs and committed writes over internal call order. Use stable
+IDs and timestamps. Use explicit record assertions instead of broad snapshots.
+
+A regression test must fail before its fix and name the broken behavior.
 
 ## Test Levels
 
-- **Model tests** cover record normalization and invariants with no storage.
-- **Application tests** use minimal adapter stubs and cover one use case.
-- **Repository tests** verify validation, store selection, and transaction atomicity.
-- **Adapter integration tests** verify capability parity and lifecycle behavior.
-- **View tests** cover pure selectors, display models, and focused DOM behavior.
-- **Manual browser checks** currently cover responsive layout, motion, dialogs,
-  service-worker updates, and actual IndexedDB persistence.
+| Level | Main evidence |
+| --- | --- |
+| Model | Record normalization and invariants |
+| Application | One use case with a small adapter stub |
+| Repository | Validation, store choice, and transaction atomicity |
+| Adapter | Contract parity and lifecycle behavior |
+| View | Pure selectors, display models, and focused DOM behavior |
+| Manual browser | Layout, motion, dialogs, service worker, and real IndexedDB |
 
-The final category is a known automation gap. A future browser test harness should
-exercise the hosted-path build, real IndexedDB, service workers, keyboard input,
-pointer input, and representative wide/narrow screenshots. Until then, do not
-interpret Node coverage as end-to-end confidence.
+Node coverage is not end-to-end browser coverage. The project has no automated
+browser suite, so responsive and pointer behavior still needs manual checks.
 
-## Deleted-Item Coverage
+## Lifecycle Coverage
 
-Recovery behavior is covered from the inside out:
+Deleted-item behavior is checked at several boundaries:
 
-1. model tests for valid restore transitions and immutable item content
-2. repository tests for `deleted` scope, restoration, and atomic item/asset purge
-3. shared adapter contract cases for DebugStorage and IndexedDB
-4. application tests for deleted-scope reads, restore invariants, and purge boundaries
-5. static interface checks for localization, module reachability, and offline caching
-6. manual browser checks for empty and failure states, confirmation, retained
-   filters, motion, and reload
+| Boundary | Covered behavior |
+| --- | --- |
+| Model | Valid lifecycle transitions and immutable content |
+| Repository | Deleted reads, restore, and atomic item/asset purge |
+| Adapter | Matching DebugStorage and IndexedDB behavior |
+| Application | Scope selection, restore rules, and purge calls |
+| Shared UI | Dialog timing, cancellation, blocking, and reduced motion |
+| Manual browser | Empty states, failures, confirmation, motion, and reload |
 
-Repository and adapter failure paths prove that the active item, deleted item,
-and asset catalogs remain unchanged. Dialog state remains a manual browser-test
-gap until a browser harness is introduced.
+Repository failure tests assert that active items, deleted items, and assets stay
+unchanged after an aborted operation.
 
-## Backup Export And Import Milestone
+## Manual Verification
 
-Start with pure transfer contracts before file UI:
-
-1. deterministic snapshot serialization tests
-2. export tests proving `all` scopes and retained assets are included
-3. table-driven validation tests for versions, duplicate IDs, relationships,
-   lifecycle state, and malformed image payloads
-4. replacement repository tests proving one transaction and no partial writes
-5. round-trip tests from valid domain records to snapshot and back
-6. browser tests for file selection, review, cancellation, download, and failures
-
-Invalid files must be tested as non-mutating inputs. Merge behavior must not be
-tested or implemented until its conflict semantics are designed.
+Use the grouped browser checklist in
+[Development Notes](development.md#manual-browser-checks) after changing runtime
+or UI behavior.

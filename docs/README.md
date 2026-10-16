@@ -1,31 +1,32 @@
 # Documentation
 
-This directory separates current architecture from planned product behavior. A
-document should state whether it describes implemented code or a future contract.
+The documents are split into current behavior and product plans. This keeps
+implemented facts separate from unfinished work.
 
-## Start Here
+## Current Implementation
 
-| Document | Purpose |
+| Document | Scope |
 | --- | --- |
-| [Architecture](architecture.md) | Current runtime flow, module ownership, and dependency rules |
-| [Development](development.md) | Local commands, conventions, browser storage, and common changes |
-| [Testing Strategy](testing.md) | Test ownership, quality rules, coverage scope, and milestone matrices |
-| [Deployment](deployment.md) | GitHub Pages workflow and release verification |
-| [Roadmap](roadmap.md) | Implemented capabilities and ordered milestones |
+| [Architecture](architecture.md) | Runtime flow, code ownership, and dependency rules |
+| [Domain Model](data-model.md) | Records, relationships, and invariants |
+| [Persistence](persistence.md) | IndexedDB, adapters, transactions, and errors |
+| [Workflows](workflows.md) | User workflows available in the app |
+| [Development](development.md) | Local commands and coding conventions |
+| [Testing](testing.md) | Test ownership, shape, and coverage |
+| [Deployment](deployment.md) | GitHub Pages release process |
 
-## Data And Product Design
+## Planning
 
-| Document | Purpose |
+| Document | Scope |
 | --- | --- |
-| [Domain Model](data-model.md) | Stable records, relationships, built-in fields, and deletion rules |
-| [Persistence](persistence.md) | IndexedDB schema, adapters, transactions, errors, and migrations |
-| [Workflows](workflows.md) | Implemented and planned goods-management workflows |
-| [Data Portability](data-portability.md) | Planned versioned export/import contract and optional Google Drive snapshots |
+| [Roadmap](roadmap.md) | Completed work and ordered milestones |
+| [Data Portability](data-portability.md) | Backup, import, and cloud-snapshot design |
 
-## Documentation Rules
+## Writing Rules
 
-- `architecture.md` describes code that exists now.
-- Design documents may describe future behavior but must label it clearly.
-- `roadmap.md` is the source of truth for implementation status and sequence.
-- Avoid copying the same detailed rules into several files; link to the owner.
-- Update file paths and commands in the same commit that changes them.
+- Current documents describe only behavior that exists.
+- Unfinished work belongs only in a planning document.
+- Keep each paragraph focused and short.
+- Group related list items under a clear heading.
+- Link to the owning document instead of copying detailed rules.
+- Update paths and commands in the same commit as the code change.

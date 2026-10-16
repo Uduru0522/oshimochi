@@ -1,24 +1,26 @@
 # Domain Model
 
-This document defines the stable application records. Goods types and their
-protected built-in field definitions can now be created atomically. Remaining
-mutation behavior is specified in [Workflows](workflows.md).
+This document defines the records and invariants used by the current app.
+User actions are covered in [Workflows](workflows.md). Physical storage is
+covered in [Persistence](persistence.md).
 
-## Goals
+## Core Rules
 
-- Support many goods types without changing physical database schema.
-- Let each goods type define custom item fields.
-- Keep protected item fields consistent across goods types.
-- Preserve soft-deleted records until an explicit purge.
-- Keep records independent from IndexedDB and UI components.
-- Remain exportable to a versioned, storage-neutral format.
+- One physical schema stores every goods type.
+- Field definitions are records, not database columns.
+- IDs are stable and do not come from editable labels.
+- Built-in item fields have fixed meaning.
+- Soft-deleted items keep their values and image until purge.
+- Domain records do not depend on IndexedDB or the UI.
 
 ## Naming
 
-- JavaScript record properties use `camelCase`.
-- Persistent object-store and index names use lowercase `snake_case`.
-- IDs are opaque stable strings and never derive from editable labels.
-- User-facing labels use unrestricted normal text.
+| Kind | Rule |
+| --- | --- |
+| JavaScript properties | `camelCase` |
+| Stores and indexes | lowercase `snake_case` |
+| IDs | opaque stable strings |
+| User labels | unrestricted normal text |
 
 ## Relationships
 
@@ -79,19 +81,19 @@ erDiagram
   }
 ```
 
-IndexedDB does not enforce relationships. Domain operations validate references
-before opening a write transaction.
+IndexedDB does not enforce these links. Domain operations validate records before
+opening a write transaction.
 
-## Goods Type
+## Goods Types
 
-A goods type classifies items and owns field definitions. It does not own a
-physical table or object store.
+A goods type classifies items and owns field definitions. It does not create a
+new object store.
 
 ```js
 {
   id: "stable-generated-id",
   displayName: "Tapestries",
-  description: "Wall scrolls, fabric posters, and related display goods.",
+  description: "Wall scrolls and related display goods.",
   isDeleted: false,
   deletedAt: null,
   createdAt: "2026-07-20T00:00:00.000Z",
@@ -99,43 +101,33 @@ physical table or object store.
 }
 ```
 
-`displayName` may change. `id` must not. Creation order is sufficient for initial
-navigation; explicit ordering can be added only when the UI supports reordering.
+`displayName` may change. `id` must not change.
 
-## Field Definition
+## Field Definitions
 
-Field definitions drive forms, validation, detail labels, and item presentations.
-They are records, not physical database columns.
+Field definitions drive forms, validation, labels, filters, sorting, and item
+presentations.
 
-Initial data types:
+### Supported Types
 
-```text
-text
-long_text
-number
-date
-boolean
-url
-select
-```
+| Type | Stored value |
+| --- | --- |
+| `text` | short string |
+| `long_text` | multiline string |
+| `number` | finite number |
+| `date` | calendar date string |
+| `boolean` | `true` or `false` |
+| `url` | HTTPS address |
+| `select` | stable option ID |
 
-`image` is an internal type used by the protected built-in image field. It is
-not offered as a general custom-field type in the first field manager.
+`image` is used only by the protected built-in image field.
 
-Deferred types:
+### Stable Identity
 
-```text
-tags
-price
-rating
-image_set
-relation
-```
+`key` is unique inside one goods type. `displayName` is editable.
+`position` controls form and display order.
 
-`key` is a stable identifier unique within one goods type. `displayName` is
-editable. `position` gives forms and details deterministic field order.
-
-Selection fields store stable option identities:
+Selection choices have stable IDs:
 
 ```js
 options: {
@@ -145,12 +137,10 @@ options: {
 }
 ```
 
-Labels may be renamed and new options may be added. Renaming preserves the
-option ID, so existing item values remain valid. Option removal and
-identity-changing edits remain deferred until item-value migration rules exist.
+Choice labels may change. New choices may be added. Stored item values keep the
+same choice ID.
 
-Two-option toggle fields store customizable presentation labels while item
-values remain booleans:
+Two-option fields store booleans and define labels for both states:
 
 ```js
 options: {
@@ -159,29 +149,27 @@ options: {
 }
 ```
 
-Older toggle definitions with `options: null` are read as `No / Yes` for
-backward compatibility. Two-option fields are required, and new item forms
-always write one boolean value. An item
-may omit a required field only when it was created before that field existed;
-the UI marks such records as incomplete until the missing values are supplied through item editing.
+Definitions with `options: null` use `No` and `Yes`. Two-option fields are
+required. Older items may lack a value when the field was added after the item;
+the UI marks those items as incomplete.
 
-### Built-In Item Fields
+### Built-In Fields
 
-| Field | Required | User editable | Deletable |
+| Field | Required | Editable value | Removable |
 | --- | --- | --- | --- |
 | `id` | Yes | No | No |
 | `name` | Yes | Yes | No |
 | `image` | Yes | Yes | No |
 
-`createdAt`, `updatedAt`, `isDeleted`, and `deletedAt` are system properties.
-Goods-type creation stores all three built-in field records so future renderers
-can process built-in and custom fields through one path. The creation operation
-sets their protected metadata; field-management operations reject changes that
-violate these rules.
+`createdAt`, `updatedAt`, `isDeleted`, and `deletedAt` are system
+properties.
 
-## Item And Custom Values
+Goods-type creation writes all three built-in field definitions. Field
+management rejects changes that break their protected rules.
 
-All goods types share the `items` store. `goodsTypeId` determines the applicable
+## Items
+
+All goods types share the `items` store. `goodsTypeId` selects the matching
 field definitions.
 
 ```js
@@ -201,73 +189,84 @@ field definitions.
 }
 ```
 
-Custom values use stable field IDs as keys. Renaming a field therefore does not
-rewrite every item, and restoring a deleted field reveals its previous values.
+Custom values use field IDs as keys. Renaming or soft-deleting a field does not
+rewrite its item values.
 
-## Image Asset
+## Image Assets
 
-Processed images are stored as `Blob` values in asset records. Items store only
-`imageAssetId`. This avoids Base64 overhead during ordinary browser use and keeps
-image storage replaceable.
+Processed images are stored as `Blob` values. Items keep only
+`imageAssetId`.
 
-Required asset metadata:
+Each asset stores:
 
 - media type
-- pixel width and height
+- width and height
 - byte size
 - creation and update timestamps
 
-Item entry requires a processed low-resolution JPEG. Portrait output is
-`560 x 792`; landscape output is `792 x 560`. Source files remain only in the
-in-memory draft and are not written to IndexedDB. Legacy items may still have
-`imageAssetId: null`; they remain readable for backward compatibility, but new
-items cannot be created without an image.
+New items require one processed JPEG:
 
-## Soft Deletion
+| Orientation | Output size |
+| --- | --- |
+| Portrait | `560 x 792` |
+| Landscape | `792 x 560` |
 
-Goods types, field definitions, and items use:
+The source file stays in the form draft and is not persisted. Older records with
+`imageAssetId: null` remain readable.
+
+## Lifecycle
+
+Lifecycle records use:
 
 ```js
-isDeleted: true
-deletedAt: "2026-07-20T00:00:00.000Z"
+{
+  isDeleted: true,
+  deletedAt: "2026-07-20T00:00:00.000Z"
+}
 ```
 
-The boolean supports filtering. The timestamp supports restoration, retention,
-and audit UI. Deleting a goods type leaves dependent fields, items, and assets
-recoverable. Permanent purge is a separate destructive operation that must
-explicitly traverse dependent records.
+Repository reads always request one scope:
 
-Application and repository reads use one explicit lifecycle scope:
+| Scope | Use |
+| --- | --- |
+| `active` | Normal browsing and editing |
+| `deleted` | Recovery views |
+| `all` | Complete integrity checks |
 
-- `active` for ordinary browsing and editing
-- `deleted` for recovery interfaces
-- `all` for integrity checks and complete backup snapshots
+Deletion and restoration change only lifecycle properties. IDs, values, creation
+timestamps, and image references stay unchanged.
 
-Lifecycle transitions preserve every non-lifecycle property. Item deletion and
-restoration therefore retain the same item ID, custom values, creation
-timestamp, and `imageAssetId`. Content edits and lifecycle transitions are
-separate storage operations.
+An image used by a deleted item is retained. Permanent purge removes the deleted
+item and its image in one transaction.
 
-An asset referenced by a soft-deleted item is retained. Permanent purge must
-delete the item and its owned image asset atomically. A future import must
-validate every item-to-asset reference and asset metadata before replacing local
-data.
+## Versions
 
-## Model Version
+The domain-model version is `1`. It is defined in
+`src/data/models/domain-model.js`.
 
-The storage-independent domain model currently has version `1`, owned by
-`src/data/models/domain-model.js`. This version describes record meaning and is
-separate from the IndexedDB schema version and future export-format version.
+The domain-model version describes record meaning. The IndexedDB version
+describes physical stores and indexes. They are separate values.
 
 ## Invariants
 
-- IDs and creation timestamps never change after creation.
-- `updatedAt` changes with every committed mutation.
-- Active items reference an existing, active goods type.
-- Custom value keys reference fields belonging to the item's goods type.
-- Built-in fields cannot be deleted or redefined as another type.
-- Active records have `deletedAt: null`.
-- Deleted records have `isDeleted: true` and a deletion timestamp.
+### Identity
 
-Physical storage, versioning, and adapter rules are owned by
-[Persistence](persistence.md).
+- IDs and creation timestamps never change.
+- `updatedAt` changes with each committed mutation.
+
+### Relationships
+
+- An active item belongs to an existing active goods type.
+- Each custom value refers to a field from that goods type.
+- An item image reference points to its owned asset.
+
+### Fields
+
+- Built-in fields cannot be removed or assigned another type.
+- Field and selection-option IDs stay stable when labels change.
+
+### Lifecycle
+
+- Active records use `deletedAt: null`.
+- Deleted records use `isDeleted: true` and a deletion timestamp.
+- Item lifecycle changes do not alter item content.

@@ -1,6 +1,8 @@
 # Development Notes
 
-## Running The App
+## Run The App
+
+Use Node.js 24 or newer.
 
 ```powershell
 npm start
@@ -9,129 +11,101 @@ npm start
 Open:
 
 ```text
-http://localhost:4173
+User mode:  http://localhost:4173/
+Debug mode: http://localhost:4173/?debug=1
 ```
 
-Debug mode:
+Use the local server instead of opening `index.html` directly. The manifest,
+service worker, and browser storage depend on an HTTP origin.
+
+To test the GitHub Pages path:
+
+```powershell
+npm run start:pages
+```
+
+Open:
 
 ```text
-http://localhost:4173?debug=1
+http://localhost:4173/wotagoods-manager/
+http://localhost:4173/wotagoods-manager/?debug=1
 ```
 
-The app can be opened directly through `index.html`, but the local server is preferred because manifest and service worker behavior are browser-origin dependent.
+## Automated Verification
 
-## Verification
-
-Run the complete static and unit-test suite:
+Run the full check:
 
 ```powershell
 npm run check
 ```
 
-`npm run check` validates JavaScript syntax, browser import reachability,
-dependency cycles and layer boundaries, referenced assets, and offline-cache
-coverage. It also rejects disabled, focused, duplicate, or accidentally discovered
-tests, then runs the dependency-free `node:test` suite in `test/`.
+It checks source syntax, import rules, cycles, runtime assets, offline coverage,
+test hygiene, and the complete `node:test` suite.
 
-Run the scoped data-layer coverage guard with:
+Run the data-layer coverage guard separately:
 
 ```powershell
 npm run test:coverage:data
 ```
 
-See [Testing Strategy](testing.md) for ownership rules, the meaning of one
-behavior per test, known browser-automation gaps, and milestone-specific test
-matrices.
+See [Testing](testing.md) for test ownership and design rules.
 
-After runtime or layout changes, start the server and verify:
+## Manual Browser Checks
 
-- `http://localhost:4173`
-- `http://localhost:4173?debug=1`
+Choose the groups affected by the change. Test user and debug mode when storage
+or mutation behavior changes.
 
-For persistence changes, create a goods type in each mode and reload:
+### Startup And Storage
 
-- user-mode goods types must remain after reload
-- debug-mode goods types must return to the fixtures after reload
-- successful creation must open the new goods type's Items view
-- a duplicate display name may warn but must not be blocked
+- Reload user mode and confirm saved data remains.
+- Reload debug mode and confirm it returns to fixtures.
+- Confirm storage failures show a retry action, not an empty collection.
+- Confirm localhost and the hosted app keep separate data.
 
-For field-management changes:
+### Goods Types And Fields
 
-- confirm protected fields have no edit or removal commands
-- stage several additions, edits, removals, and order changes before applying
-- confirm changing views discards unapplied staging without database writes
-- reload after applying and confirm user-mode changes remain
-- reload debug mode and confirm field changes return to fixtures
+- Create a goods type and confirm Items opens after save.
+- Stage add, edit, remove, and order changes before applying.
+- Confirm protected fields have no edit or remove action.
+- Leave the view and confirm unapplied field changes are discarded.
+- Reload and confirm only user-mode changes persist.
 
-For item-registration changes:
+### Item Forms
 
-- add values for every supported custom field type and review them before saving
-- confirm image selection is required before review
-- confirm scheme-less web addresses normalize to HTTPS and HTTP is rejected
-- move and resize portrait and landscape crop rectangles, then confirm fixed-resolution thumbnails survive reload
-- confirm two-option fields use their configured labels and always produce one boolean value for new items
-- confirm Administration reveals the field editor after Add, Edit, and Remove actions
-- confirm item URLs open as links and saved two-option values render as read-only selectors
-- confirm Add item preserves unfinished drafts, confirms Clear all, and resets after closing the success screen
-- confirm dialog controls never trigger background drag scrolling
-- test long field names, values, and two-option labels in both entry and list layouts
-- confirm required values are enforced after whitespace normalization
-- reload user mode and confirm saved items remain
-- reload debug mode and confirm created items disappear
-- confirm a failed save retains the item draft
+- Enter every supported field type and review the values.
+- Confirm image selection is required.
+- Move and resize both crop orientations and check the saved image.
+- Confirm scheme-less URLs become HTTPS and HTTP URLs are rejected.
+- Confirm long labels and values do not create horizontal overflow.
+- Close, reopen, clear, save, and retry a failed draft.
 
-For item-browser presentation changes:
+### Item Browser
 
-- choose a goods type and confirm it opens Items directly
-- open Collection overview from the title-bar information action, confirm the
-  goods type stays highlighted, then return through the arrow in the same position
-- confirm cards are selected on first opening a collection and List remains selectable
-- switch between list and cards with portrait and landscape fixtures; every thumbnail must remain fully visible in a square media region
-- apply text search and several field filters; cards must prioritize matching fields without changing their fixed field limit
-- filter, clear, sort, add, edit, and delete while scrolled; retained entries must move from their previous positions instead of being rebuilt
-- confirm card filtering completes exits before grid movement and movement before entrances
-- verify the item toolbar remains aligned in its full and compact title-bar states
+- Confirm a collection opens Items and the information action opens Overview.
+- Switch between card and list views with both image orientations.
+- Apply and clear several filters and sort orders.
+- Confirm retained entries move from their old positions.
+- Confirm card exits finish before movement, then entrances begin.
+- Scroll until the title bar compacts and check toolbar alignment.
 
-For lifecycle and persistence changes:
+### Item Lifecycle
 
-- use `RECORD_SCOPES.active`, `RECORD_SCOPES.deleted`, or `RECORD_SCOPES.all`;
-  do not introduce `includeDeleted` booleans
-- keep editable item writes in `updateItemContent` and deletion/restoration in
-  `updateItemLifecycle`
-- confirm soft deletion and restoration do not rewrite or remove the image asset
-- confirm permanent purge removes the item and owned image in one transaction
-- exercise equivalent behavior through both `IndexedDbStorage` and `DebugStorage`
-
-For future backup transfer changes:
-
-- map storage records into a storage-neutral snapshot outside view modules
-- export complete scopes, including soft-deleted records and retained assets
-- validate the complete import and all relationships before opening a transaction
-- keep the original database unchanged on parse, validation, or write failure
-- test unsupported versions, duplicate IDs, broken references, and malformed assets
+- Soft-delete an item and confirm its image stays available.
+- Restore it and confirm values, identity, and image are unchanged.
+- Purge a deleted item and confirm both item and image are removed.
+- Confirm active filters and sorting remain after each change.
+- Check empty, failure, cancel, and confirmation states.
 
 ## Browser Storage
 
-Settings are stored in browser `localStorage`, not in project files.
+Interface settings use `localStorage`:
 
-Current keys:
+| Key | Values |
+| --- | --- |
+| `wotagoods.language` | `en`, `ja`, `zh-Hant` |
+| `wotagoods.theme` | `light`, `dark` |
 
-```text
-wotagoods.language
-wotagoods.theme
-```
-
-Expected values:
-
-```text
-en
-ja
-zh-Hant
-light
-dark
-```
-
-In DevTools Console:
+Useful console commands:
 
 ```js
 localStorage.getItem("wotagoods.language")
@@ -140,179 +114,157 @@ localStorage.getItem("wotagoods.theme")
 localStorage.removeItem("wotagoods.theme")
 ```
 
-Collection data uses IndexedDB, not `localStorage`. User mode persists goods-type
-creation in the browser database. Debug mode uses a separate writable in-memory
-adapter and never opens or writes the user database.
+Collection data uses IndexedDB. Debug mode uses a separate in-memory adapter and
+does not open the user database.
 
-Browser storage is origin-specific. These locations do not share settings or
-IndexedDB data:
+Browser storage is origin-specific. Localhost and GitHub Pages do not share
+settings or collection data.
 
-```text
-http://localhost:4173/
-https://uduru0522.github.io/wotagoods-manager/
-```
+## Common Changes
 
-Use versioned export/import to move a collection between origins, browsers, or
-devices. Do not inspect or mutate IndexedDB directly from view modules.
+### Add A View
 
-## Adding A View
+1. Add its definition to `src/views/view-definitions.js`.
+2. Choose a renderer key.
+3. Register the renderer in `src/views/view-renderer.js`.
+4. Add navigation metadata only when the route belongs in navigation.
 
-1. Add the definition in `src/views/view-definitions.js`.
-2. Choose a `renderer` key.
-3. If needed, add that renderer in `src/views/view-renderer.js`.
-4. Add navigation metadata if it should appear in primary or utility navigation.
+Keep route IDs stable. A secondary route uses `navigationId` to keep its
+primary route highlighted.
 
-Keep route/view IDs stable. They are used by navigation state and router state.
-Secondary routes that should keep a primary destination highlighted must declare
-that destination as `navigationId`. Pass route IDs through view definitions and
-renderer callbacks; do not parse route strings inside components.
-Goods-type route IDs are constructed by
-`src/views/goods-types/goods-type-view-ids.js`; use those helpers when opening a
-collection after an app-level operation.
+Use `src/views/goods-types/goods-type-view-ids.js` for collection route IDs.
+Do not parse route strings inside components.
 
-## Adding A Goods Type For Debug Mode
+### Edit Debug Fixtures
 
-Edit the fixture definitions in `src/data/debug/debug-fixtures.js`. The default
-catalog intentionally covers every supported custom field type, optional and
-missing required values, configurable toggles, and both image orientations. Its
-Tapestries collection contains at least 20 items with repeated and distinct
-values specifically for filtering, sorting, list/card rendering, and keyed
-membership-motion tests.
+Edit sample records in `src/data/debug/debug-fixture-data.js`.
+`debug-fixtures.js` turns those definitions into validated records and image
+assets.
 
-Use stable IDs and domain-facing property names:
+The default catalog covers:
 
-```js
-{
-  id: "example_goods",
-  displayName: "Example goods",
-  description: "Short description."
-}
-```
+- every custom field type
+- optional and missing required values
+- custom two-option labels
+- portrait and landscape images
+- at least 20 Tapestries items for query and layout checks
 
-Keep fixture IDs stable. The catalog derives item and asset records from one
-entry so their identities cannot drift apart. Construct records through the
-domain model factories so invalid fixture data fails during startup and in
-automated tests. Extend the catalog-coverage test when adding a new test purpose.
+Keep fixture IDs stable. Build records through domain factories so invalid
+fixtures fail during startup and tests.
 
-This is only debug data. `DebugStorage` clones these records and never writes them
-to the user database. Supplying custom goods types to `createDebugStorage()` also
-disables the default item and asset catalog unless those records are supplied
-explicitly.
+`DebugStorage` clones fixture records. Changes never reach the user database.
 
-## Theme Rules
+### Change Theme Or Language
 
-Theme constants live in `src/app/config.js`.
+Theme ownership:
 
-Runtime theme changes are handled by `src/services/theme.js`.
+| Concern | Owner |
+| --- | --- |
+| Constants | `src/app/config.js` |
+| Runtime changes | `src/services/theme.js` |
+| First paint | `src/bootstrap/theme-bootstrap.js` |
 
-First-paint theme is handled by `src/bootstrap/theme-bootstrap.js`. Keep that bootstrap file small and synchronous.
+Language ownership:
 
-## Language Rules
+| Concern | Owner |
+| --- | --- |
+| Constants | `src/app/config.js` |
+| Runtime and document metadata | `src/services/language.js` |
+| First paint | `src/bootstrap/language-bootstrap.js` |
+| Catalogs and fallback | `src/localization/` |
 
-Language constants live in `src/app/config.js`. Runtime persistence and document
-metadata are owned by `src/services/language.js`; first-paint `lang` selection is
-handled by `src/bootstrap/language-bootstrap.js`.
+Translate interface copy with `translate()`. Never translate user data.
 
-Interface copy must pass through `translate()` in browser-facing composition
-modules. Do not translate user-defined collection, field, option, or item values.
-English source copy is the fallback, and parameterized copy uses named
-placeholders such as `{name}`. Keep both non-English catalogs synchronized and
-add tests when introducing locale normalization or interpolation behavior.
+Keep the Japanese and Traditional Chinese catalogs in sync. After copy changes,
+check all three languages in wide and narrow layouts.
 
-After copy or layout changes, switch among English, Japanese, and Traditional
-Chinese in Options and check navigation, Administration, dialogs, filter/sort
-controls, long labels, and narrow mode. Reload once in each language to verify
-that `wotagoods.language` applies before the app mounts.
+### Change Styles Or Motion
 
-## CSS Rules
+`src/styles/app.css` only imports owned style files:
 
-Main CSS lives in `src/styles/app.css`.
+| File | Use |
+| --- | --- |
+| `foundation.css` | Tokens, shell, navigation, and shared UI |
+| `items.css` | Item browsing and item dialogs |
+| `administration.css` | Administration and Options |
+| `responsive.css` | Narrow layout and reduced motion |
 
-Prefer editing existing tokens before adding new hardcoded values. Important token groups:
+Preserve this import order. Add every new runtime stylesheet to
+`service-worker.js`.
 
-- theme colors
-- focus and accent tint colors
-- scrollbar sizing
-- navigation spacing
-- motion timing
+Prefer tokens over hardcoded values. Keep motion at or below 200 ms and use the
+shared timing tokens.
 
-Keep interface motion subtle and at or below `200ms`. Use the shared
-`--motion-phase`, `--motion-fast`, `--motion-enter`, and `--motion-layout` tokens
-instead of component-specific durations. The static verification script enforces
-this ceiling. New animation must also remain usable with the existing
-`prefers-reduced-motion` override.
+Use `content-transition.js` for stateful workflow replacement. Use
+`motion.js` when JavaScript needs a CSS timing value.
 
-Stateful workflows should use `src/shared/content-transition.js`. One `--motion-phase`
-is used before replacement and one after it, so their combined duration must remain
-within the same `200ms` ceiling.
+The shell breakpoint is `1100px`. Item rows also use a container query so they
+follow workspace width.
 
-Rendered views that allocate browser resources should return `destroy()` from
-their renderer result. Cancel pending transitions and loads, disconnect
-observers, close dialogs, and revoke object URLs during teardown.
+### Change Item Presentations
 
-JavaScript fallbacks for CSS timing belong in `src/shared/motion.js`. Text action
-buttons should use `src/shared/action-button.js` so default type and class behavior
-remain consistent.
+`item-browser.js` owns loading, query state, and presentation choice.
 
-Responsive behavior currently has one app-shell breakpoint at `1100px`, matching `APP_CONFIG.layout.narrowQuery`. Item rows also use a container query so their presentation follows the available workspace width rather than the viewport alone.
+| Concern | Owner |
+| --- | --- |
+| List markup | `item-list.js` |
+| Card collection | `item-cards.js` |
+| One card body | `item-card-content.js` |
+| Card field choice | `item-card-context.js` |
+| Shared value display | Item display and formatting helpers |
+| Reordering | Keyed layout motion helpers |
 
-Collection loading and active item presentation belong in
-`src/views/items/item-browser.js`. Keep list-only markup in `item-list.js` and
-card collection reconciliation in `item-cards.js`. Keep one-card body rendering
-in `item-card-content.js` and pure field prioritization in `item-card-context.js`;
-place field/value interpretation in the shared item display helpers so
-presentations do not duplicate it. Filtering and sorting produce one prepared
-item set before the active renderer receives it.
-Presentation switching replaces only the renderer and retains applied query state.
+Filtering and sorting prepare one item set before rendering. Switching
+presentation must keep query state.
 
-## Dependency Rules
+### Change Dependencies
 
-- `src/shared/` may only import other shared modules.
-- `src/data/` may only import data modules.
-- `src/application/` may import application and data modules.
-- Browser composition folders may combine these layers, but circular imports are
-  rejected everywhere.
+The allowed import matrix is documented in
+[Architecture](architecture.md#dependency-direction) and enforced by
+`scripts/verify-static.js`.
 
-These constraints are enforced by `scripts/verify-static.js`.
+Views call application operations. They do not import storage adapters.
+Shared helpers do not import product features.
 
-Browser views receive operations from
-`src/application/create-application-operations.js`. Register new application
-capabilities there instead of importing feature operations individually in
-`app-runtime.js` or calling storage adapters from views.
+Register browser-facing operations in
+`src/application/create-application-operations.js`.
 
-## Drag Scrolling
+### Add Drag Scrolling
 
-Shared pointer drag behavior lives in `src/shared/drag-scroll.js`.
+Use `src/shared/drag-scroll.js` for pointer dragging.
 
-Current users:
+Current scroll areas are:
 
-- main view panel vertical scrolling
-- wide navigation vertical scrolling
-- narrow navigation horizontal scrolling
-- schema table horizontal scrolling
+- main view panel
+- wide and narrow navigation
+- schema table
 
-Use the shared helper for new draggable scroll areas instead of adding local pointer logic.
+Narrow navigation also uses `scrollable-row.js` for wheel scrolling and the
+right-edge hint.
 
-Narrow navigation also uses `src/navigation/scrollable-row.js` for wheel-to-horizontal scrolling and right-edge scroll hints.
+### Update Offline Assets
 
-## Service Worker Updates
+When a runtime file moves or is added:
 
-When moving or adding app files that must work offline:
+1. update `service-worker.js`
+2. bump `CACHE_NAME`
+3. run `npm run check`
+4. load the changed path through the local server
 
-1. Add the path to `service-worker.js`.
-2. Bump `CACHE_NAME`.
-3. Verify the moved file is served by the local server.
+The worker activates new assets without reloading an open page. Use a hard
+refresh when checking a new deployment.
 
-Docs are not currently cached by the service worker.
+## Related Documents
 
-The worker checks for updates without the browser HTTP cache. It activates new
-assets without automatically reloading an open page, so use a hard refresh when
-validating a freshly deployed version.
+### Current Implementation
 
-## Related Design Documents
+- [Architecture](architecture.md)
+- [Domain Model](data-model.md)
+- [Persistence](persistence.md)
+- [Workflows](workflows.md)
+- [Testing](testing.md)
 
-- `docs/data-model.md`: domain records and invariants
-- `docs/persistence.md`: adapters, physical schema, and transaction rules
-- `docs/workflows.md`: implemented and planned mutation UX
-- `docs/data-portability.md`: export, import, and cloud snapshots
-- `docs/roadmap.md`: current and upcoming milestones
+### Planning
+
+- [Roadmap](roadmap.md)
+- [Data Portability](data-portability.md)

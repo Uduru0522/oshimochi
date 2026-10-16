@@ -1,52 +1,51 @@
 # Wotagoods Manager
 
-A local-first web application for organizing multiple types of collectible goods.
+A local-first web app for organizing collectible goods.
 
-The application runs from GitHub Pages or a local static server. User collections
-belong to the current browser profile and are stored in IndexedDB. Debug mode uses
-temporary fixtures and never writes to the user database.
+The app runs on GitHub Pages or a local static server. User data stays in the
+current browser profile and is stored in IndexedDB. Debug mode uses temporary
+sample data and never writes to the user database.
 
-## Current Status
+## What Works
 
-Implemented:
+### Interface
 
-- responsive application shell and view navigation
-- light and dark themes
-- English, Japanese, and Traditional Chinese interface languages
-- user and debug runtime modes
-- versioned IndexedDB schema initialization
-- isolated in-memory debug storage
-- Administration workflow for creating goods types
-- atomic goods-type and protected-field persistence
-- staged custom-field management with atomic apply
-- direct-to-items navigation for each goods type with a secondary Overview action
-- modal item-entry shell launched from the Items view
-- typed reset of all browser-local collection data
-- generated item-entry forms with image cropping, review, and atomic local persistence
-- collection item listing with thumbnails and custom values
-- typed item filtering with general search and field-specific rules
-- typed item sorting across metadata, names, and supported custom values
-- modal item editing with optional image replacement and atomic persistence
-- confirmed item soft deletion with retained records and image assets
-- card-first, switchable card and list presentations over one filtered and sorted item set
-- keyed presentation updates for filtering, sorting, and newly registered items
-- runtime navigation refresh after database changes
-- offline app-shell caching
-- automated static and unit checks
+- Responsive wide and narrow layouts
+- Light and dark themes
+- English, Japanese, and Traditional Chinese
+- Direct navigation to each collection's item browser
+- Separate collection overview and application settings
+
+### Collection Setup
+
+- Goods-type creation with protected built-in fields
+- Custom text, long-text, number, date, toggle, URL, and selection fields
+- Staged field changes with review and one atomic save
+- Local-data reset with typed confirmation
+
+### Item Management
+
+- Required image selection, cropping, review, and local storage
+- Card and list presentations over the same item set
+- General search and field-aware filters
+- Field-aware sorting
+- Item editing and soft deletion
+- Per-collection restore and permanent purge
+
+### Runtime And Quality
+
+- Persistent IndexedDB user storage
+- Isolated in-memory debug storage
+- Offline app-shell caching
+- Static architecture checks and unit tests
 - GitHub Pages deployment
 
-Item list management and visual card browsing are complete. Restore and purge
-controls for soft-deleted items are the next application feature; backup transfer
-remains planned afterward.
-
-The data layer already separates active, deleted, and complete record queries,
-and it keeps item-content writes separate from lifecycle transitions. These are
-internal contracts for the upcoming recovery and backup milestones; no recovery
-or file-transfer interface is exposed yet.
+See the [roadmap](docs/roadmap.md) for work that is not part of the current app.
 
 ## Run Locally
 
-This project has no external runtime dependencies.
+Development requires Node.js 24 or newer. The app has no external runtime
+dependencies.
 
 ```powershell
 npm start
@@ -59,7 +58,7 @@ User mode:  http://localhost:4173/
 Debug mode: http://localhost:4173/?debug=1
 ```
 
-To reproduce the GitHub Pages repository path locally:
+To reproduce the GitHub Pages path locally:
 
 ```powershell
 npm run start:pages
@@ -73,59 +72,52 @@ Then open `http://localhost:4173/wotagoods-manager/`.
 npm run check
 ```
 
-This checks JavaScript syntax, import boundaries and cycles, static asset
-references, offline coverage, and test-suite hygiene, then runs the
-dependency-free `node:test` suite. Data-layer coverage can be checked separately
-with `npm run test:coverage:data`.
+This command checks syntax, module boundaries, import cycles, asset graphs,
+offline coverage, test hygiene, and the full `node:test` suite.
+
+Run the data-layer coverage guard separately:
+
+```powershell
+npm run test:coverage:data
+```
 
 ## Hosted Application
 
 - [User mode](https://uduru0522.github.io/wotagoods-manager/)
 - [Debug mode](https://uduru0522.github.io/wotagoods-manager/?debug=1)
 
-The hosted and local URLs are different browser origins and therefore have
-separate settings and IndexedDB databases.
+Local and hosted URLs are different browser origins. They do not share settings
+or IndexedDB data.
 
 ## Repository Map
 
-```text
-.github/workflows/     GitHub Pages deployment
-docs/                  Architecture, development, and product design
-icons/                 Installable-app icons
-scripts/               Repository verification scripts
-src/application/       Storage-neutral application operations
-src/app/               Startup, shell behavior, routing, layout
-src/bootstrap/         Scripts that run before first paint
-src/data/              Domain records and storage adapters
-src/localization/      Translation catalogs and locale-aware copy lookup
-src/navigation/        Primary and utility navigation
-src/services/          Browser services
-src/shared/            Domain-independent UI helpers
-src/styles/            Design tokens, layout, and component styling
-src/views/             View definitions and renderers
-test/                  Dependency-free unit tests
-index.html             Document shell
-manifest.webmanifest   Installable-app metadata
-server.js              Local static server
-service-worker.js      Offline app-shell cache
-```
+| Path | Responsibility |
+| --- | --- |
+| `.github/workflows/` | GitHub Pages deployment |
+| `docs/` | Current technical docs and product plans |
+| `icons/` | Installable-app icons |
+| `scripts/` | Repository verification |
+| `src/app/` | Startup, routing, and shell behavior |
+| `src/application/` | Storage-neutral operations and queries |
+| `src/data/` | Domain records and storage adapters |
+| `src/views/` | View definitions and feature UI |
+| `src/styles/` | Tokens, layout, and feature styles |
+| `src/shared/` | Product-neutral UI helpers |
+| `test/` | Automated tests |
+| `index.html` | Document shell |
+| `server.js` | Local static server |
+| `service-worker.js` | Offline app-shell cache |
 
 ## Documentation
 
-Start with the [documentation index](docs/README.md). The most relevant documents
-for implementation work are:
-
-- [Architecture](docs/architecture.md)
-- [Domain Model](docs/data-model.md)
-- [Persistence](docs/persistence.md)
-- [Workflows](docs/workflows.md)
-- [Roadmap](docs/roadmap.md)
+Start with the [documentation index](docs/README.md). It separates descriptions
+of the current app from planning documents.
 
 ## Contribution Rules
 
-- Keep user data local unless an explicit transfer operation is requested.
+- Keep user data in browser-local storage.
 - Never let debug mode open or write the user database.
-- Keep browser APIs behind services or storage adapters.
+- Keep browser storage APIs behind adapters and services.
 - Add or update tests for changed domain and persistence behavior.
-- Update `service-worker.js` and bump its cache name when runtime files move.
-- Prefer small commits that remain understandable and verifiable on their own.
+- Update the service-worker asset list and cache name when runtime files move.
+- Keep commits small, focused, and verifiable.
