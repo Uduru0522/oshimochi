@@ -1,4 +1,4 @@
-const CACHE_NAME = "wotagoods-manager-v123";
+const CACHE_NAME = "wotagoods-manager-v124";
 
 const ASSET_GROUPS = {
   app: [
@@ -31,7 +31,11 @@ const ASSET_GROUPS = {
     "./src/bootstrap/language-bootstrap.js",
     "./src/bootstrap/theme-bootstrap.js",
     "./src/main.js",
-    "./src/styles/app.css"
+    "./src/styles/administration.css",
+    "./src/styles/app.css",
+    "./src/styles/foundation.css",
+    "./src/styles/items.css",
+    "./src/styles/responsive.css"
   ],
   data: [
     "./src/data/create-storage.js",

@@ -1,0 +1,478 @@
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 1ms !important;
+    animation-duration: 1ms !important;
+  }
+
+  :root[data-layout-transition] .sidebar,
+  :root[data-layout-transition] .workspace,
+  :root[data-layout-transition] .sidebar-header,
+  :root[data-layout-transition] .navigation-stack,
+  :root[data-layout-transition] .topbar {
+    animation: none !important;
+  }
+}
+
+.placeholder h3 {
+  max-width: 760px;
+  overflow-wrap: anywhere;
+  font-size: 24px;
+  line-height: 1.25;
+}
+
+.placeholder p {
+  max-width: 680px;
+  margin-top: 10px;
+  font-size: 15px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 1100px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+
+  .sidebar {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    align-items: start;
+    padding: 14px 16px 10px;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .sidebar-header {
+    grid-column: 1;
+  }
+
+  .brand {
+    min-width: 0;
+  }
+
+  .navigation-stack {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    margin-right: 0;
+    min-width: 0;
+    overflow: hidden;
+    padding-right: 0;
+    touch-action: auto;
+  }
+
+  .navigation-stack[data-can-scroll-right]::after {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 34px;
+    height: 100%;
+    pointer-events: none;
+    content: "";
+    background: linear-gradient(90deg, rgba(245, 247, 249, 0), var(--surface-muted) 78%);
+  }
+
+  :root[data-theme="dark"] .navigation-stack[data-can-scroll-right]::after {
+    background: linear-gradient(90deg, rgba(29, 36, 41, 0), var(--surface-muted) 78%);
+  }
+
+  .nav-list {
+    display: flex;
+    justify-content: flex-start;
+    gap: 6px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: 0 24px 0 0;
+    cursor: grab;
+    scrollbar-width: none;
+    overscroll-behavior-inline: contain;
+    touch-action: pan-x;
+  }
+
+  .nav-list[data-dragging="true"] {
+    cursor: grabbing;
+    user-select: none;
+  }
+
+  .nav-list::-webkit-scrollbar {
+    display: none;
+  }
+
+  .utility-nav-list {
+    align-self: start;
+  }
+
+  .nav-separator {
+    width: 1px;
+    height: 32px;
+    margin: 5px 4px;
+    flex: 0 0 1px;
+  }
+
+  .nav-empty-note {
+    display: grid;
+    align-items: center;
+    min-height: 42px;
+    margin: 0 4px;
+    padding: 0 8px;
+    white-space: nowrap;
+  }
+
+  .nav-item {
+    display: grid;
+    grid-template-columns: 26px max-content;
+    justify-items: start;
+    width: auto;
+    flex: 0 0 auto;
+    min-height: 42px;
+    padding: 6px 10px 6px 8px;
+  }
+
+  .nav-label {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: hidden;
+    clip: auto;
+    max-width: 132px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .topbar,
+  .view-panel {
+    padding: 20px;
+  }
+
+  .placeholder {
+    min-height: 280px;
+    padding: 24px;
+  }
+
+  .items-empty-state {
+    min-height: 220px;
+    padding: 24px 20px;
+  }
+
+  .items-filter-action {
+    width: 38px;
+    min-width: 38px;
+    height: 38px;
+    min-height: 38px;
+    padding: 0;
+    justify-content: center;
+    gap: 0;
+  }
+
+  .item-presentation-control {
+    grid-template-columns: repeat(2, 34px);
+    width: 72px;
+    height: 38px;
+    padding: 1px;
+  }
+
+  .item-presentation-option {
+    width: 34px;
+    height: 34px;
+  }
+
+  .items-sort-action {
+    width: 38px;
+    min-width: 38px;
+    height: 38px;
+    min-height: 38px;
+    padding: 0;
+    justify-content: center;
+    gap: 0;
+  }
+
+  .items-sort-action > span {
+    max-width: 0;
+    opacity: 0;
+  }
+
+  .items-filter-action > span:not(.items-filter-badge) {
+    max-width: 0;
+    opacity: 0;
+  }
+
+  .item-filter-dialog {
+    width: calc(100% - 24px);
+    max-width: 560px;
+    max-height: calc(100dvh - 24px);
+    margin: 12px auto auto;
+  }
+
+  .item-sort-dialog {
+    width: calc(100% - 24px);
+    max-width: 440px;
+    margin: 12px auto auto;
+  }
+
+  .item-filter-footer {
+    flex-wrap: wrap;
+  }
+
+  .item-filter-footer-actions {
+    margin-left: auto;
+  }
+
+  .item-entry-dialog {
+    width: calc(100% - 24px);
+    max-width: 680px;
+    height: auto;
+    max-height: calc(100dvh - 24px);
+    margin: 16px auto auto;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius);
+  }
+
+  .item-entry-body {
+    min-height: 0;
+  }
+
+  .item-form-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .item-form-field:has(textarea) {
+    grid-column: auto;
+  }
+
+  .binary-option-editor {
+    grid-template-columns: 1fr;
+  }
+
+  .item-image-controls {
+    grid-template-columns: 1fr auto;
+  }
+
+  .item-orientation-control {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+
+  .settings-section-header,
+  .setting-row {
+    padding-right: 20px;
+    padding-left: 20px;
+  }
+
+  .creator-landing {
+    align-items: stretch;
+    flex-direction: column;
+    padding: 20px;
+  }
+
+  .creator-landing .primary-action {
+    align-self: flex-start;
+  }
+
+  .creator-workflow {
+    padding: 20px;
+  }
+
+  .local-reset-landing {
+    align-items: stretch;
+    flex-direction: column;
+    padding: 20px;
+  }
+
+  .local-reset-landing .danger-action {
+    align-self: flex-start;
+  }
+
+  .local-reset-workflow {
+    padding: 20px;
+  }
+
+  .field-manager-header,
+  .field-workspace-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .field-manager-header {
+    padding: 20px 20px 12px;
+  }
+
+  .field-manager-controls {
+    grid-template-columns: 1fr;
+    padding: 0 20px 20px;
+  }
+
+  .field-manager-workspace,
+  .field-change-review {
+    padding: 20px;
+  }
+
+  .field-workspace-header .secondary-action {
+    align-self: flex-start;
+  }
+
+  .field-row {
+    grid-template-columns: minmax(0, 1fr) 130px 110px 148px;
+    gap: 8px 12px;
+  }
+
+  .field-row-actions {
+    min-width: 148px;
+  }
+
+  .field-add-editor-slot:not(:empty),
+  .field-row-expansion-content > * {
+    padding: 18px;
+  }
+
+  .existing-option-editor {
+    grid-template-columns: 1fr;
+  }
+
+  .field-stage-footer > span {
+    width: 100%;
+    margin-right: 0;
+  }
+
+  .meta-list {
+    grid-template-columns: 1fr;
+    gap: 4px;
+  }
+  .brand h1 {
+    font-size: 16px;
+  }
+
+  .brand p {
+    font-size: 12px;
+  }
+
+  .nav-item {
+    min-height: 40px;
+    padding: 6px 9px 6px 7px;
+  }
+
+  .utility-nav-item {
+    width: 36px;
+    height: 36px;
+    min-width: 36px;
+    min-height: 36px;
+  }
+
+  .utility-nav-item .nav-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .utility-nav-item .nav-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    max-width: none;
+    white-space: nowrap;
+  }
+
+  .nav-icon {
+    width: 26px;
+    height: 26px;
+    font-size: 12px;
+  }
+
+  .nav-label {
+    font-size: 13px;
+  }
+
+  .topbar {
+    min-height: 64px;
+    padding: 16px;
+  }
+
+  .topbar h2 {
+    font-size: 22px;
+  }
+
+  .view-panel {
+    padding: 16px;
+  }
+
+  .placeholder {
+    min-height: 240px;
+    padding: 18px;
+  }
+
+  .content-panel {
+    padding: 18px;
+  }
+
+  .placeholder h3 {
+    font-size: 20px;
+  }
+
+  .placeholder p {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 600px) {
+  .topbar-inner {
+    gap: 10px;
+  }
+
+  .item-view-actions {
+    gap: 4px;
+  }
+
+  .items-add-action {
+    width: 38px;
+    min-width: 38px;
+    padding-right: 9px;
+    padding-left: 9px;
+    justify-content: center;
+    gap: 0;
+  }
+
+  .items-add-action span {
+    max-width: 0;
+    opacity: 0;
+  }
+
+  .language-setting {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .language-setting .select-menu {
+    flex-basis: auto;
+    width: 100%;
+  }
+
+  .field-manager-workspace,
+  .field-change-review {
+    padding: 14px;
+  }
+
+  .field-row {
+    grid-template-columns: minmax(0, 1fr) 76px 64px 116px;
+    gap: 6px;
+    padding: 10px;
+  }
+
+  .field-row-actions {
+    min-width: 116px;
+    gap: 2px;
+  }
+
+  .field-tool-button {
+    width: 26px;
+    height: 28px;
+    flex-basis: 26px;
+  }
+
+  .field-type-label,
+  .field-row-metadata {
+    overflow-wrap: anywhere;
+  }
+}
