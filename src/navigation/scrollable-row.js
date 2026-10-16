@@ -36,7 +36,7 @@ export function bindScrollableRow(container) {
 
   boundRows.add(container);
   bindWheelScroll(container);
-  bindDragScroll(container, { axis: "x" });
+  bindDragScroll(container, { allowInteractiveStart: true, axis: "x" });
   container.addEventListener("scroll", update, { passive: true });
   window.addEventListener("resize", update);
 

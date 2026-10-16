@@ -56,7 +56,7 @@ function clearDragState(container, event) {
   delete container.dataset.dragging;
 }
 
-export function bindDragScroll(container, { axis }) {
+export function bindDragScroll(container, { allowInteractiveStart = false, axis }) {
   if (!container || boundContainers.get(container)?.has(axis)) {
     return;
   }
@@ -78,7 +78,7 @@ export function bindDragScroll(container, { axis }) {
 
     if (
       event.button !== 0 ||
-      isExcludedDragTarget(event.target) ||
+      (!allowInteractiveStart && isExcludedDragTarget(event.target)) ||
       !canScrollOnAxis(container, axis)
     ) {
       return;
@@ -104,6 +104,7 @@ export function bindDragScroll(container, { axis }) {
     }
 
     if (isDragging) {
+      event.preventDefault();
       setScrollPosition(container, axis, scrollStart - dragDistance);
     }
   });
