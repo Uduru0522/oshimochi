@@ -1,13 +1,11 @@
 import { createActionButton } from "../../shared/action-button.js";
 import { translate } from "../../localization/translate.js";
 import { createContentTransition } from "../../shared/content-transition.js";
+import {
+  createDialogCloseController
+} from "../../shared/dialog-close-controller.js";
 import { createElement } from "../../shared/dom.js";
 import { createIcon } from "../../shared/icons.js";
-import {
-  MAX_UI_MOTION_MS,
-  getAnimationDurationMs,
-  prefersReducedMotion
-} from "../../shared/motion.js";
 import { createItemEntryForm } from "./item-entry-form.js";
 import { createItemEntryReview } from "./item-entry-review.js";
 import { clearItemImageDraft } from "./item-image-field.js";
@@ -56,10 +54,8 @@ export function createItemEntryDialog({
   const headerActions = createElement("div", { className: "item-entry-header-actions" });
   const body = createElement("div", { className: "item-entry-body" });
   const contentTransition = createContentTransition(body, { animateInitial: true });
-  let closeTimer = 0;
   let draft = createDraft();
   let fields = null;
-  let isClosing = false;
   let isLoading = false;
   let isSaving = false;
   let clearConfirmationTimer = 0;
@@ -68,6 +64,11 @@ export function createItemEntryDialog({
   let destroyed = false;
   let destroyCurrentScreen = null;
   let loadVersion = 0;
+  const closeController = createDialogCloseController(dialog, {
+    canClose: () => !isSaving,
+    onClosed: flushCreatedItems,
+    onCloseRequested: resetClearConfirmation
+  });
 
   closeButton.append(createIcon("close"));
   headerActions.append(clearButton, closeButton);
@@ -193,7 +194,7 @@ export function createItemEntryDialog({
     const anotherButton = createActionButton(translate("Add another"));
 
     doneButton.addEventListener("click", () => {
-      requestClose();
+      closeController.requestClose();
       resetDraft();
     });
     anotherButton.addEventListener("click", () => {
@@ -249,47 +250,6 @@ export function createItemEntryDialog({
     }
   }
 
-  function finishClose() {
-    if (!isClosing) {
-      return;
-    }
-
-    globalThis.clearTimeout(closeTimer);
-    dialog.removeEventListener("animationend", handleCloseAnimationEnd);
-    isClosing = false;
-    delete dialog.dataset.closing;
-    dialog.close();
-    flushCreatedItems();
-  }
-
-  function handleCloseAnimationEnd(event) {
-    if (event.target === dialog) {
-      finishClose();
-    }
-  }
-
-  function requestClose() {
-    if (isClosing || isSaving || !dialog.open) {
-      return;
-    }
-
-    resetClearConfirmation();
-
-    if (prefersReducedMotion()) {
-      dialog.close();
-      flushCreatedItems();
-      return;
-    }
-
-    isClosing = true;
-    dialog.dataset.closing = "true";
-    dialog.addEventListener("animationend", handleCloseAnimationEnd);
-    closeTimer = globalThis.setTimeout(
-      finishClose,
-      getAnimationDurationMs(dialog, MAX_UI_MOTION_MS)
-    );
-  }
-
   function flushCreatedItems() {
     if (pendingCreatedItems.length === 0) {
       return;
@@ -300,7 +260,7 @@ export function createItemEntryDialog({
     onCreated(createdItems);
   }
 
-  closeButton.addEventListener("click", requestClose);
+  closeButton.addEventListener("click", () => closeController.requestClose());
   clearButton.addEventListener("click", () => {
     if (clearButton.dataset.confirming === "true") {
       resetDraft();
@@ -314,7 +274,7 @@ export function createItemEntryDialog({
   });
   dialog.addEventListener("cancel", (event) => {
     event.preventDefault();
-    requestClose();
+    closeController.requestClose();
   });
 
   return {
@@ -322,17 +282,12 @@ export function createItemEntryDialog({
     destroy() {
       destroyed = true;
       loadVersion += 1;
-      globalThis.clearTimeout(closeTimer);
       globalThis.clearTimeout(clearConfirmationTimer);
       contentTransition.cancel();
       destroyCurrentScreen?.();
       destroyCurrentScreen = null;
       pendingCreatedItems = [];
-      isClosing = false;
-      delete dialog.dataset.closing;
-      if (dialog.open) {
-        dialog.close();
-      }
+      closeController.destroy();
       resetDraft();
     },
     open() {

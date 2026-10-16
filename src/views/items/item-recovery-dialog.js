@@ -1,10 +1,12 @@
 import { createActionButton } from "../../shared/action-button.js";
+import {
+  createDialogCloseController
+} from "../../shared/dialog-close-controller.js";
 import { createElement } from "../../shared/dom.js";
 import { createIcon } from "../../shared/icons.js";
 import { translate } from "../../localization/translate.js";
 import {
   MAX_UI_MOTION_MS,
-  getAnimationDurationMs,
   getTransitionDurationMs,
   prefersReducedMotion
 } from "../../shared/motion.js";
@@ -36,11 +38,9 @@ export function createItemRecoveryDialog({
     className: "item-entry-close"
   });
   const body = createElement("div", { className: "item-recovery-body" });
-  let closeTimer = 0;
   let deletedItems = [];
   let destroyed = false;
   let isBusy = false;
-  let isClosing = false;
   let itemThumbnails = new Map();
   let itemTiles = new Map();
   let listFeedback = null;
@@ -53,6 +53,13 @@ export function createItemRecoveryDialog({
       durationProperty: "--item-card-move-duration"
     }
   );
+  const closeController = createDialogCloseController(dialog, {
+    canClose: () => !isBusy,
+    onClosed() {
+      loadVersion += 1;
+      destroyThumbnails();
+    }
+  });
 
   closeButton.append(createIcon("close"));
   header.append(heading, closeButton);
@@ -364,46 +371,10 @@ export function createItemRecoveryDialog({
     }
   }
 
-  function finishClose() {
-    if (!isClosing) {
-      return;
-    }
-    clearTimeout(closeTimer);
-    dialog.removeEventListener("animationend", handleCloseAnimationEnd);
-    isClosing = false;
-    delete dialog.dataset.closing;
-    dialog.close();
-    loadVersion += 1;
-    destroyThumbnails();
-  }
-
-  function handleCloseAnimationEnd(event) {
-    if (event.target === dialog) {
-      finishClose();
-    }
-  }
-
-  function requestClose() {
-    if (isClosing || isBusy || !dialog.open) {
-      return;
-    }
-    isClosing = true;
-    if (prefersReducedMotion()) {
-      finishClose();
-      return;
-    }
-    dialog.dataset.closing = "true";
-    dialog.addEventListener("animationend", handleCloseAnimationEnd);
-    closeTimer = setTimeout(
-      finishClose,
-      getAnimationDurationMs(dialog, MAX_UI_MOTION_MS)
-    );
-  }
-
-  closeButton.addEventListener("click", requestClose);
+  closeButton.addEventListener("click", () => closeController.requestClose());
   dialog.addEventListener("cancel", (event) => {
     event.preventDefault();
-    requestClose();
+    closeController.requestClose();
   });
 
   return {
@@ -411,13 +382,9 @@ export function createItemRecoveryDialog({
     destroy() {
       destroyed = true;
       loadVersion += 1;
-      clearTimeout(closeTimer);
-      dialog.removeEventListener("animationend", handleCloseAnimationEnd);
+      closeController.destroy();
       layoutMotion.destroy();
       destroyThumbnails();
-      if (dialog.open) {
-        dialog.close();
-      }
     },
     open() {
       if (destroyed || dialog.open) {

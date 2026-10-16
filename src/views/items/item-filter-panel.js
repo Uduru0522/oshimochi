@@ -5,13 +5,11 @@ import {
 } from "../../application/items/filter-items.js";
 import { translate } from "../../localization/translate.js";
 import { createActionButton } from "../../shared/action-button.js";
+import {
+  createDialogCloseController
+} from "../../shared/dialog-close-controller.js";
 import { createElement } from "../../shared/dom.js";
 import { createIcon } from "../../shared/icons.js";
-import {
-  MAX_UI_MOTION_MS,
-  getAnimationDurationMs,
-  prefersReducedMotion
-} from "../../shared/motion.js";
 import {
   createDefaultItemFilterRule,
   createItemFilterRuleEditor,
@@ -76,13 +74,11 @@ export function createItemFilterPanel({ onApply }) {
     type: "submit"
   });
   let activeFilter = cloneItemFilter();
-  let closeTimer = 0;
   let destroyed = false;
   let draftFilter = cloneItemFilter();
   let fields = [];
   let items = [];
-  let isClosing = false;
-  let pendingCloseAction = null;
+  const closeController = createDialogCloseController(dialog);
 
   function isFilterableField(field) {
     return field && (!field.isBuiltIn || !["id", "image"].includes(field.key));
@@ -173,49 +169,6 @@ export function createItemFilterPanel({ onApply }) {
     renderRules();
   }
 
-  function runPendingCloseAction() {
-    const action = pendingCloseAction;
-    pendingCloseAction = null;
-    action?.();
-  }
-
-  function finishClose() {
-    if (!isClosing) {
-      return;
-    }
-    globalThis.clearTimeout(closeTimer);
-    dialog.removeEventListener("animationend", handleAnimationEnd);
-    isClosing = false;
-    delete dialog.dataset.closing;
-    dialog.close();
-    runPendingCloseAction();
-  }
-
-  function handleAnimationEnd(event) {
-    if (event.target === dialog) {
-      finishClose();
-    }
-  }
-
-  function requestClose(afterClose = null) {
-    if (isClosing || !dialog.open) {
-      return;
-    }
-    pendingCloseAction = afterClose;
-    if (prefersReducedMotion()) {
-      dialog.close();
-      runPendingCloseAction();
-      return;
-    }
-    isClosing = true;
-    dialog.dataset.closing = "true";
-    dialog.addEventListener("animationend", handleAnimationEnd);
-    closeTimer = globalThis.setTimeout(
-      finishClose,
-      getAnimationDurationMs(dialog, MAX_UI_MOTION_MS)
-    );
-  }
-
   addFieldSelect.addEventListener("change", () => {
     const field = fields.find(({ id }) => id === addFieldSelect.value);
     if (field) {
@@ -231,8 +184,8 @@ export function createItemFilterPanel({ onApply }) {
     error.textContent = "";
     renderRules();
   });
-  cancelButton.addEventListener("click", () => requestClose());
-  closeButton.addEventListener("click", () => requestClose());
+  cancelButton.addEventListener("click", () => closeController.requestClose());
+  closeButton.addEventListener("click", () => closeController.requestClose());
   form.addEventListener("submit", (event) => {
     event.preventDefault();
     for (const rule of draftFilter.rules) {
@@ -252,11 +205,11 @@ export function createItemFilterPanel({ onApply }) {
     activeFilter = cloneItemFilter(draftFilter);
     updateBadge();
     const appliedFilter = cloneItemFilter(activeFilter);
-    requestClose(() => onApply(appliedFilter));
+    closeController.requestClose({ afterClose: () => onApply(appliedFilter) });
   });
   dialog.addEventListener("cancel", (event) => {
     event.preventDefault();
-    requestClose();
+    closeController.requestClose();
   });
   button.addEventListener("click", () => {
     if (!destroyed && !dialog.open) {
@@ -271,12 +224,7 @@ export function createItemFilterPanel({ onApply }) {
     dialog,
     destroy() {
       destroyed = true;
-      globalThis.clearTimeout(closeTimer);
-      pendingCloseAction = null;
-      dialog.removeEventListener("animationend", handleAnimationEnd);
-      if (dialog.open) {
-        dialog.close();
-      }
+      closeController.destroy();
     },
     setData(nextFields, nextItems) {
       fields = [...nextFields];

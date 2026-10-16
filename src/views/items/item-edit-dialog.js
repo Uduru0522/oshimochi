@@ -1,13 +1,11 @@
 import { createActionButton } from "../../shared/action-button.js";
 import { translate } from "../../localization/translate.js";
 import { createContentTransition } from "../../shared/content-transition.js";
+import {
+  createDialogCloseController
+} from "../../shared/dialog-close-controller.js";
 import { createElement } from "../../shared/dom.js";
 import { createIcon } from "../../shared/icons.js";
-import {
-  MAX_UI_MOTION_MS,
-  getAnimationDurationMs,
-  prefersReducedMotion
-} from "../../shared/motion.js";
 import { createItemEntryForm } from "./item-entry-form.js";
 import { createItemEntryReview } from "./item-entry-review.js";
 import { clearItemImageDraft } from "./item-image-field.js";
@@ -56,17 +54,20 @@ export function createItemEditDialog({
   const contentTransition = createContentTransition(body, { animateInitial: true });
   let activeItem = null;
   let clearConfirmationTimer = 0;
-  let closeTimer = 0;
   let currentScreen = "loading";
   let destroyed = false;
   let destroyCurrentScreen = null;
   let draft = null;
   let fields = null;
-  let isClosing = false;
   let isSaving = false;
   let loadVersion = 0;
   let pendingUpdatedItem = null;
   let sourceAsset = null;
+  const closeController = createDialogCloseController(dialog, {
+    canClose: () => !isSaving,
+    onClosed: handleClosed,
+    onCloseRequested: resetClearConfirmation
+  });
 
   closeButton.append(createIcon("close"));
   headerActions.append(clearButton, closeButton);
@@ -184,7 +185,7 @@ export function createItemEditDialog({
       className: "primary-action"
     });
     const actions = createElement("div", { className: "form-actions" });
-    doneButton.addEventListener("click", requestClose);
+    doneButton.addEventListener("click", () => closeController.requestClose());
     actions.append(doneButton);
     success.append(
       createElement("h4", { textContent: translate("Changes saved") }),
@@ -238,15 +239,7 @@ export function createItemEditDialog({
     }
   }
 
-  function finishClose() {
-    if (!isClosing) {
-      return;
-    }
-    globalThis.clearTimeout(closeTimer);
-    dialog.removeEventListener("animationend", handleCloseAnimationEnd);
-    isClosing = false;
-    delete dialog.dataset.closing;
-    dialog.close();
+  function handleClosed() {
     flushUpdatedItem();
     if (currentScreen === "success") {
       disposeDraft();
@@ -255,37 +248,7 @@ export function createItemEditDialog({
     }
   }
 
-  function handleCloseAnimationEnd(event) {
-    if (event.target === dialog) {
-      finishClose();
-    }
-  }
-
-  function requestClose() {
-    if (isClosing || isSaving || !dialog.open) {
-      return;
-    }
-    resetClearConfirmation();
-    if (prefersReducedMotion()) {
-      dialog.close();
-      flushUpdatedItem();
-      if (currentScreen === "success") {
-        disposeDraft();
-        activeItem = null;
-        sourceAsset = null;
-      }
-      return;
-    }
-    isClosing = true;
-    dialog.dataset.closing = "true";
-    dialog.addEventListener("animationend", handleCloseAnimationEnd);
-    closeTimer = globalThis.setTimeout(
-      finishClose,
-      getAnimationDurationMs(dialog, MAX_UI_MOTION_MS)
-    );
-  }
-
-  closeButton.addEventListener("click", requestClose);
+  closeButton.addEventListener("click", () => closeController.requestClose());
   clearButton.addEventListener("click", () => {
     if (clearButton.dataset.confirming === "true") {
       resetDraft();
@@ -298,7 +261,7 @@ export function createItemEditDialog({
   });
   dialog.addEventListener("cancel", (event) => {
     event.preventDefault();
-    requestClose();
+    closeController.requestClose();
   });
 
   return {
@@ -306,13 +269,10 @@ export function createItemEditDialog({
     destroy() {
       destroyed = true;
       loadVersion += 1;
-      globalThis.clearTimeout(closeTimer);
       globalThis.clearTimeout(clearConfirmationTimer);
       contentTransition.cancel();
       destroyCurrentScreen?.();
-      if (dialog.open) {
-        dialog.close();
-      }
+      closeController.destroy();
       pendingUpdatedItem = null;
       disposeDraft();
     },

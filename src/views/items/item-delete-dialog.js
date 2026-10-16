@@ -1,12 +1,10 @@
 import { createActionButton } from "../../shared/action-button.js";
 import { translate } from "../../localization/translate.js";
+import {
+  createDialogCloseController
+} from "../../shared/dialog-close-controller.js";
 import { createElement } from "../../shared/dom.js";
 import { createIcon } from "../../shared/icons.js";
-import {
-  MAX_UI_MOTION_MS,
-  getAnimationDurationMs,
-  prefersReducedMotion
-} from "../../shared/motion.js";
 import { createItemThumbnail } from "./item-thumbnail.js";
 import { describeItemSaveError } from "./item-save-error.js";
 
@@ -30,12 +28,13 @@ export function createItemDeleteDialog({ itemManagement, mutationController, onD
   });
   const body = createElement("div", { className: "item-delete-body" });
   let activeItem = null;
-  let closeTimer = 0;
   let destroyed = false;
-  let isClosing = false;
   let isDeleting = false;
-  let pendingCloseAction = null;
   let thumbnail = null;
+  const closeController = createDialogCloseController(dialog, {
+    canClose: ({ force }) => force || !isDeleting,
+    onClosed: resetDialogState
+  });
 
   closeButton.append(createIcon("close"));
   header.append(heading, closeButton);
@@ -68,7 +67,7 @@ export function createItemDeleteDialog({ itemManagement, mutationController, onD
       }
     );
 
-    cancelButton.addEventListener("click", requestClose);
+    cancelButton.addEventListener("click", () => closeController.requestClose());
     deleteButton.addEventListener("click", deleteItem);
     copy.append(name, explanation);
     summary.append(thumbnail.element, copy);
@@ -102,7 +101,10 @@ export function createItemDeleteDialog({ itemManagement, mutationController, onD
         itemManagement.softDeleteItem(activeItem)
       );
       if (!destroyed) {
-        requestClose(() => onDeleted(deletedItem));
+        closeController.requestClose({
+          afterClose: () => onDeleted(deletedItem),
+          force: true
+        });
       }
     } catch (error) {
       console.error("Item deletion failed:", error);
@@ -114,68 +116,28 @@ export function createItemDeleteDialog({ itemManagement, mutationController, onD
     }
   }
 
-  function finishClose() {
-    if (!isClosing) {
-      return;
-    }
-    const action = pendingCloseAction;
-    pendingCloseAction = null;
-    globalThis.clearTimeout(closeTimer);
-    dialog.removeEventListener("animationend", handleCloseAnimationEnd);
-    isClosing = false;
-    delete dialog.dataset.closing;
-    dialog.close();
+  function resetDialogState() {
     thumbnail?.destroy();
     thumbnail = null;
     activeItem = null;
     isDeleting = false;
     closeButton.disabled = false;
-    action?.();
   }
 
-  function handleCloseAnimationEnd(event) {
-    if (event.target === dialog) {
-      finishClose();
-    }
-  }
-
-  function requestClose(afterClose = null) {
-    if (isClosing || (!afterClose && isDeleting) || !dialog.open) {
-      return;
-    }
-    pendingCloseAction = afterClose;
-    if (prefersReducedMotion()) {
-      isClosing = true;
-      finishClose();
-      return;
-    }
-    isClosing = true;
-    dialog.dataset.closing = "true";
-    dialog.addEventListener("animationend", handleCloseAnimationEnd);
-    closeTimer = globalThis.setTimeout(
-      finishClose,
-      getAnimationDurationMs(dialog, MAX_UI_MOTION_MS)
-    );
-  }
-
-  closeButton.addEventListener("click", () => requestClose());
+  closeButton.addEventListener("click", () => closeController.requestClose());
   dialog.addEventListener("cancel", (event) => {
     event.preventDefault();
-    requestClose();
+    closeController.requestClose();
   });
 
   return {
     dialog,
     destroy() {
       destroyed = true;
-      globalThis.clearTimeout(closeTimer);
-      dialog.removeEventListener("animationend", handleCloseAnimationEnd);
+      closeController.destroy();
       thumbnail?.destroy();
       thumbnail = null;
-      pendingCloseAction = null;
-      if (dialog.open) {
-        dialog.close();
-      }
+      activeItem = null;
     },
     open(item) {
       if (destroyed || dialog.open) {

@@ -6,14 +6,12 @@ import {
 } from "../../application/items/sort-items.js";
 import { translate } from "../../localization/translate.js";
 import { createActionButton } from "../../shared/action-button.js";
+import {
+  createDialogCloseController
+} from "../../shared/dialog-close-controller.js";
 import { createElement } from "../../shared/dom.js";
 import { createIcon } from "../../shared/icons.js";
 import { createSelectMenu } from "../../shared/select-menu.js";
-import {
-  MAX_UI_MOTION_MS,
-  getAnimationDurationMs,
-  prefersReducedMotion
-} from "../../shared/motion.js";
 
 const CREATED_AT_VALUE = "metadata:createdAt";
 const UPDATED_AT_VALUE = "metadata:updatedAt";
@@ -93,11 +91,11 @@ export function createItemSortPanel({ onApply }) {
     type: "submit"
   });
   let activeSort = cloneItemSort();
-  let closeTimer = 0;
   let destroyed = false;
   let fields = [];
-  let isClosing = false;
-  let pendingCloseAction = null;
+  const closeController = createDialogCloseController(dialog, {
+    onCloseRequested: () => fieldSelect.close()
+  });
 
   button.disabled = true;
   button.append(createIcon("sort"), buttonLabel);
@@ -151,53 +149,9 @@ export function createItemSortPanel({ onApply }) {
     descendingInput.checked = !ascendingInput.checked;
   }
 
-  function runPendingCloseAction() {
-    const action = pendingCloseAction;
-    pendingCloseAction = null;
-    action?.();
-  }
-
-  function finishClose() {
-    if (!isClosing) {
-      return;
-    }
-    globalThis.clearTimeout(closeTimer);
-    dialog.removeEventListener("animationend", handleAnimationEnd);
-    isClosing = false;
-    delete dialog.dataset.closing;
-    dialog.close();
-    runPendingCloseAction();
-  }
-
-  function handleAnimationEnd(event) {
-    if (event.target === dialog) {
-      finishClose();
-    }
-  }
-
-  function requestClose(afterClose = null) {
-    if (isClosing || !dialog.open) {
-      return;
-    }
-    fieldSelect.close();
-    pendingCloseAction = afterClose;
-    if (prefersReducedMotion()) {
-      dialog.close();
-      runPendingCloseAction();
-      return;
-    }
-    isClosing = true;
-    dialog.dataset.closing = "true";
-    dialog.addEventListener("animationend", handleAnimationEnd);
-    closeTimer = globalThis.setTimeout(
-      finishClose,
-      getAnimationDurationMs(dialog, MAX_UI_MOTION_MS)
-    );
-  }
-
   resetButton.addEventListener("click", () => renderDraft(DEFAULT_ITEM_SORT));
-  cancelButton.addEventListener("click", () => requestClose());
-  closeButton.addEventListener("click", () => requestClose());
+  cancelButton.addEventListener("click", () => closeController.requestClose());
+  closeButton.addEventListener("click", () => closeController.requestClose());
   form.addEventListener("submit", (event) => {
     event.preventDefault();
     const direction = ascendingInput.checked
@@ -206,11 +160,11 @@ export function createItemSortPanel({ onApply }) {
     activeSort = parseSort(fieldSelect.value, direction);
     updateButton();
     const appliedSort = cloneItemSort(activeSort);
-    requestClose(() => onApply(appliedSort));
+    closeController.requestClose({ afterClose: () => onApply(appliedSort) });
   });
   dialog.addEventListener("cancel", (event) => {
     event.preventDefault();
-    requestClose();
+    closeController.requestClose();
   });
   button.addEventListener("click", () => {
     if (!destroyed && !dialog.open) {
@@ -225,13 +179,8 @@ export function createItemSortPanel({ onApply }) {
     dialog,
     destroy() {
       destroyed = true;
-      globalThis.clearTimeout(closeTimer);
-      pendingCloseAction = null;
-      dialog.removeEventListener("animationend", handleAnimationEnd);
+      closeController.destroy();
       fieldSelect.destroy();
-      if (dialog.open) {
-        dialog.close();
-      }
     },
     setData(nextFields) {
       fields = [...nextFields];
