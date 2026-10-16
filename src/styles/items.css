@@ -72,7 +72,7 @@
 }
 
 .items-sort-action > span {
-  max-width: 64px;
+  max-width: 12em;
   overflow: hidden;
   opacity: 1;
   white-space: nowrap;
@@ -93,7 +93,7 @@
 }
 
 .items-filter-action > span:not(.items-filter-badge) {
-  max-width: 64px;
+  max-width: 12em;
   overflow: hidden;
   opacity: 1;
   white-space: nowrap;
@@ -136,7 +136,7 @@
 }
 
 .items-add-action span {
-  max-width: 90px;
+  max-width: 12em;
   overflow: hidden;
   opacity: 1;
   white-space: nowrap;
