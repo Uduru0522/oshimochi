@@ -66,7 +66,7 @@
 }
 
 .items-sort-action[data-active="true"] {
-  color: var(--accent);
+  color: var(--accent-ink);
   border-color: var(--accent);
 }
 
@@ -76,7 +76,7 @@
 }
 
 .items-filter-action[data-active="true"] {
-  color: var(--accent);
+  color: var(--accent-ink);
   border-color: var(--accent);
 }
 
@@ -89,7 +89,7 @@
   height: 18px;
   padding: 0 4px;
   place-items: center;
-  color: var(--surface);
+  color: var(--accent-foreground);
   background: var(--accent);
   border: 2px solid var(--surface);
   border-radius: 9px;
@@ -1602,7 +1602,7 @@ button.item-card-more:focus-visible {
 }
 
 .item-recovery-icon-action:hover {
-  color: var(--accent);
+  color: var(--accent-ink);
   background: var(--accent-tint);
 }
 
@@ -1949,7 +1949,7 @@ button.item-card-more:focus-visible {
 
 .item-boolean-input:not(:checked) ~ .item-binary-label.is-first,
 .item-boolean-input:checked ~ .item-binary-label.is-second {
-  color: var(--surface);
+  color: var(--accent-foreground);
 }
 
 .item-boolean-input:focus-visible ~ .item-binary-indicator {
@@ -2091,7 +2091,7 @@ button.item-card-more:focus-visible {
 }
 
 .item-orientation-option[aria-pressed="true"] {
-  color: var(--surface);
+  color: var(--accent-foreground);
 }
 
 .item-orientation-option:focus-visible {

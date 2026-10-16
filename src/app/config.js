@@ -35,9 +35,22 @@ export const APP_CONFIG = {
     viewTitle: "#viewTitle"
   },
   theme: {
+    accent: {
+      colors: {
+        blue: "#2675c7",
+        green: "#168078",
+        orange: "#b95700",
+        pink: "#c0397f",
+        purple: "#8057c4",
+        red: "#c2354b",
+        yellow: "#d3ad00"
+      },
+      defaultValue: "green",
+      storageKey: "accent",
+      values: ["red", "orange", "yellow", "blue", "green", "pink", "purple"]
+    },
     colors: {
-      dark: "#101417",
-      light: "#2f6f73"
+      dark: "#101417"
     },
     dark: "dark",
     light: "light",

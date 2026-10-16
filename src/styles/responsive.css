@@ -433,6 +433,15 @@
     flex-direction: column;
   }
 
+  .accent-setting {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .accent-options {
+    justify-content: flex-start;
+  }
+
   .language-setting .select-menu {
     flex-basis: auto;
     width: 100%;
