@@ -13,6 +13,7 @@ export function createViewRouter({
   viewActions,
   viewPanel,
   viewSection,
+  viewToolbar,
   viewTitle
 }) {
   let activeViewId = null;
@@ -31,9 +32,10 @@ export function createViewRouter({
     viewPanel.scrollLeft = 0;
     clearElement(viewActions);
     clearElement(viewPanel);
-    if (rendered?.topbarAction) {
-      viewActions.append(rendered.topbarAction);
+    if (rendered?.toolbarAction) {
+      viewActions.append(rendered.toolbarAction);
     }
+    viewToolbar.hidden = !rendered?.toolbarAction;
     viewPanel.append(content);
   }
 
@@ -73,6 +75,8 @@ export function createViewRouter({
       destroyActiveView?.();
       destroyActiveView = null;
       activeViewId = null;
+      clearElement(viewActions);
+      viewToolbar.hidden = true;
     },
     setActiveView
   };

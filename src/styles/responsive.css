@@ -10,7 +10,7 @@
   :root[data-layout-transition] .workspace,
   :root[data-layout-transition] .sidebar-header,
   :root[data-layout-transition] .navigation-stack,
-  :root[data-layout-transition] .topbar {
+  :root[data-layout-transition] .view-toolbar {
     animation: none !important;
   }
 }
@@ -148,11 +148,6 @@
     max-width: 132px;
     text-overflow: ellipsis;
     white-space: nowrap;
-  }
-
-  .topbar,
-  .view-panel {
-    padding: 20px;
   }
 
   .placeholder {
@@ -393,13 +388,9 @@
     font-size: 13px;
   }
 
-  .topbar {
-    min-height: 64px;
-    padding: 16px;
-  }
-
-  .topbar h2 {
-    font-size: 22px;
+  .view-toolbar {
+    min-height: 52px;
+    padding: 7px 16px;
   }
 
   .view-panel {
@@ -425,10 +416,6 @@
 }
 
 @media (max-width: 600px) {
-  .topbar-inner {
-    gap: 10px;
-  }
-
   .item-view-actions {
     gap: 4px;
   }

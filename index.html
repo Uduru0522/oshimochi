@@ -45,17 +45,23 @@
       </aside>
 
       <section class="workspace">
-        <header class="topbar">
-          <div class="topbar-inner">
-            <div class="topbar-copy">
-              <p class="eyebrow" id="viewSection">Overview</p>
-              <h2 id="viewTitle">Dashboard</h2>
-            </div>
-            <div class="topbar-actions" id="viewActions"></div>
-          </div>
+        <header class="view-heading visually-hidden">
+          <p id="viewSection">Overview</p>
+          <h2 id="viewTitle">Dashboard</h2>
         </header>
 
-        <section class="view-panel" id="viewPanel" aria-live="polite"></section>
+        <div class="view-toolbar" id="viewToolbar" hidden>
+          <div class="view-toolbar-inner">
+            <div class="view-toolbar-actions" id="viewActions"></div>
+          </div>
+        </div>
+
+        <section
+          class="view-panel"
+          id="viewPanel"
+          aria-labelledby="viewTitle"
+          aria-live="polite"
+        ></section>
       </section>
     </main>
 

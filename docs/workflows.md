@@ -45,8 +45,8 @@ User mode writes to IndexedDB. Debug mode writes only to memory.
 Choosing a goods type opens its Items view. The collection stays highlighted
 while Items or Overview is open.
 
-Use the title-bar information action to open Overview. Use the return arrow in
-the same position to return to Items.
+Use the information action in the view toolbar to open Overview. Use the return
+arrow in the same position to return to Items.
 
 Overview shows the collection metadata. It is not a separate navigation item.
 
@@ -74,10 +74,10 @@ changing card size.
 
 ### Filter Items
 
-1. Open **Filter** from the collection title bar.
+1. Open **Filter** from the view toolbar.
 2. Enter general search text or add one rule per field.
 3. Choose **Apply filters**.
-4. The title-bar action shows the active rule count.
+4. The toolbar action shows the active rule count.
 
 Rules stay staged until they are applied. Different field rules use AND logic.
 Selected values inside one choice field use OR logic.
@@ -211,7 +211,7 @@ item visible.
 
 ### Recover Deleted Items
 
-Open **Deleted items** from the collection title bar. The dialog contains only
+Open **Deleted items** from the view toolbar. The dialog contains only
 deleted items from that collection.
 
 Restore keeps the same ID, values, image, and creation time. The item returns to

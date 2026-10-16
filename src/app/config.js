@@ -27,6 +27,7 @@ export const APP_CONFIG = {
     viewActions: "#viewActions",
     viewPanel: "#viewPanel",
     viewSection: "#viewSection",
+    viewToolbar: "#viewToolbar",
     viewTitle: "#viewTitle"
   },
   theme: {

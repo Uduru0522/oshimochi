@@ -86,7 +86,7 @@ or mutation behavior changes.
 - Apply and clear several filters and sort orders.
 - Confirm retained entries move from their old positions.
 - Confirm card exits finish before movement, then entrances begin.
-- Scroll until the title bar compacts and check toolbar alignment.
+- Confirm the action toolbar stays fixed in size and aligned while scrolling.
 
 ### Item Lifecycle
 
@@ -235,7 +235,6 @@ Use `src/shared/drag-scroll.js` for pointer dragging.
 
 Current scroll areas are:
 
-- main view panel
 - wide and narrow navigation
 - schema table
 

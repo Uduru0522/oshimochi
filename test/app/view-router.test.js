@@ -15,7 +15,11 @@ function createElement() {
       add: (...names) => names.forEach((name) => classes.add(name)),
       remove: (...names) => names.forEach((name) => classes.delete(name))
     },
+    get children() {
+      return [...children];
+    },
     hasChildNodes: () => children.length > 0,
+    hidden: false,
     replaceChildren(...elements) {
       children.splice(0, children.length, ...elements);
     },
@@ -44,6 +48,7 @@ test("view router destroys replaced views and the active view on teardown", () =
     viewActions: createElement(),
     viewPanel: createElement(),
     viewSection: createElement(),
+    viewToolbar: createElement(),
     viewTitle: createElement()
   });
 
@@ -79,6 +84,7 @@ test("view router can highlight a primary navigation alias", () => {
     viewActions: createElement(),
     viewPanel: createElement(),
     viewSection: createElement(),
+    viewToolbar: createElement(),
     viewTitle: createElement()
   });
 
@@ -87,6 +93,47 @@ test("view router can highlight a primary navigation alias", () => {
   try {
     router.setActiveView(overview.id);
     assert.deepEqual(activeNavigationIds, [overview.navigationId]);
+  } finally {
+    router.destroy();
+    globalThis.matchMedia = originalMatchMedia;
+  }
+});
+
+test("view router shows the action toolbar only for views that provide actions", () => {
+  const originalMatchMedia = globalThis.matchMedia;
+  const toolbarAction = { id: "actions" };
+  const viewActions = createElement();
+  const viewToolbar = createElement();
+  const views = [
+    { id: "with-actions", section: "One", title: "With actions" },
+    { id: "without-actions", section: "Two", title: "Without actions" }
+  ];
+  const router = createViewRouter({
+    navigation: { setActiveView() {} },
+    renderer: {
+      render: (view) => ({
+        content: { viewId: view.id },
+        toolbarAction: view.id === "with-actions" ? toolbarAction : null
+      })
+    },
+    views,
+    viewActions,
+    viewPanel: createElement(),
+    viewSection: createElement(),
+    viewToolbar,
+    viewTitle: createElement()
+  });
+
+  globalThis.matchMedia = () => ({ matches: true });
+
+  try {
+    router.setActiveView("with-actions");
+    assert.equal(viewToolbar.hidden, false);
+    assert.deepEqual(viewActions.children, [toolbarAction]);
+
+    router.setActiveView("without-actions");
+    assert.equal(viewToolbar.hidden, true);
+    assert.deepEqual(viewActions.children, []);
   } finally {
     router.destroy();
     globalThis.matchMedia = originalMatchMedia;

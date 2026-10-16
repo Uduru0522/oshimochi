@@ -21,7 +21,7 @@ export function renderGoodsTypeOverview({ goodsType }, { onOpenItems }) {
 
   return {
     content: article,
-    topbarAction: createGoodsTypeViewAction({
+    toolbarAction: createGoodsTypeViewAction({
       icon: "arrowLeft",
       label: translate("Back to items"),
       onSelect: onOpenItems

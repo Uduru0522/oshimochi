@@ -12,6 +12,11 @@ function setTitle(elements, section, title) {
   elements.viewTitle.textContent = title;
 }
 
+function resetViewToolbar(elements) {
+  elements.viewActions.replaceChildren();
+  elements.viewToolbar.hidden = true;
+}
+
 export function renderStartupLoading(elements) {
   const status = createElement("article", {
     attributes: {
@@ -27,6 +32,7 @@ export function renderStartupLoading(elements) {
   );
 
   resetNavigation(elements);
+  resetViewToolbar(elements);
   setTitle(elements, translate("Application"), translate("Opening collection"));
   elements.viewPanel.replaceChildren(status);
 }
@@ -59,6 +65,7 @@ export function renderStartupError(elements, error, { onRetry }) {
   );
 
   resetNavigation(elements);
+  resetViewToolbar(elements);
   setTitle(elements, translate("Application"), translate("Storage unavailable"));
   elements.viewPanel.replaceChildren(article);
 }

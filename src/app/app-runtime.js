@@ -47,6 +47,7 @@ export function mountAppRuntime({
     viewActions: elements.viewActions,
     viewPanel: elements.viewPanel,
     viewSection: elements.viewSection,
+    viewToolbar: elements.viewToolbar,
     viewTitle: elements.viewTitle
   });
 

@@ -91,6 +91,6 @@ export function renderItemsView(
       itemDelete.destroy();
       itemRecovery.destroy();
     },
-    topbarAction: viewActions
+    toolbarAction: viewActions
   };
 }

@@ -115,6 +115,19 @@ textarea {
   font: inherit;
 }
 
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
 .app-shell {
   display: grid;
   grid-template-columns: 268px minmax(0, 1fr);
@@ -269,8 +282,6 @@ textarea {
 
 .brand h1,
 .brand p,
-.topbar h2,
-.eyebrow,
 .placeholder h3,
 .placeholder p {
   margin: 0;
@@ -283,7 +294,6 @@ textarea {
 }
 
 .brand p,
-.eyebrow,
 .placeholder p {
   color: var(--muted);
 }
@@ -491,7 +501,7 @@ textarea {
 
 :root[data-layout-transition] .sidebar-header,
 :root[data-layout-transition] .navigation-stack,
-:root[data-layout-transition] .topbar {
+:root[data-layout-transition] .view-toolbar {
   animation: chrome-content-settle var(--motion-layout) ease both;
 }
 
@@ -591,41 +601,34 @@ textarea {
   transition: none;
 }
 
-.topbar {
+.view-toolbar {
+  grid-row: 1;
   display: flex;
   align-items: center;
-  gap: 20px;
-  min-height: 68px;
-  padding: 16px 32px;
+  min-height: 52px;
+  padding: 7px 32px;
   position: relative;
   z-index: 2;
   background: var(--surface);
   border-bottom: 1px solid var(--line);
   transition:
     background-color var(--motion-fast) ease,
-    border-color var(--motion-fast) ease,
-    min-height var(--motion-fast) ease,
-    padding var(--motion-fast) ease;
+    border-color var(--motion-fast) ease;
 }
 
-.topbar-inner {
+.view-toolbar[hidden] {
+  display: none;
+}
+
+.view-toolbar-inner {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  width: min(1024px, 100%);
+  justify-content: flex-end;
+  width: min(1264px, 100%);
   margin: 0 auto;
 }
 
-.topbar-inner:has(.item-view-actions) {
-  width: min(1264px, 100%);
-}
-
-.topbar-copy {
-  min-width: 0;
-}
-
-.topbar-actions {
+.view-toolbar-actions {
   display: flex;
   flex: 0 0 auto;
   align-items: center;
@@ -735,95 +738,12 @@ textarea {
   height: 16px;
 }
 
-.topbar-actions:empty {
+.view-toolbar-actions:empty {
   display: none;
 }
 
-.eyebrow {
-  max-height: 16px;
-  margin-bottom: 5px;
-  overflow: hidden;
-  font-size: 12px;
-  font-weight: 750;
-  line-height: 1.25;
-  letter-spacing: 0;
-  text-transform: uppercase;
-  transition:
-    margin-bottom var(--motion-fast) ease,
-    max-height var(--motion-fast) ease,
-    opacity var(--motion-fast) ease,
-    transform var(--motion-fast) ease;
-}
-
-.topbar h2 {
-  overflow-wrap: anywhere;
-  font-size: 24px;
-  line-height: 1.2;
-  transition: font-size var(--motion-fast) ease;
-}
-
-.workspace[data-view-scrolled] .topbar {
-  min-height: 52px;
-  padding-top: 8px;
-  padding-bottom: 8px;
-}
-
-.workspace[data-view-scrolled] .eyebrow {
-  max-height: 0;
-  opacity: 0;
-  transform: translateY(-4px);
-  margin-bottom: 0;
-}
-
-.workspace[data-view-scrolled] .topbar h2 {
-  font-size: 18px;
-}
-
-.workspace[data-view-scrolled] .topbar-actions .goods-type-view-action {
-  width: 36px;
-  height: 36px;
-}
-
-.workspace[data-view-scrolled] .topbar-actions .items-add-action {
-  min-width: 36px;
-  gap: 0;
-  padding: 0;
-  justify-content: center;
-}
-
-.workspace[data-view-scrolled] .topbar-actions .items-filter-action,
-.workspace[data-view-scrolled] .topbar-actions .items-sort-action {
-  min-width: 36px;
-  gap: 0;
-  justify-content: center;
-  padding: 0;
-}
-
-.workspace[data-view-scrolled] .topbar-actions .item-presentation-control {
-  grid-template-columns: 32px 32px;
-  width: 68px;
-  height: 36px;
-  padding: 1px;
-}
-
-.workspace[data-view-scrolled] .topbar-actions .item-presentation-option {
-  width: 32px;
-}
-
-.workspace[data-view-scrolled] .topbar-actions .items-add-action span {
-  max-width: 0;
-  opacity: 0;
-  transform: translateX(4px);
-}
-
-.workspace[data-view-scrolled] .topbar-actions .items-filter-action > span:not(.items-filter-badge),
-.workspace[data-view-scrolled] .topbar-actions .items-sort-action > span {
-  max-width: 0;
-  opacity: 0;
-  transform: translateX(4px);
-}
-
 .view-panel {
+  grid-row: 2;
   display: grid;
   justify-items: center;
   min-height: 0;

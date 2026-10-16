@@ -24,6 +24,7 @@ export function getAppElements() {
     viewActions: queryRequiredElement(selectors.viewActions),
     viewPanel: queryRequiredElement(selectors.viewPanel),
     viewSection: queryRequiredElement(selectors.viewSection),
+    viewToolbar: queryRequiredElement(selectors.viewToolbar),
     viewTitle: queryRequiredElement(selectors.viewTitle)
   };
 }

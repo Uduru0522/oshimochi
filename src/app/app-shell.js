@@ -6,7 +6,6 @@ import { bindLayoutTransition } from "./layout-transition.js";
 import { createMutationController } from "./mutation-controller.js";
 import { createStartupCoordinator } from "./startup-coordinator.js";
 import { renderStartupError, renderStartupLoading } from "./startup-state.js";
-import { bindViewScrollState } from "./view-scroll-state.js";
 import { createAppStorage } from "../data/create-storage.js";
 import { createThemeController } from "../services/theme.js";
 import { createLanguageController } from "../services/language.js";
@@ -86,7 +85,6 @@ export function createApp({ storageFactory = createAppStorage } = {}) {
     applyAppLanguage(elements);
     themeController.initialize();
     bindLayoutTransition();
-    bindViewScrollState(elements.viewPanel);
     registerServiceWorker();
     window.addEventListener("pagehide", handlePageHide);
     await startupCoordinator.start();

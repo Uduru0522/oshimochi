@@ -34,8 +34,7 @@ Important app modules are grouped by task:
   `startup-state.js`
 - **Runtime assembly:** `app-runtime.js`, `app-elements.js`, and
   `create-application-operations.js`
-- **Navigation state:** `view-router.js`, `view-scroll-state.js`, and
-  `layout-transition.js`
+- **Navigation state:** `view-router.js` and `layout-transition.js`
 - **Shared state:** `mutation-controller.js`, `app-mode.js`, and `config.js`
 
 The bootstrap scripts repeat a small part of the runtime language and theme
@@ -78,7 +77,7 @@ The view layer is split by product area:
 
 - **Administration:** goods-type creation, field management, and local-data
   reset
-- **Goods types:** collection overview and the matching title-bar action
+- **Goods types:** collection overview and the matching view toolbar action
 - **Items:** browsing, filtering, sorting, registration, editing, deletion, and
   recovery
 
@@ -204,8 +203,9 @@ See [Domain Model](data-model.md) for records and
 
 ## Resource Cleanup
 
-A rendered view may return `destroy()` with its content and title-bar action.
-The router calls it before replacing the view.
+A rendered view may return `destroy()` with its content and optional
+`toolbarAction`. The router hides the view toolbar when no action is present and
+calls `destroy()` before replacing the view.
 
 Components must release resources they own. This includes observers, object
 URLs, timers, dialogs, pending transitions, and asynchronous work.
