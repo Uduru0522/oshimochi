@@ -69,7 +69,7 @@ export function createViewDefinitions(goodsTypes) {
       title: translate("Administration"),
       renderer: RENDERERS.administration,
       nav: {
-        group: NAV_GROUPS.primary,
+        group: NAV_GROUPS.utility,
         kind: NAV_KINDS.view
       },
       content: {

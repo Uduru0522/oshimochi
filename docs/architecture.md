@@ -177,11 +177,15 @@ for highlighting and return navigation:
 The Items definition carries the matching `overviewViewId`. Renderers receive
 these route IDs and do not parse route strings.
 
-Options uses:
+Administration and Options use:
 
 ```js
 nav: { group: "utility" }
 ```
+
+Wide layouts show the utility routes and GitHub link at the bottom of the
+sidebar. Narrow layouts expose those same controls from the More disclosure.
+The disclosure changes presentation only; it is not a route.
 
 ## Persistence Boundary
 

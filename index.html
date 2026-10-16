@@ -23,14 +23,26 @@
             </div>
           </div>
 
-          <nav class="utility-nav-list" id="utilityNavList" aria-label="Application views"></nav>
+          <button
+            class="utility-menu-toggle"
+            id="utilityMenuToggle"
+            type="button"
+            aria-controls="utilityMenu"
+            aria-expanded="false"
+            aria-label="More"
+            title="More"
+          >
+            <span class="utility-menu-icon" id="utilityMenuIcon" aria-hidden="true"></span>
+          </button>
         </div>
 
         <div class="navigation-stack">
           <nav class="nav-list" id="primaryNavList" aria-label="Main views"></nav>
         </div>
 
-        <footer class="sidebar-footer">
+        <footer class="sidebar-footer" id="utilityMenu">
+          <nav class="utility-nav-list" id="utilityNavList" aria-label="Application views"></nav>
+          <div class="utility-separator" aria-hidden="true"></div>
           <a
             class="sidebar-project-link"
             id="projectRepositoryLink"
@@ -40,6 +52,7 @@
           >
             <span class="nav-icon" id="projectRepositoryIcon" aria-hidden="true"></span>
             <span class="nav-label">GitHub</span>
+            <span class="utility-external-icon" id="projectExternalIcon" aria-hidden="true"></span>
           </a>
         </footer>
       </aside>

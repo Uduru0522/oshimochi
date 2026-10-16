@@ -25,7 +25,9 @@ export function createApp({ storageFactory = createAppStorage } = {}) {
   let startupCoordinator;
 
   elements.projectRepositoryLink.href = APP_CONFIG.project.repositoryUrl;
+  elements.projectExternalIcon.replaceChildren(createIcon("externalLink"));
   elements.projectRepositoryIcon.replaceChildren(createIcon("github"));
+  elements.utilityMenuIcon.replaceChildren(createIcon("moreVertical"));
 
   startupCoordinator = createStartupCoordinator({
     createStorage: storageFactory,

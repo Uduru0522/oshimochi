@@ -2,7 +2,12 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import { createViewDefinitions } from "../../src/views/view-definitions.js";
-import { NAV_KINDS, RENDERERS } from "../../src/views/view-metadata.js";
+import {
+  NAV_GROUPS,
+  NAV_KINDS,
+  RENDERERS,
+  VIEW_IDS
+} from "../../src/views/view-metadata.js";
 
 const GOODS_TYPE = {
   id: "figures",
@@ -26,4 +31,13 @@ test("goods types open Items directly and keep Overview as a secondary route", (
   assert.equal(overview.navigationId, items.id);
   assert.equal(overview.itemsViewId, items.id);
   assert.equal(views.some((view) => view.id === "goods:figures:add"), false);
+});
+
+test("administration and options share the utility navigation group", () => {
+  const views = createViewDefinitions([]);
+  const administration = views.find((view) => view.id === VIEW_IDS.administration);
+  const options = views.find((view) => view.id === VIEW_IDS.options);
+
+  assert.equal(administration.nav.group, NAV_GROUPS.utility);
+  assert.equal(options.nav.group, NAV_GROUPS.utility);
 });

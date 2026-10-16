@@ -22,6 +22,7 @@ test("app language localizes the GitHub project link metadata", () => {
     primaryNavList: createElement(),
     projectRepositoryLink: createElement(),
     sidebar: createElement(),
+    utilityMenuToggle: createElement(),
     utilityNavList: createElement()
   };
 
@@ -45,6 +46,37 @@ test("app language localizes the GitHub project link metadata", () => {
       elements.projectRepositoryLink.attributes.get("title"),
       "GitHub でプロジェクトを見る"
     );
+  } finally {
+    globalThis.document = previousDocument;
+  }
+});
+
+test("app language localizes the utility menu disclosure", () => {
+  const previousDocument = globalThis.document;
+  const elements = {
+    appShell: createElement(),
+    brandSubtitle: createElement(),
+    primaryNavList: createElement(),
+    projectRepositoryLink: createElement(),
+    sidebar: createElement(),
+    utilityMenuToggle: createElement(),
+    utilityNavList: createElement()
+  };
+
+  globalThis.document = {
+    documentElement: {
+      dataset: { languagePending: "true" },
+      lang: "en"
+    },
+    querySelector: () => createElement(),
+    title: ""
+  };
+
+  try {
+    applyAppLanguage(elements);
+
+    assert.equal(elements.utilityMenuToggle.attributes.get("aria-label"), "More");
+    assert.equal(elements.utilityMenuToggle.attributes.get("title"), "More");
   } finally {
     globalThis.document = previousDocument;
   }

@@ -28,7 +28,6 @@ export function mountAppRuntime({
     onLocalDataReset,
     onLanguageChanged,
     operations,
-    projectRepositoryUrl: APP_CONFIG.project.repositoryUrl,
     languageController,
     themeController
   });
@@ -36,6 +35,8 @@ export function mountAppRuntime({
   const navigation = createNavigation({
     primaryContainer: elements.primaryNavList,
     utilityContainer: elements.utilityNavList,
+    utilityMenu: elements.utilityMenu,
+    utilityMenuToggle: elements.utilityMenuToggle,
     views,
     onSelect: (viewId) => router.setActiveView(viewId)
   });
@@ -53,5 +54,8 @@ export function mountAppRuntime({
 
   navigation.render();
   router.setActiveView(initialViewId);
-  return () => router.destroy();
+  return () => {
+    navigation.destroy();
+    router.destroy();
+  };
 }

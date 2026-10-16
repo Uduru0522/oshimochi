@@ -22,7 +22,6 @@ function groupViews(views) {
   const primaryViews = views.filter((view) => view.nav?.group === NAV_GROUPS.primary);
 
   return {
-    administration: primaryViews.find((view) => view.id === VIEW_IDS.administration),
     dashboard: primaryViews.find((view) => view.id === VIEW_IDS.dashboard),
     goodsTypes: primaryViews.filter((view) => view.nav?.kind === NAV_KINDS.goodsType)
   };
@@ -43,7 +42,7 @@ export function createPrimaryNavigation({ container, onSelect, views }) {
 
   function render() {
     const fragment = document.createDocumentFragment();
-    const { administration, dashboard, goodsTypes } = groupViews(views);
+    const { dashboard, goodsTypes } = groupViews(views);
 
     buttons.clear();
 
@@ -58,10 +57,6 @@ export function createPrimaryNavigation({ container, onSelect, views }) {
     }
 
     goodsTypes.forEach((view) => fragment.append(createTrackedButton(view)));
-
-    if (administration) {
-      fragment.append(createNavSeparator(), createTrackedButton(administration));
-    }
 
     container.replaceChildren(fragment);
     bindDragScroll(container.parentElement, { axis: "y" });

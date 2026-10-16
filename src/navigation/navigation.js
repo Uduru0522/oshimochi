@@ -1,7 +1,14 @@
 import { createPrimaryNavigation } from "./primary-navigation.js";
 import { createUtilityNavigation } from "./utility-navigation.js";
 
-export function createNavigation({ primaryContainer, utilityContainer, onSelect, views }) {
+export function createNavigation({
+  primaryContainer,
+  utilityContainer,
+  utilityMenu,
+  utilityMenuToggle,
+  onSelect,
+  views
+}) {
   const primaryNavigation = createPrimaryNavigation({
     container: primaryContainer,
     onSelect,
@@ -9,6 +16,8 @@ export function createNavigation({ primaryContainer, utilityContainer, onSelect,
   });
   const utilityNavigation = createUtilityNavigation({
     container: utilityContainer,
+    menu: utilityMenu,
+    menuToggle: utilityMenuToggle,
     onSelect,
     views
   });
@@ -24,6 +33,7 @@ export function createNavigation({ primaryContainer, utilityContainer, onSelect,
   }
 
   return {
+    destroy: () => utilityNavigation.destroy(),
     render,
     setActiveView
   };

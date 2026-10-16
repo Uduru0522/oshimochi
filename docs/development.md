@@ -62,6 +62,12 @@ or mutation behavior changes.
 - Confirm storage failures show a retry action, not an empty collection.
 - Confirm localhost and the hosted app keep separate data.
 
+### Shell And Navigation
+
+- In wide mode, confirm Administration, Options, and GitHub stay at the bottom.
+- In narrow mode, confirm More reveals those same controls and closes on Escape
+  or an outside press.
+
 ### Goods Types And Fields
 
 - Create a goods type and confirm Items opens after save.

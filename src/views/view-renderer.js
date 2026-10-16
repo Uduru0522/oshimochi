@@ -1,5 +1,4 @@
 import { createElement } from "../shared/dom.js";
-import { createIcon } from "../shared/icons.js";
 import { translate } from "../localization/translate.js";
 import { createSelectMenu } from "../shared/select-menu.js";
 import { RENDERERS } from "./view-metadata.js";
@@ -21,25 +20,9 @@ export function renderPlaceholderView(view) {
   return article;
 }
 
-function createProjectRepositoryLink(repositoryUrl) {
-  const link = createElement("a", {
-    attributes: {
-      "aria-label": translate("View project on GitHub"),
-      href: repositoryUrl,
-      rel: "noopener noreferrer",
-      target: "_blank"
-    },
-    className: "secondary-action project-repository-action"
-  });
-
-  link.append(createIcon("github"), createElement("span", { textContent: "GitHub" }));
-  return link;
-}
-
 export function renderOptionsView({
   languageController,
   onLanguageChanged,
-  projectRepositoryUrl,
   themeController
 }) {
   const article = createElement("article", { className: "settings-view" });
@@ -70,20 +53,6 @@ export function renderOptionsView({
     ariaLabel: translate("Interface language"),
     emptyLabel: translate("Select...")
   });
-  const projectSection = createSettingsSection({
-    title: translate("About"),
-    description: translate("Project links and information.")
-  });
-  const projectRow = createElement("div", { className: "setting-row project-setting" });
-  const projectCopy = createElement("span");
-  const projectTitle = createElement("strong", {
-    textContent: translate("Source code")
-  });
-  const projectDescription = createElement("small", {
-    textContent: translate("View the source code and releases for this project.")
-  });
-  const projectLink = createProjectRepositoryLink(projectRepositoryUrl);
-
   languageMenu.setOptions([
     { label: translate("English"), value: "en" },
     { label: translate("Japanese"), value: "ja" },
@@ -96,14 +65,10 @@ export function renderOptionsView({
   });
   languageCopy.append(languageTitle, languageDescription);
   languageRow.append(languageCopy, languageMenu.element);
-  projectCopy.append(projectTitle, projectDescription);
-  projectRow.append(projectCopy, projectLink);
 
   colorTheme.append(darkMode);
   languageSection.append(languageRow);
-  projectSection.classList.add("project-settings-section");
-  projectSection.append(projectRow);
-  article.append(colorTheme, languageSection, projectSection);
+  article.append(colorTheme, languageSection);
 
   return {
     content: article,
@@ -120,7 +85,6 @@ export function createViewRenderer({
   onLocalDataReset,
   onLanguageChanged,
   operations,
-  projectRepositoryUrl,
   themeController
 }) {
   const renderers = {
@@ -144,7 +108,6 @@ export function createViewRenderer({
     [RENDERERS.options]: () => renderOptionsView({
       languageController,
       onLanguageChanged,
-      projectRepositoryUrl,
       themeController
     }),
     [RENDERERS.placeholder]: (view) => renderPlaceholderView(view)

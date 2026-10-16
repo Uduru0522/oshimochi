@@ -166,9 +166,55 @@ textarea {
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 12px;
   flex: 0 0 auto;
-  align-items: start;
+  align-items: center;
   min-width: 0;
   transform-origin: top left;
+}
+
+.utility-menu-toggle {
+  display: none;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  place-items: center;
+  color: var(--text);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition:
+    background-color var(--motion-fast) ease,
+    border-color var(--motion-fast) ease,
+    color var(--motion-fast) ease;
+}
+
+.utility-menu-toggle:hover,
+.utility-menu-toggle[aria-expanded="true"],
+.utility-menu-toggle[data-active] {
+  color: var(--accent);
+  background: var(--accent-tint);
+}
+
+.utility-menu-toggle:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.utility-menu-icon {
+  display: grid;
+  place-items: center;
+  transition: transform var(--motion-fast) ease;
+}
+
+.utility-menu-toggle[aria-expanded="true"] .utility-menu-icon {
+  transform: rotate(90deg);
+}
+
+.utility-menu-icon .nav-svg {
+  width: 22px;
+  height: 22px;
+  fill: currentColor;
+  stroke: none;
 }
 
 .navigation-stack {
@@ -212,41 +258,83 @@ textarea {
 }
 
 .sidebar-footer {
+  display: grid;
+  gap: 6px;
   flex: 0 0 auto;
   margin-top: auto;
   padding: 14px 0 0;
   border-top: 1px solid var(--line);
-  transition: border-color var(--motion-fast) ease;
+  transition:
+    background-color var(--motion-fast) ease,
+    border-color var(--motion-fast) ease,
+    opacity var(--motion-fast) ease,
+    transform var(--motion-fast) ease;
 }
 
+.utility-nav-item,
 .sidebar-project-link {
   display: grid;
   grid-template-columns: 28px minmax(0, 1fr);
   gap: 10px;
   align-items: center;
+  width: 100%;
   min-height: 42px;
   padding: 6px 10px;
   color: var(--muted);
+  background: transparent;
+  border: 1px solid transparent;
   border-radius: var(--radius);
+  cursor: pointer;
   text-decoration: none;
+  text-align: left;
   transition:
     background-color var(--motion-fast) ease,
+    border-color var(--motion-fast) ease,
     color var(--motion-fast) ease,
     transform var(--motion-fast) ease;
 }
 
+.sidebar-project-link {
+  grid-template-columns: 28px minmax(0, 1fr) 16px;
+}
+
+.utility-nav-item:hover,
 .sidebar-project-link:hover {
   color: var(--text);
   background: var(--accent-tint);
 }
 
+.utility-nav-item[aria-current="page"] {
+  color: var(--text);
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+
+.utility-nav-item:active,
 .sidebar-project-link:active {
   transform: translateY(1px);
 }
 
+.utility-nav-item:focus-visible,
 .sidebar-project-link:focus-visible {
   outline: 3px solid var(--focus-ring);
   outline-offset: 2px;
+}
+
+.utility-separator {
+  height: 1px;
+  margin: 2px 10px;
+  background: var(--line);
+}
+
+.utility-external-icon {
+  display: grid;
+  place-items: center;
+}
+
+.utility-external-icon .nav-svg {
+  width: 15px;
+  height: 15px;
 }
 
 .navigation-stack[data-dragging="true"],
@@ -312,69 +400,8 @@ textarea {
 .utility-nav-list {
   display: grid;
   gap: 6px;
-  justify-items: end;
-  width: max-content;
+  width: 100%;
   min-width: 0;
-}
-
-.utility-nav-item {
-  display: grid;
-  grid-template-columns: 1fr;
-  place-items: center;
-  width: 36px;
-  height: 36px;
-  min-width: 36px;
-  min-height: 36px;
-  padding: 0;
-  color: var(--muted);
-  background: transparent;
-  border: 0;
-  border-radius: 0;
-  outline: 0;
-  cursor: pointer;
-}
-
-.utility-nav-item:hover,
-.utility-nav-item[aria-current="page"] {
-  color: var(--accent);
-  background: transparent;
-  outline: 0;
-}
-
-.utility-nav-item:focus-visible {
-  outline: none;
-}
-
-.utility-nav-item .nav-icon {
-  width: 32px;
-  height: 32px;
-  color: currentColor;
-  background: transparent;
-  border-radius: 50%;
-}
-
-.utility-nav-item:hover .nav-icon,
-.utility-nav-item[aria-current="page"] .nav-icon {
-  background: var(--accent-soft);
-}
-
-.utility-nav-item:focus-visible .nav-icon {
-  outline: 3px solid var(--focus-ring);
-  outline-offset: 2px;
-}
-
-.utility-nav-item .nav-svg {
-  width: 22px;
-  height: 22px;
-}
-
-.utility-nav-item .nav-label {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0 0 0 0);
-  white-space: nowrap;
 }
 
 .nav-separator {

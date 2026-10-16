@@ -42,8 +42,11 @@
     gap: 12px;
     align-items: start;
     padding: 14px 16px 10px;
+    overflow: visible;
     border-right: 0;
     border-bottom: 1px solid var(--line);
+    position: relative;
+    z-index: 5;
   }
 
   .sidebar-header {
@@ -101,16 +104,39 @@
     display: none;
   }
 
-  .utility-nav-list {
-    align-self: start;
+  .utility-menu-toggle {
+    display: grid;
   }
 
   .sidebar-footer {
-    display: none;
+    position: absolute;
+    top: 64px;
+    right: 16px;
+    z-index: 20;
+    width: min(240px, calc(100% - 32px));
+    margin: 0;
+    padding: 8px;
+    visibility: hidden;
+    opacity: 0;
+    background: var(--surface);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+    pointer-events: none;
+    transform: translateY(-4px) scale(0.98);
+    transform-origin: top right;
+    transition:
+      opacity var(--motion-fast) ease,
+      transform var(--motion-fast) ease,
+      visibility 0s linear var(--motion-fast);
   }
 
-  .project-settings-section {
-    display: block;
+  .sidebar-footer[data-open="true"] {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0) scale(1);
+    transition-delay: 0s;
   }
 
   .nav-separator {
@@ -356,28 +382,6 @@
     padding: 6px 9px 6px 7px;
   }
 
-  .utility-nav-item {
-    width: 36px;
-    height: 36px;
-    min-width: 36px;
-    min-height: 36px;
-  }
-
-  .utility-nav-item .nav-icon {
-    width: 32px;
-    height: 32px;
-  }
-
-  .utility-nav-item .nav-label {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-    max-width: none;
-    white-space: nowrap;
-  }
-
   .nav-icon {
     width: 26px;
     height: 26px;
@@ -437,15 +441,6 @@
   .language-setting {
     align-items: stretch;
     flex-direction: column;
-  }
-
-  .project-setting {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .project-repository-action {
-    align-self: flex-start;
   }
 
   .language-setting .select-menu {
