@@ -237,14 +237,12 @@ textarea {
 }
 
 .navigation-stack[data-dragging="true"],
-.view-panel[data-dragging="true"],
 .schema-table-wrap[data-dragging="true"] {
   cursor: grabbing;
   user-select: none;
 }
 
 .navigation-stack[data-dragging="true"] *,
-.view-panel[data-dragging="true"] *,
 .schema-table-wrap[data-dragging="true"] * {
   cursor: grabbing;
 }

@@ -11,7 +11,6 @@ import { createAppStorage } from "../data/create-storage.js";
 import { createThemeController } from "../services/theme.js";
 import { createLanguageController } from "../services/language.js";
 import { registerServiceWorker } from "../services/service-worker-registration.js";
-import { bindDragScroll } from "../shared/drag-scroll.js";
 import { createIcon } from "../shared/icons.js";
 import { getGoodsTypeItemsViewId } from "../views/goods-types/goods-type-view-ids.js";
 import { VIEW_IDS } from "../views/view-metadata.js";
@@ -87,7 +86,6 @@ export function createApp({ storageFactory = createAppStorage } = {}) {
     applyAppLanguage(elements);
     themeController.initialize();
     bindLayoutTransition();
-    bindDragScroll(elements.viewPanel, { axis: "y" });
     bindViewScrollState(elements.viewPanel);
     registerServiceWorker();
     window.addEventListener("pagehide", handlePageHide);
