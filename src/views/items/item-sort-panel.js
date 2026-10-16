@@ -47,7 +47,6 @@ export function createItemSortPanel({ onApply }) {
     },
     className: "secondary-action items-sort-action"
   });
-  const buttonLabel = createElement("span", { textContent: translate("Sort") });
   const dialog = createElement("dialog", {
     attributes: { "aria-labelledby": "itemSortTitle" },
     className: "item-sort-dialog"
@@ -98,7 +97,7 @@ export function createItemSortPanel({ onApply }) {
   });
 
   button.disabled = true;
-  button.append(createIcon("sort"), buttonLabel);
+  button.append(createIcon("sort"));
   closeButton.append(createIcon("close"));
   fieldLabel.append(
     createElement("strong", { textContent: translate("Sort by") }),
@@ -133,7 +132,7 @@ export function createItemSortPanel({ onApply }) {
 
   function updateButton() {
     const currentValue = serializeSort(activeSort);
-    const label = fieldSelect.getLabel(currentValue) || translate("Sort");
+    const label = fieldSelect.getLabel(currentValue) || translate("Sort items");
     button.dataset.active = String(!isDefaultSort(activeSort));
     button.title = translate("Sort items: {field}, {direction}", {
       field: label,

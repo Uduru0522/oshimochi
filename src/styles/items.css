@@ -36,50 +36,28 @@
     transform var(--motion-fast) ease;
 }
 
+.items-filter-action,
+.items-sort-action {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
+  min-height: 42px;
+  padding: 0;
+  place-items: center;
+  flex: 0 0 42px;
+  overflow: hidden;
+  transition:
+    background-color var(--motion-fast) ease,
+    border-color var(--motion-fast) ease,
+    color var(--motion-fast) ease,
+    opacity var(--motion-fast) ease,
+    transform var(--motion-fast) ease;
+}
+
 .items-filter-action {
   position: relative;
-  display: inline-flex;
-  min-height: 36px;
-  min-width: 36px;
-  align-items: center;
-  gap: 7px;
   overflow: visible;
-  transition:
-    background-color var(--motion-fast) ease,
-    border-color var(--motion-fast) ease,
-    color var(--motion-fast) ease,
-    gap var(--motion-fast) ease,
-    opacity var(--motion-fast) ease,
-    padding var(--motion-fast) ease,
-    transform var(--motion-fast) ease;
-}
-
-.items-sort-action {
-  display: inline-flex;
-  min-height: 36px;
-  min-width: 36px;
-  align-items: center;
-  gap: 7px;
-  overflow: hidden;
-  transition:
-    background-color var(--motion-fast) ease,
-    border-color var(--motion-fast) ease,
-    color var(--motion-fast) ease,
-    gap var(--motion-fast) ease,
-    opacity var(--motion-fast) ease,
-    padding var(--motion-fast) ease,
-    transform var(--motion-fast) ease;
-}
-
-.items-sort-action > span {
-  max-width: 12em;
-  overflow: hidden;
-  opacity: 1;
-  white-space: nowrap;
-  transition:
-    max-width var(--motion-fast) ease,
-    opacity var(--motion-fast) ease,
-    transform var(--motion-fast) ease;
 }
 
 .items-sort-action .nav-svg {
@@ -90,17 +68,6 @@
 .items-sort-action[data-active="true"] {
   color: var(--accent);
   border-color: var(--accent);
-}
-
-.items-filter-action > span:not(.items-filter-badge) {
-  max-width: 12em;
-  overflow: hidden;
-  opacity: 1;
-  white-space: nowrap;
-  transition:
-    max-width var(--motion-fast) ease,
-    opacity var(--motion-fast) ease,
-    transform var(--motion-fast) ease;
 }
 
 .items-filter-action .nav-svg {

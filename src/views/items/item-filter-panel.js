@@ -25,7 +25,6 @@ export function createItemFilterPanel({ onApply }) {
     },
     className: "secondary-action items-filter-action"
   });
-  const buttonLabel = createElement("span", { textContent: translate("Filter") });
   const badge = createElement("span", {
     attributes: { "aria-hidden": "true" },
     className: "items-filter-badge"
@@ -86,7 +85,7 @@ export function createItemFilterPanel({ onApply }) {
 
   button.disabled = true;
   badge.hidden = true;
-  button.append(createIcon("filter"), buttonLabel, badge);
+  button.append(createIcon("filter"), badge);
   closeButton.append(createIcon("close"));
   searchField.append(
     createElement("strong", { textContent: translate("Search all fields") }),

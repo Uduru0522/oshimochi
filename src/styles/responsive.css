@@ -191,9 +191,9 @@
     min-width: 38px;
     height: 38px;
     min-height: 38px;
+    flex-basis: 38px;
     padding: 0;
     justify-content: center;
-    gap: 0;
   }
 
   .item-presentation-control {
@@ -213,19 +213,9 @@
     min-width: 38px;
     height: 38px;
     min-height: 38px;
+    flex-basis: 38px;
     padding: 0;
     justify-content: center;
-    gap: 0;
-  }
-
-  .items-sort-action > span {
-    max-width: 0;
-    opacity: 0;
-  }
-
-  .items-filter-action > span:not(.items-filter-badge) {
-    max-width: 0;
-    opacity: 0;
   }
 
   .item-filter-dialog {
