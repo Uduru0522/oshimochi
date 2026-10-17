@@ -7,6 +7,7 @@ implemented facts separate from unfinished work.
 
 | Document | Scope |
 | --- | --- |
+| [Session Handoff](session-handoff.md) | Current baseline, decisions, limitations, and resume point |
 | [Architecture](architecture.md) | Runtime flow, code ownership, and dependency rules |
 | [Domain Model](data-model.md) | Records, relationships, and invariants |
 | [Persistence](persistence.md) | IndexedDB, adapters, transactions, and errors |

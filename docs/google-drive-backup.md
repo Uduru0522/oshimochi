@@ -216,8 +216,10 @@ After step 10, debug fixtures return, the setup and folder remain, and the
 Google session is disconnected. Choose **Connect** again to list the real Drive
 snapshot.
 
-Repeat the round trip at the hosted URL before a release. Use a separate test
-folder there because localhost and GitHub Pages are different browser origins.
+Repeat the round trip at the hosted URL after changing authentication, transfer,
+or restore behavior. Use a separate test folder there because localhost and
+GitHub Pages are different browser origins. Personal-account round trips have
+been completed on both supported origins.
 
 ## Cost And Quota
 
