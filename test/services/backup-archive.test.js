@@ -8,20 +8,20 @@ import {
 } from "../../src/services/backup-archive.js";
 
 const REPETITIVE_SNAPSHOT = JSON.stringify({
-  application: "wotagoods-manager",
+  application: "oshimochi",
   content: "portable-content-".repeat(4_000)
 });
 
 test("backup archive creates a smaller gzip file for compressible content", async () => {
   const summary = Object.freeze({ snapshotId: "snapshot-1" });
   const archive = await createGzipBackupArchive({
-    fileName: "wotagoods-backup.json",
+    fileName: "oshimochi-backup.json",
     mimeType: "application/json",
     summary,
     text: REPETITIVE_SNAPSHOT
   });
 
-  assert.equal(archive.fileName, "wotagoods-backup.json.gz");
+  assert.equal(archive.fileName, "oshimochi-backup.json.gz");
   assert.equal(archive.mimeType, BACKUP_ARCHIVE_MIME_TYPE);
   assert.equal(archive.blob.type, BACKUP_ARCHIVE_MIME_TYPE);
   assert.equal(archive.summary, summary);
@@ -45,7 +45,7 @@ test("backup archive reader rejects uncompressed content", async () => {
 
   await assert.rejects(
     readBackupArchiveText(plainText),
-    /compressed Wotagoods backup archive/
+    /compressed Oshimochi backup archive/
   );
 });
 

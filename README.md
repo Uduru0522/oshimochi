@@ -1,4 +1,4 @@
-# Wotagoods Manager
+# Oshimochi
 
 A local-first web app for organizing collectible goods.
 
@@ -71,7 +71,7 @@ To reproduce the GitHub Pages path locally:
 npm run start:pages
 ```
 
-Then open `http://localhost:4173/wotagoods-manager/`.
+Then open `http://localhost:4173/oshimochi/`.
 
 ## Verify Changes
 
@@ -90,8 +90,8 @@ npm run test:coverage:data
 
 ## Hosted Application
 
-- [User mode](https://uduru0522.github.io/wotagoods-manager/)
-- [Debug mode](https://uduru0522.github.io/wotagoods-manager/?debug=1)
+- [User mode](https://uduru0522.github.io/oshimochi/)
+- [Debug mode](https://uduru0522.github.io/oshimochi/?debug=1)
 
 Local and hosted URLs are different browser origins. They do not share settings
 or IndexedDB data.

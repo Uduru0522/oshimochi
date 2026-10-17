@@ -9,7 +9,7 @@ import {
 } from "../backup-archive.js";
 import { pickGoogleDriveFolder } from "./google-picker.js";
 
-const APPLICATION_ID = "wotagoods-manager";
+const APPLICATION_ID = "oshimochi";
 const DRIVE_API_ROOT = "https://www.googleapis.com/drive/v3";
 const DRIVE_FILE_SCOPE = "https://www.googleapis.com/auth/drive.file";
 const FOLDER_MIME_TYPE = "application/vnd.google-apps.folder";
@@ -80,7 +80,7 @@ function createUrl(root, path, parameters = {}) {
 }
 
 function createMultipartUpload(metadata, content, mimeType) {
-  const boundary = `wotagoods-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  const boundary = `oshimochi-${Date.now()}-${Math.random().toString(16).slice(2)}`;
   const body = new Blob([
     `--${boundary}\r\n`,
     "Content-Type: application/json; charset=UTF-8\r\n\r\n",
@@ -637,7 +637,7 @@ export function createGoogleDriveBackupProvider({
       file.appProperties?.kind !== SNAPSHOT_KIND
     ) {
       throw new GoogleDriveBackupError(
-        "The selected file is not a Wotagoods backup.",
+        "The selected file is not an Oshimochi backup.",
         { code: "invalid-snapshot" }
       );
     }

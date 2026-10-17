@@ -5,11 +5,11 @@ GitHub Pages hosts the static app. The Node server is for local development only
 ## Production URL
 
 ```text
-https://uduru0522.github.io/wotagoods-manager/
+https://uduru0522.github.io/oshimochi/
 ```
 
 Runtime paths are relative so the app works under
-`/wotagoods-manager/`.
+`/oshimochi/`.
 
 ## Repository Setup
 
@@ -75,8 +75,8 @@ npm run start:pages
 Open:
 
 ```text
-http://localhost:4173/wotagoods-manager/
-http://localhost:4173/wotagoods-manager/?debug=1
+http://localhost:4173/oshimochi/
+http://localhost:4173/oshimochi/?debug=1
 ```
 
 Stop the server with `Ctrl+C` after each check.
@@ -115,7 +115,7 @@ local storage. The Drive and Picker API quota belongs to the user's Google Cloud
 project, and backup bytes belong to the signed-in Drive account.
 
 The deployed origin is `https://uduru0522.github.io`. OAuth authorized origins
-do not include `/wotagoods-manager/`.
+do not include `/oshimochi/`.
 
 See [Google Drive Backup Setup](google-drive-backup.md) for the user setup and
 manual smoke test. See [Data Portability](data-portability.md) for the provider,

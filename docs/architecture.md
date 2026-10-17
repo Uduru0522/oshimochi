@@ -1,6 +1,6 @@
 # Architecture
 
-Wotagoods Manager is a build-free browser app. Its local runtime uses native
+Oshimochi is a build-free browser app. Its local runtime uses native
 browser modules. Configured Drive backup loads Google Identity Services only
 when needed. The main boundaries are the app shell, storage-neutral operations,
 domain and storage code, and browser views.
@@ -244,3 +244,5 @@ When a cached runtime file changes or moves:
 
 The worker checks for updates without the HTTP cache. It does not reload an open
 page because that could discard a draft.
+Cache cleanup removes only older Oshimochi caches and leaves other identities'
+caches untouched.

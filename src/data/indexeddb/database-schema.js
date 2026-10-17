@@ -1,6 +1,6 @@
 import { DOMAIN_MODEL_VERSION } from "../models/domain-model.js";
 
-export const DATABASE_NAME = "wotagoods-manager";
+export const DATABASE_NAME = "oshimochi";
 export const DATABASE_VERSION = 1;
 
 export { DOMAIN_MODEL_VERSION };

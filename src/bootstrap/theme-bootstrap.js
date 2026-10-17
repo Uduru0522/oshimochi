@@ -12,11 +12,11 @@
   const DEFAULT_ACCENT = "green";
 
   try {
-    const savedAccent = localStorage.getItem("wotagoods.accent");
+    const savedAccent = localStorage.getItem("oshimochi.accent");
     const accent = Object.hasOwn(ACCENT_THEME_COLORS, savedAccent)
       ? savedAccent
       : DEFAULT_ACCENT;
-    const theme = localStorage.getItem("wotagoods.theme") === "dark" ? "dark" : "light";
+    const theme = localStorage.getItem("oshimochi.theme") === "dark" ? "dark" : "light";
     const themeColor = theme === "dark" ? DARK_THEME_COLOR : ACCENT_THEME_COLORS[accent];
 
     document.documentElement.dataset.accent = accent;

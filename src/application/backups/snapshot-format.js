@@ -10,7 +10,7 @@ import {
   encodeBytesToBase64
 } from "./base64.js";
 
-export const SNAPSHOT_APPLICATION = "wotagoods-manager";
+export const SNAPSHOT_APPLICATION = "oshimochi";
 export const SNAPSHOT_FORMAT_VERSION = 1;
 export const SNAPSHOT_MIME_TYPE = "application/json";
 
@@ -136,7 +136,7 @@ export async function parsePortableSnapshot(value) {
   const input = requireRecord(value, "Snapshot");
 
   if (input.application !== SNAPSHOT_APPLICATION) {
-    throw new TypeError("This file is not a Wotagoods Manager snapshot.");
+    throw new TypeError("This file is not an Oshimochi snapshot.");
   }
 
   requireVersion(
@@ -203,5 +203,5 @@ export function createSnapshotFileName(createdAt) {
   const timestamp = requireTimestamp(createdAt, "createdAt")
     .replace(/[:.]/g, "-");
 
-  return `wotagoods-backup-${timestamp}.json`;
+  return `oshimochi-backup-${timestamp}.json`;
 }

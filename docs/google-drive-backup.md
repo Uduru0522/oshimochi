@@ -1,10 +1,10 @@
 # Google Drive Backup Setup
 
-Wotagoods can store manual backup snapshots in a folder chosen by the user.
+Oshimochi can store manual backup snapshots in a folder chosen by the user.
 Google Drive is not the live database and does not sync edits between devices.
 
 This guide uses a Google Cloud project controlled by the person or group setting
-up backup. No Wotagoods server or client secret is required.
+up backup. No Oshimochi server or client secret is required.
 
 ## What Is Stored Where
 
@@ -23,8 +23,8 @@ project and choose one regular My Drive folder shared with edit access. Their
 browser databases remain separate. One member must back up, and another must
 manually restore that snapshot, before their local catalogs match.
 
-Restore replaces the full local catalog. It does not merge changes. Wotagoods
-keeps only the newest three Wotagoods snapshots in the selected folder. A group
+Restore replaces the full local catalog. It does not merge changes. Oshimochi
+keeps only the newest three Oshimochi snapshots in the selected folder. A group
 using one folder therefore shares the same three-snapshot retention pool.
 
 The current adapter does not support Google Workspace Shared Drives. The
@@ -37,17 +37,17 @@ You need:
 
 - a Google account
 - an existing Drive folder for the backups
-- the Wotagoods URL you will use
+- the Oshimochi URL you will use
 - permission to create a Google Cloud project
 
-For the first test, create a Drive folder named `Wotagoods Test Backups`.
+For the first test, create a Drive folder named `Oshimochi Test Backups`.
 
 ## 1. Create A Cloud Project
 
 1. Open [Google Cloud Console](https://console.cloud.google.com/).
 2. Open the project selector at the top.
 3. Choose **New Project**.
-4. Enter a name such as `Wotagoods Backup`.
+4. Enter a name such as `Oshimochi Backup`.
 5. Create the project, then select it.
 
 Keep every following Google setting in this same project.
@@ -83,7 +83,7 @@ normally expires after seven days, so connecting again is expected.
 1. Open **Google Auth Platform > Clients**.
 2. Choose **Create Client**.
 3. Select **Web application**.
-4. Give it a name such as `Wotagoods Web`.
+4. Give it a name such as `Oshimochi Web`.
 5. Add each URL you use under **Authorized JavaScript origins**.
 6. Create the client and copy its **Client ID**.
 
@@ -100,7 +100,7 @@ http://localhost
 http://localhost:4173
 ```
 
-An origin has no path. Do not add `/wotagoods-manager/` and do not add a
+An origin has no path. Do not add `/oshimochi/` and do not add a
 trailing wildcard here. No redirect URI is needed for this browser flow.
 
 The client ID ends in `.apps.googleusercontent.com`. Do not copy or enter a
@@ -145,9 +145,9 @@ value.
 Use the numeric project number, not the project name or project ID. It must
 belong to the same project as the OAuth client and API key.
 
-## 7. Connect Wotagoods
+## 7. Connect Oshimochi
 
-1. Open Wotagoods.
+1. Open Oshimochi.
 2. Open **More > Administration**.
 3. Find **Google Drive** under **Backup and restore**.
 4. Enter the **Google OAuth client ID**.
@@ -163,7 +163,7 @@ They must be entered again on another origin or browser profile.
 
 ## Back Up And Restore
 
-Backup is manual. Wotagoods does not upload after each edit and does not run a
+Backup is manual. Oshimochi does not upload after each edit and does not run a
 background schedule.
 
 To create a snapshot:
@@ -204,7 +204,7 @@ Use this sequence for a safe local test:
 1. Start the app with `npm start`.
 2. Open `http://localhost:4173/?debug=1`.
 3. Complete the Google setup and connect.
-4. Select `Wotagoods Test Backups`.
+4. Select `Oshimochi Test Backups`.
 5. Choose **Back up now**.
 6. Confirm that one `.json.gz` file appears in that Drive folder.
 7. Edit or delete one debug item.
@@ -223,15 +223,15 @@ been completed on both supported origins.
 
 ## Cost And Quota
 
-Wotagoods does not enable billing or buy storage. Backup files count against
+Oshimochi does not enable billing or buy storage. Backup files count against
 the signed-in account's normal Drive storage. If that storage is full, a new
 backup fails instead of purchasing more space.
 
 Google controls Drive API quotas and billing policy, and those rules can change.
 Review the current official limits before sharing a Cloud project broadly.
-Wotagoods itself never links a billing account or enables paid Google services.
+Oshimochi itself never links a billing account or enables paid Google services.
 
-This app uses the Cloud project entered on each device. A public Wotagoods
+This app uses the Cloud project entered on each device. A public Oshimochi
 deployment does not use the maintainer's project unless its credentials are
 shared with users.
 
@@ -272,7 +272,7 @@ This is expected. Access tokens are memory-only. Choose **Connect** again.
 
 ### No Backups Are Listed
 
-Confirm the signed-in account and selected folder. Wotagoods lists only its own
+Confirm the signed-in account and selected folder. Oshimochi lists only its own
 marked snapshots from that folder.
 
 ## Security Notes

@@ -15,16 +15,16 @@ session. Detailed rules stay in their owning documents.
 
 - `main` contains the portable backup and user-owned Google Drive milestone and
   is deployed to GitHub Pages.
-- The package version is `0.5.0`. The latest release tag is still `v0.4.1`.
-  See the [roadmap](roadmap.md#recommended-next-steps) for release preparation.
-- Pull request [#1](https://github.com/Uduru0522/wotagoods-manager/pull/1)
-  contains an unmerged themeable icon concept. Treat it as separate work.
+- The package version and latest release tag are `0.5.0` and `v0.5.0`.
+  The backup release passed deployment and owner-confirmed smoke checks.
+- Pull request [#1](https://github.com/Uduru0522/oshimochi/pull/1)
+  contains the Oshimochi rename, branding, and themeable icon integration.
 - Stale pre-release IndexedDB data was reset after the image field became
   required. No legacy-data migration was kept.
 
 ## Architecture Summary
 
-Wotagoods Manager is a build-free static browser app. Node.js 24 runs the local
+Oshimochi is a build-free static browser app. Node.js 24 runs the local
 server and repository checks, but the deployed app uses native browser modules.
 
 | Layer | Responsibility |
@@ -72,6 +72,8 @@ The [workflows](workflows.md) document owns user behavior. The
   are not part of a snapshot.
 - Browser data and settings are origin-specific. Localhost and GitHub Pages do
   not share them.
+- Oshimochi has its own database, preferences, and snapshot identity. See
+  [Persistence](persistence.md#indexeddb-schema) for the storage boundary.
 - The app is pre-release. Obsolete development data should be reset rather than
   creating permanent compatibility behavior without an explicit product need.
 

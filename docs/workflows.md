@@ -236,7 +236,7 @@ files are not included.
 ### Restore Local Data
 
 1. Open **Administration** and choose **Restore from file**.
-2. Select a Wotagoods `.json.gz` backup.
+2. Select an Oshimochi `.json.gz` backup.
 3. Review its date, record counts, and total image size.
 4. Confirm the replacement.
 
@@ -253,8 +253,8 @@ goods types.
 1. Create a Google Cloud project and enable the Drive and Picker APIs.
 2. Create a Web OAuth client and add the `drive.file` scope.
 3. Add only your Google account as a test user.
-4. Authorize the Wotagoods browser origin.
-5. Create a browser API key restricted to Wotagoods, Google Picker, and Drive.
+4. Authorize the Oshimochi browser origin.
+5. Create a browser API key restricted to Oshimochi, Google Picker, and Drive.
 6. Open **Administration**.
 7. Enter the client ID, API key, and project number, then save.
 
@@ -271,7 +271,7 @@ full Cloud Console and test steps.
 5. Wait for upload confirmation.
 
 The app uploads the same gzip archive used by local export. Files go to the
-selected folder. The newest three Wotagoods snapshots in that folder are
+selected folder. The newest three Oshimochi snapshots in that folder are
 retained.
 
 ### Restore From Google Drive

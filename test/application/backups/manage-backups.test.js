@@ -43,7 +43,7 @@ test("backup export reads once and returns a downloadable snapshot", async () =>
   assert.deepEqual(storage.calls.replacements, []);
   assert.equal(
     result.fileName,
-    "wotagoods-backup-2026-10-17T12-34-56-789Z.json"
+    "oshimochi-backup-2026-10-17T12-34-56-789Z.json"
   );
   assert.equal(result.mimeType, "application/json");
   assert.equal(JSON.parse(result.text).snapshotId, "snapshot-1");

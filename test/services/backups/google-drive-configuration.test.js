@@ -61,7 +61,7 @@ test("Google API key normalization trims a valid key", () => {
 
 test("Google Cloud project number normalization rejects a project name", () => {
   assert.throws(
-    () => normalizeGoogleCloudProjectNumber("wotagoods-project"),
+    () => normalizeGoogleCloudProjectNumber("oshimochi-project"),
     /valid Google Cloud project number/
   );
 });

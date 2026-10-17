@@ -21,9 +21,14 @@ storage events. User mode also never falls back to debug data after a failure.
 ## IndexedDB Schema
 
 ```text
-Name:    wotagoods-manager
+Name:    oshimochi
 Version: 1
 ```
+
+Oshimochi uses its own database and `oshimochi.*` preference keys. It does not
+read, rename, or remove data belonging to another app identity. A browser with
+only another identity's data starts with an empty Oshimochi catalog and default
+preferences. Google setup must be entered again.
 
 Goods types and custom fields are normal records. Creating them does not change
 the database version.

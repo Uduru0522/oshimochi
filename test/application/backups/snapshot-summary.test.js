@@ -5,7 +5,7 @@ import { createSnapshotSummary } from "../../../src/application/backups/snapshot
 
 test("snapshot summary separates active, deleted, and binary totals", () => {
   const snapshot = {
-    application: "wotagoods-manager",
+    application: "oshimochi",
     exportFormatVersion: 1,
     domainModelVersion: 1,
     snapshotId: "snapshot-1",
@@ -29,7 +29,7 @@ test("snapshot summary separates active, deleted, and binary totals", () => {
   };
 
   assert.deepEqual(createSnapshotSummary(snapshot), {
-    application: "wotagoods-manager",
+    application: "oshimochi",
     assetBytes: 25,
     counts: {
       assets: { total: 2 },

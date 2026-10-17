@@ -67,7 +67,7 @@ Format version `1` uses this envelope:
 
 ```js
 {
-  application: "wotagoods-manager",
+  application: "oshimochi",
   exportFormatVersion: 1,
   domainModelVersion: 1,
   snapshotId: "generated-uuid",
@@ -80,6 +80,10 @@ Format version `1` uses this envelope:
   }
 }
 ```
+
+Only snapshots with the `oshimochi` application identity are accepted. Drive
+listing and retention also operate only on Oshimochi's file marker. Files from
+another identity are left untouched and are not listed or converted.
 
 An asset keeps its metadata and replaces the domain `Blob` with:
 
@@ -96,7 +100,7 @@ Canonical output has these rules:
 
 - record arrays are ordered by ID
 - JSON uses two-space indentation and one final newline
-- downloaded file names use `wotagoods-backup-<UTC timestamp>.json.gz`
+- downloaded file names use `oshimochi-backup-<UTC timestamp>.json.gz`
 - compressed archives use the `application/gzip` media type
 
 ## Validation
@@ -157,7 +161,7 @@ do not depend on Google Drive.
 
 ## User-Owned Google Drive
 
-Wotagoods does not run a shared backup backend. GitHub Pages serves only the
+Oshimochi does not run a shared backup backend. GitHub Pages serves only the
 static interface.
 
 Each browser setup supplies three public values from a user- or group-controlled
@@ -175,7 +179,7 @@ No developer-owned OAuth client, API key, storage bucket, client secret, or
 application server is used.
 
 The client ID, restricted API key, project number, and selected folder metadata
-are public configuration. Wotagoods stores them in `localStorage` on the current
+are public configuration. Oshimochi stores them in `localStorage` on the current
 origin. Access tokens stay in memory and disappear when the page closes or
 reloads.
 
@@ -185,7 +189,7 @@ user grant this app access to one existing folder without exposing the rest of
 Drive.
 
 Backups use the folder selected by the user. New uploads are gzip archives. The
-newest three Wotagoods snapshots in that folder are kept after each upload.
+newest three Oshimochi snapshots in that folder are kept after each upload.
 Downloaded gzip snapshots still pass the normal local validation and review
 flow.
 

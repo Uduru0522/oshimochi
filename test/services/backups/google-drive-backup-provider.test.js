@@ -223,14 +223,14 @@ async function connect(provider) {
 
 function createBackup() {
   return {
-    fileName: "wotagoods-backup.json",
+    fileName: "oshimochi-backup.json",
     mimeType: "application/json",
     summary: {
       createdAt: "2026-10-17T12:00:00.000Z",
       exportFormatVersion: 1,
       snapshotId: "snapshot-new"
     },
-    text: "{\"application\":\"wotagoods-manager\"}\n"
+    text: "{\"application\":\"oshimochi\"}\n"
   };
 }
 
@@ -244,7 +244,7 @@ function createRemoteFile({
 }) {
   return {
     appProperties: {
-      application: "wotagoods-manager",
+      application: "oshimochi",
       createdAt,
       fileName,
       kind: "snapshot",
@@ -419,7 +419,7 @@ test("Google Drive backup lists paged snapshots newest first", async () => {
 test("Google Drive backup uploads an app-owned snapshot and trims retention", async () => {
   const uploadedFile = createRemoteFile({
     createdAt: "2026-10-17T12:00:00.000Z",
-    fileName: "wotagoods-backup.json.gz",
+    fileName: "oshimochi-backup.json.gz",
     id: "drive-new",
     snapshotId: "snapshot-new"
   });
@@ -458,10 +458,10 @@ test("Google Drive backup uploads an app-owned snapshot and trims retention", as
   await connect(provider);
   const result = await provider.uploadSnapshot(createBackup());
 
-  assert.match(uploadText, /"application":"wotagoods-manager"/);
+  assert.match(uploadText, /"application":"oshimochi"/);
   assert.match(uploadText, /"snapshotId":"snapshot-new"/);
   assert.match(uploadText, /"mimeType":"application\/gzip"/);
-  assert.match(uploadText, /"name":"wotagoods-backup\.json\.gz"/);
+  assert.match(uploadText, /"name":"oshimochi-backup\.json\.gz"/);
   assert.deepEqual(result.retention, { failed: 0, removed: 1 });
   assert.equal(provider.getState().lastBackup.id, "drive-new");
 });

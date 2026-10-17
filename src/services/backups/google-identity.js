@@ -1,6 +1,6 @@
 export const GOOGLE_IDENTITY_SCRIPT_URL = "https://accounts.google.com/gsi/client";
 
-const SCRIPT_ATTRIBUTE = "data-wotagoods-google-identity";
+const SCRIPT_ATTRIBUTE = "data-oshimochi-google-identity";
 
 function getBrowserOAuth2() {
   return globalThis.google?.accounts?.oauth2 ?? null;

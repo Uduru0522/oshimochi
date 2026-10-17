@@ -1,4 +1,4 @@
-const CACHE_NAME = "wotagoods-manager-v143";
+const CACHE_NAME = "oshimochi-v144";
 
 const ASSET_GROUPS = {
   app: [
@@ -71,8 +71,7 @@ const ASSET_GROUPS = {
   ],
   install: [
     "./manifest.webmanifest",
-    "./icons/icon-192.svg",
-    "./icons/icon-512.svg"
+    "./icons/oshimochi-themeable.svg"
   ],
   navigation: [
     "./src/navigation/navigation.js",
@@ -189,7 +188,9 @@ self.addEventListener("activate", (event) => {
       .then((cacheNames) =>
         Promise.all(
           cacheNames
-            .filter((cacheName) => cacheName !== CACHE_NAME)
+            .filter((cacheName) =>
+              cacheName.startsWith("oshimochi-") && cacheName !== CACHE_NAME
+            )
             .map((cacheName) => caches.delete(cacheName))
         )
       )

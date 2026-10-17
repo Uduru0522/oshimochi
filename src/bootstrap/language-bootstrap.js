@@ -1,6 +1,6 @@
 (() => {
   try {
-    const savedLanguage = localStorage.getItem("wotagoods.language");
+    const savedLanguage = localStorage.getItem("oshimochi.language");
     const normalized = savedLanguage === "ja" || savedLanguage === "zh-Hant"
       ? savedLanguage
       : "en";

@@ -1,5 +1,5 @@
 {
-  "name": "wotagoods-manager",
+  "name": "oshimochi",
   "version": "0.5.0",
   "private": true,
   "description": "A local-first web app for managing multiple goods collections.",
@@ -9,7 +9,7 @@
   "scripts": {
     "check": "node scripts/verify-static.js && node scripts/verify-tests.js && npm test",
     "start": "node server.js",
-    "start:pages": "node server.js --base-path=/wotagoods-manager/",
+    "start:pages": "node server.js --base-path=/oshimochi/",
     "test": "node --test",
     "test:coverage:data": "node --experimental-test-coverage --test --test-coverage-include=src/data/**/*.js --test-coverage-lines=90 --test-coverage-branches=85 --test-coverage-functions=85"
   }

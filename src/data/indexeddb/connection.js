@@ -78,7 +78,7 @@ export function openDatabase({
     request.onblocked = () => {
       rejectOnce(
         createConnectionError(
-          "A different app tab is blocking the local database upgrade. Close other Wotagoods tabs and retry.",
+          "A different app tab is blocking the local database upgrade. Close other Oshimochi tabs and retry.",
           STORAGE_ERROR_CODES.upgradeBlocked
         )
       );

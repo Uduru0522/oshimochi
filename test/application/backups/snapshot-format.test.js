@@ -90,7 +90,7 @@ test("portable snapshot round trip preserves image bytes and domain records", as
 test("portable snapshot serialization is readable and ends with one newline", async () => {
   const serialized = serializePortableSnapshot(await createSnapshot());
 
-  assert.match(serialized, /^\{\n  "application": "wotagoods-manager"/);
+  assert.match(serialized, /^\{\n  "application": "oshimochi"/);
   assert.equal(serialized.endsWith("\n"), true);
   assert.equal(serialized.endsWith("\n\n"), false);
 });
@@ -101,7 +101,7 @@ test("portable snapshot rejects another application identity", async () => {
 
   await assert.rejects(
     parsePortableSnapshot(snapshot),
-    /not a Wotagoods Manager snapshot/
+    /not an Oshimochi snapshot/
   );
 });
 
@@ -146,6 +146,6 @@ test("portable snapshot reports malformed JSON separately", async () => {
 test("snapshot filename uses a filesystem-safe UTC timestamp", () => {
   assert.equal(
     createSnapshotFileName(CREATED_AT),
-    "wotagoods-backup-2026-10-17T12-34-56-789Z.json"
+    "oshimochi-backup-2026-10-17T12-34-56-789Z.json"
   );
 });

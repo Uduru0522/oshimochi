@@ -578,7 +578,7 @@ export function createDataPortability({
         console.error("Local backup could not be inspected:", error);
         renderLanding({
           feedback: translate(
-            "This backup could not be opened. Choose a valid Wotagoods backup file."
+            "This backup could not be opened. Choose a valid Oshimochi backup file."
           ),
           isError: true
         });
