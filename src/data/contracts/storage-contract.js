@@ -20,6 +20,8 @@ const REQUIRED_STORAGE_METHODS = Object.freeze([
   "saveFieldDefinitions",
   "listItems",
   "purgeItem",
+  "readDataCatalog",
+  "replaceDataCatalog",
   "resetData",
   "close"
 ]);

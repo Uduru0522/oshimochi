@@ -16,24 +16,31 @@ export function renderPlaceholderView(view) {
 }
 
 export function createViewRenderer({
+  backupFileService,
+  backupProviders,
   goodsTypes,
   languageController,
   mutationController,
   onNavigate,
   onGoodsTypeCreated,
   onLocalDataReset,
+  onLocalDataRestored,
   onLanguageChanged,
   operations,
   themeController
 }) {
   const renderers = {
     [RENDERERS.administration]: () => renderAdministrationView({
+      backupFileService,
+      backupOperations: operations.backups,
+      backupProviders,
       createGoodsType: operations.goodsTypes.create,
       fieldManagement: operations.fields,
       goodsTypes,
       mutationController,
       onGoodsTypeCreated,
       onLocalDataReset,
+      onLocalDataRestored,
       resetLocalData: operations.localData.reset
     }),
     [RENDERERS.goodsTypeOverview]: (view) => renderGoodsTypeOverview(view, {

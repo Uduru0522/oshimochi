@@ -55,27 +55,41 @@ order of unfinished work. It does not set release dates.
 - Explicit record scopes
 - Focused source and test ownership
 
-## Current Milestone: Backup Export And Import
+### Portable Backup And Restore
 
-- [ ] Export one versioned local snapshot.
-- [ ] Include active and soft-deleted records.
-- [ ] Include every retained image asset.
-- [ ] Validate the full file before a write starts.
-- [ ] Review and confirm replacement of local data.
-- [ ] Replace all user stores atomically.
-- [ ] Keep existing data unchanged after any failure.
+- Coherent catalog reads through both storage adapters
+- Versioned JSON snapshots with retained image data
+- Local download of active and soft-deleted records
+- Full validation and review before restore
+- Atomic replacement of all user-data stores
+- Failure behavior that preserves the previous catalog
 
-The first import mode is full replacement. Merge is outside this milestone.
+Restore is full replacement. Merge is outside the current product.
 
-See [Data Portability](data-portability.md) for the file and workflow design.
+## Current Milestone: User-Owned Google Drive Backup
+
+- [x] Define a provider-neutral cloud backup contract.
+- [x] Let each user store their own public Google project setup locally.
+- [x] Request only the `drive.file` permission.
+- [x] Let the user choose the backup folder through Google Picker.
+- [x] Keep access tokens in memory.
+- [x] Upload, list, download, and validate app-owned snapshots.
+- [x] Retain the newest three snapshots after upload.
+- [x] Reuse the local restore review and atomic replacement flow.
+- [ ] Verify consent, folder selection, upload, and restore with a real account
+  on localhost.
+- [ ] Repeat the cloud round trip on GitHub Pages.
+
+See [Data Portability](data-portability.md) for the snapshot contract, provider
+boundary, ownership model, and setup steps.
 
 ## Later Milestones
 
-### Cloud Snapshots
+### Backup Policy
 
-- Upload and download the same snapshot format through Google Drive.
 - Add reminders before destructive operations.
-- Define bounded snapshot retention.
+- Add automatic backup after the manual cloud workflow is verified.
+- Show quota and retention health to the user.
 
 ### Multi-Device Data
 
@@ -85,8 +99,10 @@ deletion rules are defined.
 ## Outside Current Scope
 
 - Server-hosted user database
+- Shared developer-owned cloud backup
+- Dropbox and OneDrive backup providers
 - Multi-user accounts and permissions
-- Live Google Drive database access
+- Live multi-device synchronization
 - One IndexedDB store per goods type
 - Destructive field-type conversion
 - Import merge without explicit conflict rules

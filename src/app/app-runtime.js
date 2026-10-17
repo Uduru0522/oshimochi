@@ -6,6 +6,8 @@ import { createViewRenderer } from "../views/view-renderer.js";
 import { createApplicationOperations } from "../application/create-application-operations.js";
 
 export function mountAppRuntime({
+  backupFileService,
+  backupProviders,
   elements,
   goodsTypes,
   initialViewId = APP_CONFIG.defaultViewId,
@@ -13,6 +15,7 @@ export function mountAppRuntime({
   mutationController,
   onGoodsTypeCreated,
   onLocalDataReset,
+  onLocalDataRestored,
   onLanguageChanged,
   storage,
   themeController
@@ -21,11 +24,14 @@ export function mountAppRuntime({
   const operations = createApplicationOperations({ storage });
   let router;
   const renderer = createViewRenderer({
+    backupFileService,
+    backupProviders,
     goodsTypes,
     mutationController,
     onNavigate: (viewId) => router.setActiveView(viewId),
     onGoodsTypeCreated,
     onLocalDataReset,
+    onLocalDataRestored,
     onLanguageChanged,
     operations,
     languageController,

@@ -78,6 +78,16 @@ export function createIndexedDbStorage({
     return localDataRepository.reset();
   }
 
+  async function readDataCatalog() {
+    assertInitialized();
+    return localDataRepository.readCatalog();
+  }
+
+  async function replaceDataCatalog(catalog) {
+    assertInitialized();
+    return localDataRepository.replaceCatalog(catalog);
+  }
+
   async function createItem(item) {
     assertInitialized();
     return itemRepository.create(item);
@@ -127,6 +137,8 @@ export function createIndexedDbStorage({
     listGoodsTypes,
     listItems,
     purgeItem,
+    readDataCatalog,
+    replaceDataCatalog,
     resetData,
     saveFieldDefinitions,
     updateItemContent,

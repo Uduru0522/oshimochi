@@ -8,6 +8,7 @@ import {
 import { createDebugStorage } from "../../../src/data/debug/debug-storage.js";
 import { createItemRecord } from "../../../src/data/models/item.js";
 import { RECORD_SCOPES } from "../../../src/data/models/record-lifecycle.js";
+import { createDataCatalogFixture } from "../../../test-support/data-catalog-fixtures.js";
 
 test("DebugStorage rejects reads before initialization", async () => {
   const storage = createDebugStorage();
@@ -123,4 +124,39 @@ test("DebugStorage reset clears all temporary domain records", async () => {
   assert.deepEqual(await storage.listGoodsTypes(), []);
   assert.deepEqual(await storage.listFieldDefinitions("figures"), []);
   assert.deepEqual(await storage.listItems("figures"), []);
+});
+
+test("DebugStorage reads an isolated complete data catalog", async () => {
+  const catalog = createDataCatalogFixture();
+  const storage = createDebugStorage(catalog);
+
+  await storage.initialize();
+  const result = await storage.readDataCatalog();
+  result.items[0].name = "Changed outside storage";
+
+  assert.deepEqual(await storage.readDataCatalog(), catalog);
+});
+
+test("DebugStorage atomically replaces its complete data catalog", async () => {
+  const original = createDataCatalogFixture();
+  const replacement = createDataCatalogFixture();
+  replacement.goodsTypes[0].displayName = "Replacement figures";
+  const storage = createDebugStorage(original);
+
+  await storage.initialize();
+  await storage.replaceDataCatalog(replacement);
+
+  assert.deepEqual(await storage.readDataCatalog(), replacement);
+});
+
+test("DebugStorage keeps its catalog after invalid replacement data", async () => {
+  const original = createDataCatalogFixture();
+  const invalidReplacement = createDataCatalogFixture();
+  invalidReplacement.assets = [];
+  const storage = createDebugStorage(original);
+
+  await storage.initialize();
+  await assert.rejects(storage.replaceDataCatalog(invalidReplacement));
+
+  assert.deepEqual(await storage.readDataCatalog(), original);
 });

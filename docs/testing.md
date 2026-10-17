@@ -102,6 +102,22 @@ A regression test must fail before its fix and name the broken behavior.
 Node coverage is not end-to-end browser coverage. The project has no automated
 browser suite, so responsive and pointer behavior still needs manual checks.
 
+## Backup Coverage
+
+Backup behavior is checked at four boundaries:
+
+| Boundary | Covered behavior |
+| --- | --- |
+| Model | Complete catalog links, protected fields, and image ownership |
+| Codec | Versions, canonical JSON, base64 images, and round trips |
+| Repository | Coherent reads and atomic full replacement |
+| Application | Read-only export, validation before write, and retry behavior |
+| Services | Gzip archives, provider state, Google loading, folder selection, Drive transfer, and retention |
+
+Browser download, file selection, review layout, post-restore navigation, and a
+real Google consent, Picker selection, and Drive round trip still require manual
+checks.
+
 ## Lifecycle Coverage
 
 Deleted-item behavior is checked at several boundaries:

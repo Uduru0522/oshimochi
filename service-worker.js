@@ -1,7 +1,11 @@
-const CACHE_NAME = "wotagoods-manager-v133";
+const CACHE_NAME = "wotagoods-manager-v143";
 
 const ASSET_GROUPS = {
   app: [
+    "./src/application/backups/base64.js",
+    "./src/application/backups/manage-backups.js",
+    "./src/application/backups/snapshot-format.js",
+    "./src/application/backups/snapshot-summary.js",
     "./src/application/create-application-operations.js",
     "./src/application/data/reset-local-data.js",
     "./src/application/fields/field-configuration.js",
@@ -57,6 +61,7 @@ const ASSET_GROUPS = {
     "./src/data/indexeddb/requests.js",
     "./src/data/models/asset.js",
     "./src/data/models/built-in-fields.js",
+    "./src/data/models/data-catalog.js",
     "./src/data/models/domain-model.js",
     "./src/data/models/field-definition.js",
     "./src/data/models/goods-type.js",
@@ -78,6 +83,13 @@ const ASSET_GROUPS = {
     "./src/navigation/utility-navigation.js"
   ],
   services: [
+    "./src/services/backup-archive.js",
+    "./src/services/backup-files.js",
+    "./src/services/backups/backup-provider.js",
+    "./src/services/backups/google-drive-backup-provider.js",
+    "./src/services/backups/google-drive-configuration.js",
+    "./src/services/backups/google-identity.js",
+    "./src/services/backups/google-picker.js",
     "./src/services/language.js",
     "./src/services/service-worker-registration.js",
     "./src/services/storage.js",
@@ -100,6 +112,7 @@ const ASSET_GROUPS = {
   ],
   views: [
     "./src/views/administration/administration-view.js",
+    "./src/views/administration/data-portability.js",
     "./src/views/administration/field-change-review.js",
     "./src/views/administration/field-change-set.js",
     "./src/views/administration/field-editor.js",

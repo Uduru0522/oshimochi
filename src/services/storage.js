@@ -17,6 +17,13 @@ export function createStorage(namespace) {
       } catch {
         // Storage can be unavailable in restricted browser contexts.
       }
+    },
+    remove(key) {
+      try {
+        localStorage.removeItem(getNamespacedKey(key));
+      } catch {
+        // Storage can be unavailable in restricted browser contexts.
+      }
     }
   };
 }

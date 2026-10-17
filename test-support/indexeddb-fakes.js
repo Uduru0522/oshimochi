@@ -191,6 +191,112 @@ export function createClearDatabase({ failAt = -1 } = {}) {
   };
 }
 
+export function createCatalogDatabase(initialCatalog, { failAt = -1 } = {}) {
+  const recordsByStore = new Map([
+    [OBJECT_STORES.assets, structuredClone(initialCatalog.assets)],
+    [
+      OBJECT_STORES.fieldDefinitions,
+      structuredClone(initialCatalog.fieldDefinitions)
+    ],
+    [OBJECT_STORES.goodsTypes, structuredClone(initialCatalog.goodsTypes)],
+    [OBJECT_STORES.items, structuredClone(initialCatalog.items)]
+  ]);
+  const transactions = [];
+
+  function readCatalog() {
+    return {
+      assets: structuredClone(recordsByStore.get(OBJECT_STORES.assets)),
+      fieldDefinitions: structuredClone(
+        recordsByStore.get(OBJECT_STORES.fieldDefinitions)
+      ),
+      goodsTypes: structuredClone(recordsByStore.get(OBJECT_STORES.goodsTypes)),
+      items: structuredClone(recordsByStore.get(OBJECT_STORES.items))
+    };
+  }
+
+  return {
+    readCatalog,
+    transaction(storeNames, mode) {
+      const requests = [];
+      const workingRecords = new Map(
+        [...recordsByStore].map(([storeName, records]) => [
+          storeName,
+          structuredClone(records)
+        ])
+      );
+      let scheduled = false;
+      const transaction = {
+        error: null,
+        objectStore(storeName) {
+          function queue(operation, value) {
+            const request = {};
+            requests.push({ operation, request, storeName, value });
+
+            if (!scheduled) {
+              scheduled = true;
+              queueMicrotask(() => {
+                const failedRequest = requests[failAt];
+
+                if (failedRequest) {
+                  const failure = new Error("catalog transaction failed");
+                  transaction.error = failure;
+                  failedRequest.request.error = failure;
+                  failedRequest.request.onerror();
+                  transaction.onabort();
+                  return;
+                }
+
+                requests.forEach((entry) => {
+                  if (entry.operation === "getAll") {
+                    entry.request.result = structuredClone(
+                      workingRecords.get(entry.storeName)
+                    );
+                  } else if (entry.operation === "clear") {
+                    workingRecords.set(entry.storeName, []);
+                  } else {
+                    workingRecords.get(entry.storeName).push(
+                      structuredClone(entry.value)
+                    );
+                    entry.request.result = entry.value.id;
+                  }
+
+                  entry.request.onsuccess();
+                });
+
+                if (mode === "readwrite") {
+                  workingRecords.forEach((records, store) => {
+                    recordsByStore.set(store, records);
+                  });
+                }
+
+                transaction.oncomplete();
+              });
+            }
+
+            return request;
+          }
+
+          return {
+            add(record) {
+              return queue("add", record);
+            },
+            clear() {
+              return queue("clear");
+            },
+            getAll() {
+              return queue("getAll");
+            }
+          };
+        }
+      };
+
+      transactions.push({ mode, storeNames });
+      return transaction;
+    },
+    transactions
+  };
+}
+
 export function createIndexReadDatabase(records, { transactionError } = {}) {
   const queries = [];
 
