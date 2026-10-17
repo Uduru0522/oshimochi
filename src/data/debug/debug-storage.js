@@ -65,6 +65,14 @@ export function createDebugStorage(options = {}) {
       assertInitialized();
       return itemRepository.purge(itemId);
     },
+    async readDataCatalog() {
+      assertInitialized();
+      return localDataRepository.readCatalog();
+    },
+    async replaceDataCatalog(catalog) {
+      assertInitialized();
+      return localDataRepository.replaceCatalog(catalog);
+    },
     async resetData() {
       assertInitialized();
       return localDataRepository.reset();

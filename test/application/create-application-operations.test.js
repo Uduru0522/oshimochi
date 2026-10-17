@@ -14,6 +14,15 @@ function createStorageStub() {
     async listGoodsTypes() { return []; },
     async listItems() { return []; },
     async purgeItem() {},
+    async readDataCatalog() {
+      return {
+        assets: [],
+        fieldDefinitions: [],
+        goodsTypes: [],
+        items: []
+      };
+    },
+    async replaceDataCatalog() {},
     async resetData() {},
     async saveFieldDefinitions() {},
     async updateItemContent() {},
@@ -24,6 +33,9 @@ function createStorageStub() {
 test("application operation composition exposes feature-owned capabilities", () => {
   const operations = createApplicationOperations({ storage: createStorageStub() });
 
+  assert.equal(typeof operations.backups.createExport, "function");
+  assert.equal(typeof operations.backups.inspect, "function");
+  assert.equal(typeof operations.backups.restore, "function");
   assert.equal(typeof operations.goodsTypes.create, "function");
   assert.equal(typeof operations.fields.applyChanges, "function");
   assert.equal(typeof operations.items.softDeleteItem, "function");
