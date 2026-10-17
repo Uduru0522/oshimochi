@@ -1,6 +1,6 @@
 export const TRANSLATIONS = Object.freeze({
   ja: Object.freeze({
-    "Wotagoods Manager": "Wotagoods マネージャー",
+    "Oshimochi": "Oshimochi",
     "A local-first web app for managing multiple goods collections.": "複数のグッズコレクションを管理するローカルファースト Web アプリです。",
     "Goods manager": "グッズ管理",
     "Main navigation": "メインナビゲーション",
@@ -61,7 +61,7 @@ export const TRANSLATIONS = Object.freeze({
     "Opening collection": "コレクションを開いています",
     "Retry": "再試行",
     "Your collection could not be opened": "コレクションを開けませんでした",
-    "Close other Wotagoods tabs, then retry. Your saved data has not been changed.": "ほかの Wotagoods タブを閉じてから再試行してください。保存済みデータは変更されていません。",
+    "Close other Oshimochi tabs, then retry. Your saved data has not been changed.": "ほかの Oshimochi タブを閉じてから再試行してください。保存済みデータは変更されていません。",
     "Local browser storage is unavailable or could not be initialized. Your saved data has not been changed.": "ブラウザーのローカルストレージを利用できないか、初期化できませんでした。保存済みデータは変更されていません。",
     "Storage unavailable": "ストレージを利用できません",
     "ID": "ID",
@@ -252,7 +252,7 @@ export const TRANSLATIONS = Object.freeze({
     "{name} is ready in your downloads.": "{name} をダウンロードに保存しました。",
     "The backup could not be created. Existing local data was not changed.": "バックアップを作成できませんでした。既存のローカルデータは変更されていません。",
     "Reading and validating backup...": "バックアップを読み込み、検証しています…",
-    "This backup could not be opened. Choose a valid Wotagoods backup file.": "このバックアップを開けませんでした。有効な Wotagoods バックアップファイルを選択してください。",
+    "This backup could not be opened. Choose a valid Oshimochi backup file.": "このバックアップを開けませんでした。有効な Oshimochi バックアップファイルを選択してください。",
     "Connected account": "接続中のアカウント",
     "Connect": "接続",
     "Back up now": "今すぐバックアップ",
@@ -421,7 +421,7 @@ export const TRANSLATIONS = Object.freeze({
     "The staged changes could not be applied. They remain available for review or editing.": "ステージ済み変更を適用できませんでした。変更は確認または編集できる状態で保持されています。"
   }),
   "zh-Hant": Object.freeze({
-    "Wotagoods Manager": "Wotagoods 管理器",
+    "Oshimochi": "Oshimochi",
     "A local-first web app for managing multiple goods collections.": "用於管理多種周邊收藏的本機優先 Web 應用程式。",
     "Goods manager": "周邊管理",
     "Main navigation": "主要導覽",
@@ -482,7 +482,7 @@ export const TRANSLATIONS = Object.freeze({
     "Opening collection": "正在開啟收藏",
     "Retry": "重試",
     "Your collection could not be opened": "無法開啟收藏",
-    "Close other Wotagoods tabs, then retry. Your saved data has not been changed.": "請關閉其他 Wotagoods 分頁後重試。已儲存的資料未被變更。",
+    "Close other Oshimochi tabs, then retry. Your saved data has not been changed.": "請關閉其他 Oshimochi 分頁後重試。已儲存的資料未被變更。",
     "Local browser storage is unavailable or could not be initialized. Your saved data has not been changed.": "瀏覽器本機儲存空間無法使用或無法初始化。已儲存的資料未被變更。",
     "Storage unavailable": "儲存空間無法使用",
     "ID": "ID",
@@ -673,7 +673,7 @@ export const TRANSLATIONS = Object.freeze({
     "{name} is ready in your downloads.": "{name} 已存入下載項目。",
     "The backup could not be created. Existing local data was not changed.": "無法建立備份。現有本機資料未被變更。",
     "Reading and validating backup...": "正在讀取並驗證備份…",
-    "This backup could not be opened. Choose a valid Wotagoods backup file.": "無法開啟此備份。請選擇有效的 Wotagoods 備份檔案。",
+    "This backup could not be opened. Choose a valid Oshimochi backup file.": "無法開啟此備份。請選擇有效的 Oshimochi 備份檔案。",
     "Connected account": "已連線的帳戶",
     "Connect": "連線",
     "Back up now": "立即備份",

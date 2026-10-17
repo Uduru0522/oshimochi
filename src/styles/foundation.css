@@ -398,14 +398,13 @@ textarea {
 }
 
 .brand-mark {
-  display: grid;
+  --oshimochi-bg: var(--accent);
+  --oshimochi-outline: var(--accent-ink);
+  --oshimochi-soft: color-mix(in srgb, var(--accent) 22%, white);
+  --oshimochi-eye: color-mix(in srgb, var(--accent) 70%, #14395e);
+  display: block;
   width: 44px;
   height: 44px;
-  place-items: center;
-  color: var(--accent-foreground);
-  background: var(--accent);
-  border-radius: var(--radius);
-  font-weight: 750;
 }
 
 .brand h1,

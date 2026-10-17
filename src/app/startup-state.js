@@ -58,7 +58,7 @@ export function renderStartupError(elements, error, { onRetry }) {
     }),
     createElement("p", {
       textContent: isUpgradeBlocked
-        ? translate("Close other Wotagoods tabs, then retry. Your saved data has not been changed.")
+        ? translate("Close other Oshimochi tabs, then retry. Your saved data has not been changed.")
         : translate("Local browser storage is unavailable or could not be initialized. Your saved data has not been changed.")
     }),
     actions

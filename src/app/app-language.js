@@ -4,7 +4,7 @@ export function applyAppLanguage(elements) {
   const moreLabel = translate("More");
   const projectLinkLabel = translate("View project on GitHub");
 
-  document.title = translate("Wotagoods Manager");
+  document.title = translate("Oshimochi");
   document
     .querySelector('meta[name="description"]')
     ?.setAttribute(
@@ -12,7 +12,7 @@ export function applyAppLanguage(elements) {
       translate("A local-first web app for managing multiple goods collections.")
     );
 
-  elements.appShell.setAttribute("aria-label", translate("Wotagoods Manager"));
+  elements.appShell.setAttribute("aria-label", translate("Oshimochi"));
   elements.sidebar.setAttribute("aria-label", translate("Main navigation"));
   elements.primaryNavList.setAttribute("aria-label", translate("Main views"));
   elements.utilityNavList.setAttribute("aria-label", translate("Application views"));

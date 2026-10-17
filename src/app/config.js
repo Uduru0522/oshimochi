@@ -5,7 +5,7 @@ export const APP_CONFIG = {
       appIdStorageKey: "google-drive-project-number",
       clientIdStorageKey: "google-drive-client-id",
       destinationStorageKey: "google-drive-destination",
-      storageNamespace: "wotagoods"
+      storageNamespace: "oshimochi"
     },
     retainedCloudSnapshots: 3
   },
@@ -13,7 +13,7 @@ export const APP_CONFIG = {
   defaultViewId: "dashboard",
   language: {
     storageKey: "language",
-    storageNamespace: "wotagoods"
+    storageNamespace: "oshimochi"
   },
   layout: {
     narrowQuery: "(max-width: 1100px)",
@@ -23,7 +23,7 @@ export const APP_CONFIG = {
     fastFallbackMs: 160
   },
   project: {
-    repositoryUrl: "https://github.com/Uduru0522/wotagoods-manager"
+    repositoryUrl: "https://github.com/Uduru0522/oshimochi"
   },
   serviceWorkerPath: "service-worker.js",
   selectors: {
@@ -65,6 +65,6 @@ export const APP_CONFIG = {
     dark: "dark",
     light: "light",
     storageKey: "theme",
-    storageNamespace: "wotagoods"
+    storageNamespace: "oshimochi"
   }
 };

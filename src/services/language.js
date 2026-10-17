@@ -11,7 +11,7 @@ export function createLanguageController() {
   }
 
   function applyDocumentMetadata() {
-    document.title = translate("Wotagoods Manager");
+    document.title = translate("Oshimochi");
     document
       .querySelector('meta[name="description"]')
       ?.setAttribute(

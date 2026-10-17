@@ -1,9 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="oshimochi-title oshimochi-desc">
+<svg xmlns="http://www.w3.org/2000/svg" id="oshimochi-mark" viewBox="0 0 512 512" role="img" aria-labelledby="oshimochi-title oshimochi-desc">
   <title id="oshimochi-title">Oshimochi</title>
   <desc id="oshimochi-desc">A smiling mochi mascot peeking out beside a hanging tapestry.</desc>
   <!--
     Single source of geometry for every app accent color.
-    Inline this SVG into the document to inherit the CSS custom properties below.
+    Reference this root from an inline SVG use element to inherit the custom properties.
     An <img src="..."> is isolated and will show the fallback blue palette.
     The background variable defaults to blue and can use the app accent token.
   -->

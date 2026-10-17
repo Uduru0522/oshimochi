@@ -27,8 +27,8 @@ npm run start:pages
 Open:
 
 ```text
-http://localhost:4173/wotagoods-manager/
-http://localhost:4173/wotagoods-manager/?debug=1
+http://localhost:4173/oshimochi/
+http://localhost:4173/oshimochi/?debug=1
 ```
 
 ## Automated Verification
@@ -125,31 +125,31 @@ Interface settings use `localStorage`:
 
 | Key | Values |
 | --- | --- |
-| `wotagoods.language` | `en`, `ja`, `zh-Hant` |
-| `wotagoods.theme` | `light`, `dark` |
-| `wotagoods.accent` | `red`, `orange`, `yellow`, `blue`, `green`, `pink`, `purple` |
-| `wotagoods.google-drive-client-id` | Personal Web OAuth client ID |
-| `wotagoods.google-drive-api-key` | Restricted browser API key |
-| `wotagoods.google-drive-project-number` | Google Cloud project number |
-| `wotagoods.google-drive-destination` | Selected folder ID and name |
+| `oshimochi.language` | `en`, `ja`, `zh-Hant` |
+| `oshimochi.theme` | `light`, `dark` |
+| `oshimochi.accent` | `red`, `orange`, `yellow`, `blue`, `green`, `pink`, `purple` |
+| `oshimochi.google-drive-client-id` | Personal Web OAuth client ID |
+| `oshimochi.google-drive-api-key` | Restricted browser API key |
+| `oshimochi.google-drive-project-number` | Google Cloud project number |
+| `oshimochi.google-drive-destination` | Selected folder ID and name |
 
 Useful console commands:
 
 ```js
-localStorage.getItem("wotagoods.language")
-localStorage.removeItem("wotagoods.language")
-localStorage.getItem("wotagoods.theme")
-localStorage.removeItem("wotagoods.theme")
-localStorage.getItem("wotagoods.accent")
-localStorage.removeItem("wotagoods.accent")
-localStorage.getItem("wotagoods.google-drive-client-id")
-localStorage.removeItem("wotagoods.google-drive-client-id")
-localStorage.getItem("wotagoods.google-drive-api-key")
-localStorage.removeItem("wotagoods.google-drive-api-key")
-localStorage.getItem("wotagoods.google-drive-project-number")
-localStorage.removeItem("wotagoods.google-drive-project-number")
-localStorage.getItem("wotagoods.google-drive-destination")
-localStorage.removeItem("wotagoods.google-drive-destination")
+localStorage.getItem("oshimochi.language")
+localStorage.removeItem("oshimochi.language")
+localStorage.getItem("oshimochi.theme")
+localStorage.removeItem("oshimochi.theme")
+localStorage.getItem("oshimochi.accent")
+localStorage.removeItem("oshimochi.accent")
+localStorage.getItem("oshimochi.google-drive-client-id")
+localStorage.removeItem("oshimochi.google-drive-client-id")
+localStorage.getItem("oshimochi.google-drive-api-key")
+localStorage.removeItem("oshimochi.google-drive-api-key")
+localStorage.getItem("oshimochi.google-drive-project-number")
+localStorage.removeItem("oshimochi.google-drive-project-number")
+localStorage.getItem("oshimochi.google-drive-destination")
+localStorage.removeItem("oshimochi.google-drive-destination")
 ```
 
 Collection data uses IndexedDB. Debug mode uses a separate in-memory adapter and

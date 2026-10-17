@@ -86,7 +86,7 @@ export async function readBackupArchiveText(
   const archive = requireReadableBlob(value);
 
   if (!await hasGzipSignature(archive)) {
-    throw new TypeError("Choose a compressed Wotagoods backup archive.");
+    throw new TypeError("Choose a compressed Oshimochi backup archive.");
   }
 
   const StreamClass = requireStreamConstructor(

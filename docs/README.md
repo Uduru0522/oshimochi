@@ -17,6 +17,7 @@ implemented facts separate from unfinished work.
 | [Deployment](deployment.md) | GitHub Pages release process |
 | [Data Portability](data-portability.md) | Snapshot format, local restore, and user-owned Drive backup |
 | [Google Drive Setup](google-drive-backup.md) | Beginner setup, sharing rules, testing, and troubleshooting |
+| [Brand Icon](oshimochi-brand-icon.md) | Shared SVG, accent colors, and installed-app icon |
 
 ## Planning
 

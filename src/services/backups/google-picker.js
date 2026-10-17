@@ -1,7 +1,7 @@
 export const GOOGLE_PICKER_SCRIPT_URL = "https://apis.google.com/js/api.js";
 
 const FOLDER_MIME_TYPE = "application/vnd.google-apps.folder";
-const SCRIPT_ATTRIBUTE = "data-wotagoods-google-picker";
+const SCRIPT_ATTRIBUTE = "data-oshimochi-google-picker";
 
 function getBrowserGapi() {
   return globalThis.gapi ?? null;

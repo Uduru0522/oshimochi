@@ -81,23 +81,17 @@ Restore is full replacement. Merge is outside the current product.
 See [Data Portability](data-portability.md) for the snapshot contract, provider
 boundary, ownership model, and setup steps.
 
+The backup milestone was tagged `v0.5.0` on 2026-10-18 after successful
+deployment and owner-confirmed manual smoke checks.
+
 ## Recommended Next Steps
 
-### 1. Close The Backup Release
+### 1. Launch Oshimochi
 
-The owner selected `0.5.0` for the backup milestone, and the package version is
-prepared. On 2026-10-18, the owner confirmed that the manual user- and debug-mode
-smoke checks from [Development](development.md#manual-browser-checks) passed.
-
-The remaining release steps are:
-
-- Merge the version-preparation pull request through normal review.
-- Confirm the Pages deployment after that merge.
-- Create a milestone tag only after explicit owner approval.
-
-After closing the backup release, discuss the separate icon work in
-[PR #1](https://github.com/Uduru0522/wotagoods-manager/pull/1) before starting
-another milestone.
+- Review and merge [PR #1](https://github.com/Uduru0522/oshimochi/pull/1).
+- Verify user and debug modes at the renamed Pages address.
+- Configure Drive backup for the Oshimochi identity and verify a new snapshot.
+- Use Oshimochi names for personal Google project branding and test folders.
 
 ### 2. Define Automatic Backup Policy
 
