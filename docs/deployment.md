@@ -31,6 +31,16 @@ The workflow uses Node 24 and these Pages actions:
 Do not hide action runtime warnings with
 `FORCE_JAVASCRIPT_ACTIONS_TO_NODE24`.
 
+## Pull Request Verification
+
+`.github/workflows/verify-pr.yml` runs `npm run check` on Node.js 24 for pull
+requests targeting `main`, including documentation-only changes. Opening,
+reopening, or pushing commits to a pull request starts verification.
+
+The workflow has read-only repository access. New commits cancel an older run
+for the same pull request. Results appear as **Verify pull requests / Check app**
+in the pull request checks.
+
 ## Before Push
 
 ### Automated Check

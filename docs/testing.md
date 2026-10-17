@@ -11,6 +11,10 @@ behavior. Browser layout and full interaction flows are checked manually.
 | `npm run test:coverage:data` | Enforce data-layer coverage thresholds |
 | `npm run check` | Run static checks, test hygiene, and all tests |
 
+GitHub Actions runs the full check for pull requests targeting `main` and during
+Pages deployment. See [Deployment](deployment.md#pull-request-verification) for
+the pull-request workflow.
+
 The data coverage guard requires:
 
 - 90% line coverage
