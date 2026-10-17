@@ -6,6 +6,7 @@ import {
   STORAGE_ERROR_CODES,
   StorageError
 } from "../../../src/data/contracts/storage-contract.js";
+import { createFieldMigrationTransaction } from "../../../test-support/indexeddb-fakes.js";
 
 test("database connection reports unavailable IndexedDB", async () => {
   await assert.rejects(
@@ -59,4 +60,30 @@ test("database connection aborts a failed schema upgrade", async () => {
       error instanceof StorageError && error.code === STORAGE_ERROR_CODES.initializationFailed
   );
   assert.equal(abortCount, 1);
+});
+
+test("database connection supplies its transaction to data migrations", { timeout: 1000 }, async () => {
+  const migration = createFieldMigrationTransaction([
+    {
+      id: "figures-image",
+      key: "image",
+      isBuiltIn: true,
+      isRequired: false
+    }
+  ]);
+  const database = {};
+  const request = {
+    result: database,
+    transaction: migration.transaction
+  };
+  const opening = openDatabase({
+    indexedDBFactory: { open: () => request }
+  });
+
+  request.onupgradeneeded({ oldVersion: 1 });
+  await migration.done;
+  request.onsuccess();
+
+  assert.equal(await opening, database);
+  assert.equal(migration.records[0].isRequired, true);
 });

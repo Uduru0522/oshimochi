@@ -22,7 +22,7 @@ storage events. User mode also never falls back to debug data after a failure.
 
 ```text
 Name:    wotagoods-manager
-Version: 1
+Version: 2
 ```
 
 Goods types and custom fields are normal records. Creating them does not change
@@ -133,7 +133,8 @@ Storage boundaries validate records:
 - after reading persisted data
 - before returning data to application code
 
-Invalid data produces a storage error. It is not skipped or repaired.
+Known older records are updated by explicit IndexedDB migrations. Other invalid
+data produces a storage error. It is not skipped or repaired.
 
 Shared primitive checks live in
 `src/data/models/record-validation.js`. Lifecycle parsing and scopes live in
@@ -163,6 +164,9 @@ Two versions are active in the current app:
 
 The physical schema imports the domain version. It does not define domain
 meaning.
+
+IndexedDB version 2 marks legacy protected image fields as required. It does
+not change custom image fields or the domain-model version.
 
 ## Source Ownership
 

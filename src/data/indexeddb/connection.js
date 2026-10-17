@@ -52,7 +52,7 @@ export function openDatabase({
 
     request.onupgradeneeded = (event) => {
       try {
-        upgradeDatabase(request.result, event.oldVersion);
+        upgradeDatabase(request.result, event.oldVersion, request.transaction);
       } catch (error) {
         request.transaction?.abort();
         rejectOnce(

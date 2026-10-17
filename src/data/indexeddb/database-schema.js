@@ -1,7 +1,7 @@
 import { DOMAIN_MODEL_VERSION } from "../models/domain-model.js";
 
 export const DATABASE_NAME = "wotagoods-manager";
-export const DATABASE_VERSION = 1;
+export const DATABASE_VERSION = 2;
 
 export { DOMAIN_MODEL_VERSION };
 
@@ -57,8 +57,37 @@ function createVersionOneSchema(database) {
   metadata.put({ key: "domainModelVersion", value: DOMAIN_MODEL_VERSION });
 }
 
-export function upgradeDatabase(database, oldVersion) {
+function migrateVersionTwoData(transaction) {
+  const fields = transaction.objectStore(OBJECT_STORES.fieldDefinitions);
+  const request = fields.openCursor();
+
+  request.onsuccess = () => {
+    const cursor = request.result;
+
+    if (!cursor) {
+      return;
+    }
+
+    const field = cursor.value;
+
+    if (
+      field?.isBuiltIn === true &&
+      field.key === "image" &&
+      field.isRequired === false
+    ) {
+      cursor.update({ ...field, isRequired: true });
+    }
+
+    cursor.continue();
+  };
+}
+
+export function upgradeDatabase(database, oldVersion, transaction) {
   if (oldVersion < 1) {
     createVersionOneSchema(database);
+  }
+
+  if (oldVersion >= 1 && oldVersion < 2) {
+    migrateVersionTwoData(transaction);
   }
 }

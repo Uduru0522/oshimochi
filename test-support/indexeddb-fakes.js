@@ -30,6 +30,59 @@ export function createSchemaDatabase() {
   };
 }
 
+export function createFieldMigrationTransaction(records) {
+  const migratedRecords = structuredClone(records);
+  let finish;
+  const done = new Promise((resolve) => {
+    finish = resolve;
+  });
+
+  return {
+    done,
+    records: migratedRecords,
+    transaction: {
+      objectStore(storeName) {
+        if (storeName !== OBJECT_STORES.fieldDefinitions) {
+          throw new Error(`Unexpected migration store: ${storeName}`);
+        }
+
+        return {
+          openCursor() {
+            const request = {};
+            let index = 0;
+
+            function advance() {
+              queueMicrotask(() => {
+                if (index === migratedRecords.length) {
+                  request.result = null;
+                  request.onsuccess();
+                  finish();
+                  return;
+                }
+
+                request.result = {
+                  value: structuredClone(migratedRecords[index]),
+                  continue() {
+                    index += 1;
+                    advance();
+                  },
+                  update(record) {
+                    migratedRecords[index] = structuredClone(record);
+                  }
+                };
+                request.onsuccess();
+              });
+            }
+
+            advance();
+            return request;
+          }
+        };
+      }
+    }
+  };
+}
+
 export function createReadDatabase(records, { transactionError } = {}) {
   return {
     transaction() {
