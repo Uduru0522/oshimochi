@@ -15,8 +15,8 @@ session. Detailed rules stay in their owning documents.
 
 - `main` contains the portable backup and user-owned Google Drive milestone and
   is deployed to GitHub Pages.
-- The package and latest tag are still `0.4.1`. The backup milestone was merged
-  after that tag and has not received a release version.
+- The package version is `0.5.0`. The latest release tag is still `v0.4.1`.
+  See the [roadmap](roadmap.md#recommended-next-steps) for release preparation.
 - Pull request [#1](https://github.com/Uduru0522/wotagoods-manager/pull/1)
   contains an unmerged themeable icon concept. Treat it as separate work.
 - Stale pre-release IndexedDB data was reset after the image field became
