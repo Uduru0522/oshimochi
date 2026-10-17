@@ -238,5 +238,7 @@ Automated tests cover:
 - folder selection, Drive connection, listing, upload, retention, and guarded
   download
 
-Manual checks still cover browser downloads, file selection, popup consent,
-responsive layout, the real Google folder picker, and one Drive round trip.
+Manual checks cover browser downloads, file selection, popup consent,
+responsive layout, and the real Google folder picker. A personal-account Drive
+round trip has been completed on localhost and GitHub Pages. Shared-folder and
+multi-account behavior remains a separate manual verification boundary.

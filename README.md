@@ -117,8 +117,9 @@ or IndexedDB data.
 
 ## Documentation
 
-Start with the [documentation index](docs/README.md). It separates descriptions
-of the current app from planning documents.
+Start with the [session handoff](docs/session-handoff.md) for the current
+baseline, then use the [documentation index](docs/README.md) for detailed
+implementation and planning documents.
 
 ## Contribution Rules
 

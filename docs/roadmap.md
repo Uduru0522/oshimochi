@@ -66,29 +66,53 @@ order of unfinished work. It does not set release dates.
 
 Restore is full replacement. Merge is outside the current product.
 
-## Current Milestone: User-Owned Google Drive Backup
+### User-Owned Google Drive Backup
 
-- [x] Define a provider-neutral cloud backup contract.
-- [x] Let each user store their own public Google project setup locally.
-- [x] Request only the `drive.file` permission.
-- [x] Let the user choose the backup folder through Google Picker.
-- [x] Keep access tokens in memory.
-- [x] Upload, list, download, and validate app-owned snapshots.
-- [x] Retain the newest three snapshots after upload.
-- [x] Reuse the local restore review and atomic replacement flow.
-- [ ] Verify consent, folder selection, upload, and restore with a real account
-  on localhost.
-- [ ] Repeat the cloud round trip on GitHub Pages.
+- Provider-neutral cloud backup contract
+- User-supplied Google Cloud configuration
+- Narrow `drive.file` permission and memory-only access tokens
+- Existing-folder selection through Google Picker
+- Compressed upload, listing, download, and validated restore
+- Newest-three snapshot retention
+- Shared local and cloud restore review
+- Personal-account round trips on localhost and GitHub Pages
 
 See [Data Portability](data-portability.md) for the snapshot contract, provider
 boundary, ownership model, and setup steps.
 
+## Recommended Next Steps
+
+### 1. Close The Backup Release
+
+- Confirm pull-request verification runs `npm run check` for PRs targeting `main`.
+- Decide the next semantic version for the backup milestone.
+- Run the complete user- and debug-mode smoke checks from `docs/development.md`.
+- Confirm the deployed Pages workflow and personal Drive round trip.
+- Create a milestone tag only after explicit owner approval.
+
+After closing the backup release, discuss the separate icon work in
+[PR #1](https://github.com/Uduru0522/wotagoods-manager/pull/1) before starting
+another milestone.
+
+### 2. Define Automatic Backup Policy
+
+- Decide which successful mutations request a backup and how requests combine.
+- Define disconnected, offline, retry, and failure behavior.
+- Define visible last-success and pending status without blocking normal work.
+- Add reminders before destructive operations where a fresh backup matters.
+- Implement automatic backup only after these rules are agreed.
+
+### 3. Add Browser Regression Coverage
+
+- Choose a small end-to-end browser harness.
+- Cover startup, IndexedDB persistence, one item workflow, and local restore.
+- Keep responsive, motion, service-worker, and real Google checks manual where
+  automation would be brittle or require personal credentials.
+
 ## Later Milestones
 
-### Backup Policy
+### Backup Health
 
-- Add reminders before destructive operations.
-- Add automatic backup after the manual cloud workflow is verified.
 - Show quota and retention health to the user.
 
 ### Multi-Device Data
