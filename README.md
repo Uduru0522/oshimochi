@@ -21,7 +21,6 @@ sample data and never writes to the user database.
 - Goods-type creation with protected built-in fields
 - Custom text, long-text, number, date, toggle, URL, and selection fields
 - Staged field changes with review and one atomic save
-- Local-data reset with typed confirmation
 
 ### Item Management
 
@@ -31,6 +30,14 @@ sample data and never writes to the user database.
 - Field-aware sorting
 - Item editing and soft deletion
 - Per-collection restore and permanent purge
+
+### Data Safety
+
+- Compressed complete backup with active and soft-deleted records and images
+- Validated restore review before one atomic local-data replacement
+- Optional user-owned Google Drive backup to a chosen folder, with
+  three-snapshot retention
+- Local-data reset with typed confirmation
 
 ### Runtime And Quality
 
@@ -44,8 +51,8 @@ See the [roadmap](docs/roadmap.md) for work that is not part of the current app.
 
 ## Run Locally
 
-Development requires Node.js 24 or newer. The app has no external runtime
-dependencies.
+Development requires Node.js 24 or newer. The local app installs no runtime
+packages. Configured cloud backup loads Google Identity Services on demand.
 
 ```powershell
 npm start

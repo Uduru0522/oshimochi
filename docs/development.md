@@ -103,6 +103,22 @@ or mutation behavior changes.
 - Confirm active filters and sorting remain after each change.
 - Check empty, failure, cancel, and confirmation states.
 
+### Backup And Restore
+
+- Export user data and confirm one `.json.gz` file downloads.
+- Restore that file and confirm collections, deleted items, and images return.
+- Select an invalid file and confirm existing data does not change.
+- Enter a personal OAuth client ID, API key, and project number. Confirm they
+  survive reload.
+- Connect Drive and select a destination folder through Google Picker.
+- Upload and restore a snapshot from the selected folder.
+- Confirm cancelling Google consent leaves local data unchanged.
+- Confirm disconnect hides cloud actions but keeps local file actions available.
+- Change the destination and confirm new backups use the new folder.
+- Remove Drive setup and confirm all Google setup and folder data is cleared.
+- Cancel from the review state and confirm no write occurs.
+- Check the workflow in narrow and wide layouts and all interface languages.
+
 ## Browser Storage
 
 Interface settings use `localStorage`:
@@ -112,6 +128,10 @@ Interface settings use `localStorage`:
 | `wotagoods.language` | `en`, `ja`, `zh-Hant` |
 | `wotagoods.theme` | `light`, `dark` |
 | `wotagoods.accent` | `red`, `orange`, `yellow`, `blue`, `green`, `pink`, `purple` |
+| `wotagoods.google-drive-client-id` | Personal Web OAuth client ID |
+| `wotagoods.google-drive-api-key` | Restricted browser API key |
+| `wotagoods.google-drive-project-number` | Google Cloud project number |
+| `wotagoods.google-drive-destination` | Selected folder ID and name |
 
 Useful console commands:
 
@@ -122,6 +142,14 @@ localStorage.getItem("wotagoods.theme")
 localStorage.removeItem("wotagoods.theme")
 localStorage.getItem("wotagoods.accent")
 localStorage.removeItem("wotagoods.accent")
+localStorage.getItem("wotagoods.google-drive-client-id")
+localStorage.removeItem("wotagoods.google-drive-client-id")
+localStorage.getItem("wotagoods.google-drive-api-key")
+localStorage.removeItem("wotagoods.google-drive-api-key")
+localStorage.getItem("wotagoods.google-drive-project-number")
+localStorage.removeItem("wotagoods.google-drive-project-number")
+localStorage.getItem("wotagoods.google-drive-destination")
+localStorage.removeItem("wotagoods.google-drive-destination")
 ```
 
 Collection data uses IndexedDB. Debug mode uses a separate in-memory adapter and
