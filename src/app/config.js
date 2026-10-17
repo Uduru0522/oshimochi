@@ -1,4 +1,14 @@
 export const APP_CONFIG = {
+  backups: {
+    googleDrive: {
+      apiKeyStorageKey: "google-drive-api-key",
+      appIdStorageKey: "google-drive-project-number",
+      clientIdStorageKey: "google-drive-client-id",
+      destinationStorageKey: "google-drive-destination",
+      storageNamespace: "wotagoods"
+    },
+    retainedCloudSnapshots: 3
+  },
   debugQueryParam: "debug",
   defaultViewId: "dashboard",
   language: {
