@@ -7,6 +7,7 @@ implemented facts separate from unfinished work.
 
 | Document | Scope |
 | --- | --- |
+| [Session Handoff](session-handoff.md) | Current baseline, decisions, limitations, and resume point |
 | [Architecture](architecture.md) | Runtime flow, code ownership, and dependency rules |
 | [Domain Model](data-model.md) | Records, relationships, and invariants |
 | [Persistence](persistence.md) | IndexedDB, adapters, transactions, and errors |
@@ -14,13 +15,14 @@ implemented facts separate from unfinished work.
 | [Development](development.md) | Local commands and coding conventions |
 | [Testing](testing.md) | Test ownership, shape, and coverage |
 | [Deployment](deployment.md) | GitHub Pages release process |
+| [Data Portability](data-portability.md) | Snapshot format, local restore, and user-owned Drive backup |
+| [Google Drive Setup](google-drive-backup.md) | Beginner setup, sharing rules, testing, and troubleshooting |
 
 ## Planning
 
 | Document | Scope |
 | --- | --- |
 | [Roadmap](roadmap.md) | Completed work and ordered milestones |
-| [Data Portability](data-portability.md) | Backup, import, and cloud-snapshot design |
 
 ## Writing Rules
 

@@ -223,6 +223,68 @@ item and its retained image in one transaction.
 
 ## Administration
 
+### Back Up Local Data
+
+1. Open **Administration**.
+2. Choose **Export backup**.
+3. The app validates one complete catalog and downloads a `.json.gz` archive.
+
+The file includes active and soft-deleted goods types, fields, items, and all
+retained images. Export is read-only. Theme, accent, language, and cached app
+files are not included.
+
+### Restore Local Data
+
+1. Open **Administration** and choose **Restore from file**.
+2. Select a Wotagoods `.json.gz` backup.
+3. Review its date, record counts, and total image size.
+4. Confirm the replacement.
+
+The app parses and validates the complete file before a write starts. Confirmed
+restore replaces every local collection, field, item, and image in one
+transaction. It does not merge data.
+
+An invalid file leaves local data unchanged. A failed replacement also keeps the
+previous catalog. After a successful commit, navigation reloads from the restored
+goods types.
+
+### Configure Personal Drive Backup
+
+1. Create a Google Cloud project and enable the Drive and Picker APIs.
+2. Create a Web OAuth client and add the `drive.file` scope.
+3. Add only your Google account as a test user.
+4. Authorize the Wotagoods browser origin.
+5. Create a browser API key restricted to Wotagoods, Google Picker, and Drive.
+6. Open **Administration**.
+7. Enter the client ID, API key, and project number, then save.
+
+The public setup values stay on this browser origin. They are not included in
+backups. Follow the [Google Drive setup guide](google-drive-backup.md) for the
+full Cloud Console and test steps.
+
+### Back Up To Google Drive
+
+1. Open **Administration**.
+2. Choose **Connect** and approve Drive access.
+3. Choose the **Backup folder** row and select an existing folder.
+4. Choose **Back up now**.
+5. Wait for upload confirmation.
+
+The app uploads the same gzip archive used by local export. Files go to the
+selected folder. The newest three Wotagoods snapshots in that folder are
+retained.
+
+### Restore From Google Drive
+
+1. Open **Administration** and connect if needed.
+2. Choose **Restore from cloud**.
+3. Choose one listed backup.
+4. Review its record counts and image size.
+5. Confirm full replacement.
+
+Download and validation finish before any local write. The replacement uses
+the same atomic restore operation as a local file.
+
 ### Manage Fields
 
 Use **Manage fields** in user-facing copy. The UI does not expose database terms

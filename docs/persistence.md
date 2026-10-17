@@ -51,6 +51,7 @@ The adapter contract is grouped by responsibility:
 | Items | `listItems`, `createItem`, `updateItemContent` |
 | Item lifecycle | `updateItemLifecycle`, `purgeItem` |
 | Assets | `getAsset` |
+| Complete catalog | `readDataCatalog`, `replaceDataCatalog` |
 | Maintenance | `resetData` |
 
 ### Record Scopes
@@ -89,10 +90,13 @@ starts. Each operation chooses its full store set at the start.
 | Replace item image | `assets`, `items` |
 | Delete or restore item | `items` |
 | Purge deleted item | `items`, `assets` |
+| Read backup catalog | `goods_types`, `field_definitions`, `items`, `assets` |
+| Restore backup catalog | `goods_types`, `field_definitions`, `items`, `assets` |
 | Reset local data | `goods_types`, `field_definitions`, `items`, `assets` |
 
-Image replacement removes the old asset in the same transaction. Reset keeps
-`app_metadata`.
+Image replacement removes the old asset in the same transaction. Backup reads
+use one read-only transaction. Restore clears and rewrites all four user stores
+in one write transaction. Restore and reset keep `app_metadata`.
 
 The global mutation controller blocks overlapping writes. IndexedDB protects
 atomic commits. The debug adapter validates its full change before replacing

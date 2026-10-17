@@ -1,8 +1,9 @@
 # Architecture
 
-Wotagoods Manager is a dependency-free browser app. Its main boundaries are the
-app shell, storage-neutral operations, domain and storage code, and browser
-views.
+Wotagoods Manager is a build-free browser app. Its local runtime uses native
+browser modules. Configured Drive backup loads Google Identity Services only
+when needed. The main boundaries are the app shell, storage-neutral operations,
+domain and storage code, and browser views.
 
 ## Runtime Flow
 
@@ -25,7 +26,7 @@ rebuilds data-based navigation. It does not reopen the database.
 | --- | --- |
 | `src/bootstrap/` | Apply saved language, theme, and accent before first paint |
 | `src/app/` | Compose the app, start storage, route views, and manage global UI state |
-| `src/services/` | Wrap browser language, theme, localStorage, and service-worker APIs |
+| `src/services/` | Wrap browser files, cloud backup providers, preferences, and service-worker APIs |
 | `src/main.js` | Start the composition root |
 
 Important app modules are grouped by task:
@@ -56,6 +57,7 @@ Application operations are grouped by feature:
 - **Goods types:** create one type and its protected fields atomically.
 - **Fields:** validate and apply one staged field change set.
 - **Items:** validate values, filter, sort, save content, and change lifecycle.
+- **Backups:** encode, validate, summarize, and restore complete snapshots.
 - **Local data:** reset all user collection stores atomically.
 
 Application code may use domain models and storage contracts. It must not use
@@ -75,8 +77,8 @@ sample records, and loses changes on reload. It never opens IndexedDB.
 
 The view layer is split by product area:
 
-- **Administration:** goods-type creation, field management, and local-data
-  reset
+- **Administration:** goods-type creation, field management, backup and restore,
+  and local-data reset
 - **Goods types:** collection overview and the matching view toolbar action
 - **Items:** browsing, filtering, sorting, registration, editing, deletion, and
   recovery
@@ -200,6 +202,17 @@ restoration from changing values or image ownership.
 Image replacement writes the item and asset together. Permanent purge removes a
 deleted item and its retained asset together.
 
+Backup export reads one coherent catalog from the adapter. Restore validates the
+whole snapshot before replacing all user-data stores in one transaction. File
+and cloud-provider services only transfer compressed snapshot archives. They
+do not inspect domain records or receive a storage adapter.
+
+The cloud interface is provider-neutral. Its Google Drive adapter uses a Web
+OAuth client, restricted browser API key, and Cloud project number supplied by
+the user. Google Picker grants access to the selected folder. Public setup and
+folder metadata stay in local storage, while the short-lived access token stays
+in memory. App data and snapshots do not contain credentials.
+
 The global mutation controller blocks overlapping writes. Storage transactions
 protect committed data.
 
@@ -212,8 +225,9 @@ A rendered view may return `destroy()` with its content and optional
 `toolbarAction`. The router hides the view toolbar when no action is present and
 calls `destroy()` before replacing the view.
 
-Components must release resources they own. This includes observers, object
-URLs, timers, dialogs, pending transitions, and asynchronous work.
+Components must release resources they own. This includes observers,
+subscriptions, object URLs, timers, dialogs, pending transitions, and
+asynchronous work.
 
 ## Service Worker
 

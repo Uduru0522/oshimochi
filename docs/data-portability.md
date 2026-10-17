@@ -1,49 +1,77 @@
 # Data Portability
 
-**Planning scope:** Export, import, and cloud snapshots are not implemented.
-This document defines their intended contract.
+IndexedDB is the live database. A backup is a portable copy, not a second live
+database.
 
-## Goals
+Users can download a compressed backup or store it in their own Google Drive.
+Restore always replaces the full local catalog. It never merges records.
 
-Browser data belongs to one origin and browser profile. Localhost, GitHub Pages,
-other browsers, and other devices do not share it.
+## Current Behavior
 
-The portability work must let users:
+Every backup contains:
 
-- keep a readable backup outside browser storage
-- move a collection between browser origins
-- restore a complete collection after data loss
-- inspect a file before replacing local data
+- active and soft-deleted records
+- retained image assets
+- snapshot and domain-model versions
+- a unique snapshot ID and UTC creation time
+
+Theme, accent, language, cached app files, OAuth configuration, and access
+tokens are not included.
+
+Restore validates the full backup before writing. A confirmed restore replaces
+all collection data in one transaction. It does not merge records.
+
+Backup files are gzip-compressed JSON. Images use base64 text inside the
+snapshot. Compression reduces transfer overhead but does not encrypt or sign
+the data. Restore accepts only gzip backup archives.
+
+## Ownership
+
+| Layer | Responsibility |
+| --- | --- |
+| Storage adapter | Read or replace one coherent data catalog |
+| Application | Build, validate, summarize, and restore snapshots |
+| File service | Download and read local files |
+| Backup provider | Transfer serialized snapshots to remote storage |
+| Administration view | Show progress, review, confirmation, and errors |
+
+Transfer services receive serialized text. They do not receive repositories,
+domain records, or a storage adapter.
+
+## Data Catalog
+
+A catalog contains all user collection data:
+
+```js
+{
+  goodsTypes: [],
+  fieldDefinitions: [],
+  items: [],
+  assets: []
+}
+```
+
+Both storage adapters expose:
+
+| Method | Rule |
+| --- | --- |
+| `readDataCatalog()` | Read all four sets in one read-only operation |
+| `replaceDataCatalog(catalog)` | Validate, clear, and write all four sets atomically |
+
+The IndexedDB adapter keeps `app_metadata` during replacement. The debug
+adapter replaces its temporary catalog and resets on reload.
 
 ## Snapshot Format
 
-The snapshot is versioned and independent from IndexedDB. It must not expose
-transactions, indexes, or browser object identities.
-
-The first format may use one JSON file with encoded image data.
-
-Every snapshot contains:
-
-### Envelope
-
-- application identity
-- export-format version
-- domain-model version
-- creation timestamp
-
-### Records
-
-- goods types
-- field definitions
-- items
-- image assets
+Format version `1` uses this envelope:
 
 ```js
 {
   application: "wotagoods-manager",
   exportFormatVersion: 1,
   domainModelVersion: 1,
-  createdAt: "2026-08-10T00:00:00.000Z",
+  snapshotId: "generated-uuid",
+  createdAt: "2026-10-17T00:00:00.000Z",
   data: {
     goodsTypes: [],
     fieldDefinitions: [],
@@ -53,88 +81,164 @@ Every snapshot contains:
 }
 ```
 
-The snapshot includes active and soft-deleted records. It also includes assets
-retained for deleted items.
+An asset keeps its metadata and replaces the domain `Blob` with:
 
-## Export Plan
+```js
+{
+  encoding: "base64",
+  content: "..."
+}
+```
 
-1. Read complete record scopes.
-2. Validate every record.
-3. Map records into the storage-neutral snapshot.
-4. Serialize the snapshot.
-5. Download it as a local file.
+Import rebuilds the `Blob` and checks its byte count.
 
-Export is read-only. A failure must not change local data.
+Canonical output has these rules:
 
-## Import Plan
+- record arrays are ordered by ID
+- JSON uses two-space indentation and one final newline
+- downloaded file names use `wotagoods-backup-<UTC timestamp>.json.gz`
+- compressed archives use the `application/gzip` media type
 
-### Validation
+## Validation
 
-Validate the whole file before opening a transaction:
+Every selected or downloaded backup is untrusted. Validation finishes before a
+replacement transaction opens.
+
+Checks cover:
 
 - application identity and supported versions
-- record shapes and unique IDs
-- field keys and selection-option IDs
-- goods-type, field, item, and asset links
-- image type, size, dimensions, and encoded data
-- active and deleted lifecycle state
+- snapshot identity and creation time
+- record arrays and unique IDs
+- protected fields and field ownership
+- item values and collection relationships
+- image references, ownership, types, and byte sizes
+- timestamps and soft-deletion state
 
-### Replacement
+Older items may lack a required custom value added later. Restore keeps that
+state so the normal incomplete-item warning remains useful.
 
-1. Parse and validate the file.
-2. Show versions, date, counts, and replacement effect.
-3. Ask for explicit confirmation.
-4. Replace all user stores in one transaction.
-5. Remount navigation and the active view after commit.
+Unreferenced assets are preserved. Invalid data never opens a write
+transaction. An aborted transaction keeps the previous catalog.
 
-Invalid, unsupported, or partial files leave the current collection unchanged.
+## Local Workflow
 
-The first import mode is replacement only. Silent merge is not allowed.
+Export reads one catalog, validates it, encodes images, and downloads one gzip
+archive. It does not change stored data. Archive creation blocks other app
+input and reports its current stage until the download is ready.
 
-## Google Drive Plan
+Restore follows this order:
 
-Google Drive will store and retrieve complete snapshot files. It will not act as
-a live database.
+1. Read and decompress a selected gzip archive.
+2. Parse and validate the full snapshot.
+3. Show its date, record counts, and image size.
+4. Ask for replacement confirmation.
+5. Replace all user-data stores atomically.
+6. Reload goods types and navigation.
 
-Live synchronization needs separate rules for:
+Only step 5 uses the global mutation lock.
 
-- revision identity
-- concurrent edits
-- deletion propagation
-- expired authentication
-- offline edits
-- conflict review and recovery
+## Cloud Provider Contract
 
-## Verification Plan
+The Administration view depends on a small provider interface:
 
-### Pure Format Tests
+| Operation | Purpose |
+| --- | --- |
+| `configure()` / `clearConfiguration()` | Manage local provider setup |
+| `prepare()` | Load the remote identity library |
+| `connect()` / `disconnect()` | Manage the short account session |
+| `selectDestination()` | Let the user grant access to one backup folder |
+| `uploadSnapshot(backup)` | Compress and store a snapshot archive |
+| `listSnapshots()` | Return normalized snapshot metadata |
+| `downloadSnapshot(id)` | Return text for normal validation |
+| `subscribe(listener)` | Report connection and account state |
 
-- deterministic serialization
-- supported and unsupported versions
-- duplicate identities
-- broken relationships
-- malformed image data
-- round trip from records to snapshot and back
+Provider code stays under `src/services/backups/`. Snapshot parsing and restore
+do not depend on Google Drive.
 
-### Storage Tests
+## User-Owned Google Drive
 
-- complete scopes include deleted records and retained assets
-- replacement uses one transaction
-- parse and validation failures do not write
-- transaction failure leaves existing records unchanged
+Wotagoods does not run a shared backup backend. GitHub Pages serves only the
+static interface.
 
-### Browser Checks
+Each browser setup supplies three public values from a user- or group-controlled
+Google Cloud project: a Web OAuth client ID, a restricted browser API key, and
+the project number. This creates separate ownership boundaries:
 
-- file selection and cancellation
-- export download
-- import review
-- replacement confirmation
-- readable failures
+| Resource | Owner |
+| --- | --- |
+| Drive files and storage | The signed-in Google account |
+| Drive and Picker API quota | The user's Google Cloud project |
+| OAuth and API key settings | The user's Google Cloud project |
+| Live collection database | The user's browser profile |
 
-## Delivery Order
+No developer-owned OAuth client, API key, storage bucket, client secret, or
+application server is used.
 
-1. Define and test the snapshot model.
-2. Add local export.
-3. Add validated replacement import.
-4. Add backup reminders.
-5. Add optional Google Drive upload and download.
+The client ID, restricted API key, project number, and selected folder metadata
+are public configuration. Wotagoods stores them in `localStorage` on the current
+origin. Access tokens stay in memory and disappear when the page closes or
+reloads.
+
+Google Identity Services obtains a short-lived token after a user action. The
+app requests only the non-sensitive `drive.file` scope. Google Picker lets the
+user grant this app access to one existing folder without exposing the rest of
+Drive.
+
+Backups use the folder selected by the user. New uploads are gzip archives. The
+newest three Wotagoods snapshots in that folder are kept after each upload.
+Downloaded gzip snapshots still pass the normal local validation and review
+flow.
+
+## Personal Google Setup
+
+Each user creates a Google Cloud project, authorizes each browser origin, and
+chooses an existing Drive folder. The app needs a Web OAuth client ID, a
+restricted browser API key, and that project's number. It never needs a client
+secret.
+
+Follow [Google Drive Backup Setup](google-drive-backup.md) for beginner steps,
+sharing behavior, debug-mode rules, and troubleshooting.
+
+## Security Notes
+
+- Never enter or commit a client secret. Browser apps cannot keep one secret.
+- The client ID and API key are public browser configuration. Neither can read
+  Drive data without a user access token.
+- Restrict the API key to the approved websites, Google Picker API, and Google
+  Drive API to prevent use from unrelated sites.
+- Authorized JavaScript origins restrict where the browser flow can start.
+- Google Picker grants access only to the folder the user selects.
+- Access tokens are sent only to Google APIs and are not written to backups.
+- Disconnect revokes the active grant when a valid token is available.
+- Anyone with Drive account access can decompress and read the unencrypted
+  archives.
+- Users must trust the JavaScript served by the hosted origin while connected.
+
+For stronger deployment isolation, a user can fork the repository, host the
+same static app, and authorize only that origin. No backend is needed.
+
+Official references:
+
+- [Google browser token model](https://developers.google.com/identity/oauth2/web/guides/use-token-model)
+- [Create a Web OAuth client](https://developers.google.com/identity/oauth2/web/guides/get-google-api-clientid)
+- [Integrate Google Picker](https://developers.google.com/workspace/drive/picker/guides/web-picker)
+- [Choose Drive API scopes](https://developers.google.com/workspace/drive/api/guides/api-specific-auth)
+- [Drive API usage limits](https://developers.google.com/workspace/drive/api/guides/limits)
+
+## Verification
+
+Automated tests cover:
+
+- catalog integrity and atomic replacement
+- snapshot versions, JSON shape, and image round trips
+- invalid content and failed replacement behavior
+- local file transfer
+- gzip compression and decompression
+- provider configuration, Google Identity loading, and Google Picker loading
+- folder selection, Drive connection, listing, upload, retention, and guarded
+  download
+
+Manual checks cover browser downloads, file selection, popup consent,
+responsive layout, and the real Google folder picker. A personal-account Drive
+round trip has been completed on localhost and GitHub Pages. Shared-folder and
+multi-account behavior remains a separate manual verification boundary.

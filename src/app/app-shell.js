@@ -9,6 +9,11 @@ import { renderStartupError, renderStartupLoading } from "./startup-state.js";
 import { createAppStorage } from "../data/create-storage.js";
 import { createThemeController } from "../services/theme.js";
 import { createLanguageController } from "../services/language.js";
+import { createBackupFileService } from "../services/backup-files.js";
+import { createGoogleDriveBackupProvider } from "../services/backups/google-drive-backup-provider.js";
+import { createGoogleDriveConfiguration } from "../services/backups/google-drive-configuration.js";
+import { createGoogleIdentityLoader } from "../services/backups/google-identity.js";
+import { createGooglePickerLoader } from "../services/backups/google-picker.js";
 import { registerServiceWorker } from "../services/service-worker-registration.js";
 import { createIcon } from "../shared/icons.js";
 import { getGoodsTypeItemsViewId } from "../views/goods-types/goods-type-view-ids.js";
@@ -20,6 +25,18 @@ export function createApp({ storageFactory = createAppStorage } = {}) {
   const appMode = createAppMode();
   const languageController = createLanguageController();
   const themeController = createThemeController();
+  const backupFileService = createBackupFileService();
+  const googleDriveConfiguration = createGoogleDriveConfiguration();
+  const googleIdentityLoader = createGoogleIdentityLoader();
+  const googlePickerLoader = createGooglePickerLoader();
+  const backupProviders = Object.freeze([
+    createGoogleDriveBackupProvider({
+      configuration: googleDriveConfiguration,
+      loadIdentity: googleIdentityLoader.load,
+      loadPicker: googlePickerLoader.load,
+      maxSnapshots: APP_CONFIG.backups.retainedCloudSnapshots
+    })
+  ]);
   const mutationController = createMutationController(elements.appShell);
   let unmountRuntime = null;
   let startupCoordinator;
@@ -36,6 +53,8 @@ export function createApp({ storageFactory = createAppStorage } = {}) {
     mountApplication: ({ goodsTypes, initialViewId, storage }) => {
       unmountRuntime?.();
       unmountRuntime = mountAppRuntime({
+        backupFileService,
+        backupProviders,
         elements,
         goodsTypes,
         initialViewId,
@@ -45,6 +64,9 @@ export function createApp({ storageFactory = createAppStorage } = {}) {
             initialViewId: getGoodsTypeItemsViewId(goodsTypeId)
           }),
         onLocalDataReset: () => startupCoordinator.refresh(),
+        onLocalDataRestored: () => startupCoordinator.refresh({
+          initialViewId: VIEW_IDS.administration
+        }),
         onLanguageChanged: () => {
           applyAppLanguage(elements);
           startupCoordinator.refresh({ initialViewId: VIEW_IDS.options });
@@ -74,6 +96,7 @@ export function createApp({ storageFactory = createAppStorage } = {}) {
     unmountRuntime?.();
     unmountRuntime = null;
     startupCoordinator.stop();
+    backupProviders.forEach((provider) => provider.destroy?.());
     window.removeEventListener("pagehide", handlePageHide);
   }
 

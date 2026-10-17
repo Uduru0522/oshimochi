@@ -14,6 +14,7 @@ order of unfinished work. It does not set release dates.
 - Offline app-shell cache
 - GitHub Pages deployment
 - Static architecture checks and unit tests
+- Pull-request verification on Node.js 24
 
 ### Collection Setup
 
@@ -55,27 +56,69 @@ order of unfinished work. It does not set release dates.
 - Explicit record scopes
 - Focused source and test ownership
 
-## Current Milestone: Backup Export And Import
+### Portable Backup And Restore
 
-- [ ] Export one versioned local snapshot.
-- [ ] Include active and soft-deleted records.
-- [ ] Include every retained image asset.
-- [ ] Validate the full file before a write starts.
-- [ ] Review and confirm replacement of local data.
-- [ ] Replace all user stores atomically.
-- [ ] Keep existing data unchanged after any failure.
+- Coherent catalog reads through both storage adapters
+- Versioned JSON snapshots with retained image data
+- Local download of active and soft-deleted records
+- Full validation and review before restore
+- Atomic replacement of all user-data stores
+- Failure behavior that preserves the previous catalog
 
-The first import mode is full replacement. Merge is outside this milestone.
+Restore is full replacement. Merge is outside the current product.
 
-See [Data Portability](data-portability.md) for the file and workflow design.
+### User-Owned Google Drive Backup
+
+- Provider-neutral cloud backup contract
+- User-supplied Google Cloud configuration
+- Narrow `drive.file` permission and memory-only access tokens
+- Existing-folder selection through Google Picker
+- Compressed upload, listing, download, and validated restore
+- Newest-three snapshot retention
+- Shared local and cloud restore review
+- Personal-account round trips on localhost and GitHub Pages
+
+See [Data Portability](data-portability.md) for the snapshot contract, provider
+boundary, ownership model, and setup steps.
+
+## Recommended Next Steps
+
+### 1. Close The Backup Release
+
+The owner selected `0.5.0` for the backup milestone, and the package version is
+prepared. On 2026-10-18, the owner confirmed that the manual user- and debug-mode
+smoke checks from [Development](development.md#manual-browser-checks) passed.
+
+The remaining release steps are:
+
+- Merge the version-preparation pull request through normal review.
+- Confirm the Pages deployment after that merge.
+- Create a milestone tag only after explicit owner approval.
+
+After closing the backup release, discuss the separate icon work in
+[PR #1](https://github.com/Uduru0522/wotagoods-manager/pull/1) before starting
+another milestone.
+
+### 2. Define Automatic Backup Policy
+
+- Decide which successful mutations request a backup and how requests combine.
+- Define disconnected, offline, retry, and failure behavior.
+- Define visible last-success and pending status without blocking normal work.
+- Add reminders before destructive operations where a fresh backup matters.
+- Implement automatic backup only after these rules are agreed.
+
+### 3. Add Browser Regression Coverage
+
+- Choose a small end-to-end browser harness.
+- Cover startup, IndexedDB persistence, one item workflow, and local restore.
+- Keep responsive, motion, service-worker, and real Google checks manual where
+  automation would be brittle or require personal credentials.
 
 ## Later Milestones
 
-### Cloud Snapshots
+### Backup Health
 
-- Upload and download the same snapshot format through Google Drive.
-- Add reminders before destructive operations.
-- Define bounded snapshot retention.
+- Show quota and retention health to the user.
 
 ### Multi-Device Data
 
@@ -85,8 +128,10 @@ deletion rules are defined.
 ## Outside Current Scope
 
 - Server-hosted user database
+- Shared developer-owned cloud backup
+- Dropbox and OneDrive backup providers
 - Multi-user accounts and permissions
-- Live Google Drive database access
+- Live multi-device synchronization
 - One IndexedDB store per goods type
 - Destructive field-type conversion
 - Import merge without explicit conflict rules
