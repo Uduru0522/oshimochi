@@ -44,6 +44,7 @@ const ICON_PATHS = {
     "M19 12H5",
     "M12 19l-7-7 7-7"
   ],
+  chevronRight: ["M9 18l6-6-6-6"],
   close: [
     "M6 6l12 12",
     "M18 6 6 18"

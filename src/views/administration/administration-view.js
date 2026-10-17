@@ -4,6 +4,7 @@ import { createSchemaTable, createSettingsSection } from "../../shared/ui-compon
 import { createGoodsTypeCreator } from "./goods-type-creator.js";
 import { createFieldManager } from "./field-manager.js";
 import { createLocalDataReset } from "./local-data-reset.js";
+import { createDataPortability } from "./data-portability.js";
 
 function getGoodsTypeColumns() {
   return [
@@ -14,12 +15,16 @@ function getGoodsTypeColumns() {
 }
 
 export function renderAdministrationView({
+  backupFileService,
+  backupOperations,
+  backupProviders,
   createGoodsType,
   fieldManagement,
   goodsTypes,
   mutationController,
   onGoodsTypeCreated,
   onLocalDataReset,
+  onLocalDataRestored,
   resetLocalData
 }) {
   const article = createElement("article", {
@@ -30,6 +35,13 @@ export function renderAdministrationView({
     description: translate(
       "Goods types organize items and define the custom fields shown in forms and detail views."
     )
+  });
+  const dataPortability = createDataPortability({
+    backupFileService,
+    backupOperations,
+    backupProviders,
+    mutationController,
+    onRestored: onLocalDataRestored
   });
 
   if (goodsTypes.length > 0) {
@@ -56,6 +68,7 @@ export function renderAdministrationView({
     }),
     createFieldManager({ fieldManagement, goodsTypes, mutationController }),
     schemaSection,
+    dataPortability.element,
     createLocalDataReset({
       mutationController,
       onReset: onLocalDataReset,
@@ -63,5 +76,8 @@ export function renderAdministrationView({
     })
   );
 
-  return article;
+  return {
+    content: article,
+    destroy: dataPortability.destroy
+  };
 }

@@ -13,6 +13,10 @@
   :root[data-layout-transition] .view-toolbar {
     animation: none !important;
   }
+
+  .backup-progress-spinner {
+    animation: none !important;
+  }
 }
 
 .placeholder h3 {
@@ -308,6 +312,62 @@
     padding: 20px;
   }
 
+  .backup-landing {
+    padding: 0;
+  }
+
+  .backup-copy {
+    padding: 20px;
+  }
+
+  .backup-channel {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    padding: 16px 20px;
+  }
+
+  .backup-local-channel,
+  .backup-provider-channel.is-connected {
+    grid-template-columns: 1fr;
+  }
+
+  .backup-local-channel .backup-channel-controls,
+  .backup-provider-channel.is-connected .backup-channel-controls {
+    justify-self: start;
+  }
+
+  .backup-actions {
+    justify-content: flex-start;
+  }
+
+  .backup-provider-configuration {
+    grid-template-columns: 1fr;
+  }
+
+  .backup-configuration-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .backup-configuration-actions {
+    justify-content: flex-start;
+  }
+
+  .backup-provider-channel .backup-channel-copy .backup-availability {
+    margin-top: 8px;
+  }
+
+  .backup-provider-channel .backup-channel-controls {
+    gap: 10px;
+  }
+
+  .backup-status {
+    padding: 16px 20px;
+  }
+
+  .backup-workflow {
+    padding: 20px;
+  }
+
   .field-manager-header,
   .field-workspace-header {
     align-items: stretch;
@@ -440,6 +500,25 @@
 
   .accent-options {
     justify-content: flex-start;
+  }
+
+  .backup-configuration-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .backup-configuration-actions > * {
+    width: 100%;
+  }
+
+  .backup-provider-channel.is-connected
+    .backup-channel-copy > p:not(.backup-availability) {
+    display: none;
+  }
+
+  .backup-provider-channel.is-connected
+    .backup-availability {
+    margin-top: 4px;
   }
 
   .language-setting .select-menu {
