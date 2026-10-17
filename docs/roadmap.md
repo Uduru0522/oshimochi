@@ -84,11 +84,15 @@ boundary, ownership model, and setup steps.
 
 ### 1. Close The Backup Release
 
-- Add a pull-request workflow that runs `npm run check` before merge.
+- Confirm pull-request verification runs `npm run check` for PRs targeting `main`.
 - Decide the next semantic version for the backup milestone.
 - Run the complete user- and debug-mode smoke checks from `docs/development.md`.
 - Confirm the deployed Pages workflow and personal Drive round trip.
 - Create a milestone tag only after explicit owner approval.
+
+After closing the backup release, discuss the separate icon work in
+[PR #1](https://github.com/Uduru0522/wotagoods-manager/pull/1) before starting
+another milestone.
 
 ### 2. Define Automatic Backup Policy
 

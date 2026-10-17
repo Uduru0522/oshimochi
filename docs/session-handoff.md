@@ -38,6 +38,8 @@ server and repository checks, but the deployed app uses native browser modules.
 
 Dependency direction is enforced by `scripts/verify-static.js`. Read
 [Architecture](architecture.md) before moving responsibilities between layers.
+See [Deployment](deployment.md) for GitHub Actions verification and Pages
+workflow details.
 
 ## Completed Functionality
 
@@ -84,8 +86,6 @@ The [workflows](workflows.md) document owns user behavior. The
 - Backups can be read by anyone who can access and decompress their files.
 - Responsive layout, browser storage, service-worker behavior, and real Google
   dialogs rely on manual checks because there is no automated browser suite.
-- GitHub Actions runs `npm run check` during the post-merge Pages deployment.
-  Pull requests do not currently receive a hosted verification check.
 
 ## Resume Point
 
