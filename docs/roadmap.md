@@ -14,6 +14,7 @@ order of unfinished work. It does not set release dates.
 - Offline app-shell cache
 - GitHub Pages deployment
 - Static architecture checks and unit tests
+- Pull-request verification on Node.js 24
 
 ### Collection Setup
 
@@ -84,8 +85,9 @@ boundary, ownership model, and setup steps.
 
 ### 1. Close The Backup Release
 
-- Confirm pull-request verification runs `npm run check` for PRs targeting `main`.
-- Decide the next semantic version for the backup milestone.
+The owner selected `0.5.0` for the backup milestone, and the package version is
+prepared. The remaining release checks are:
+
 - Run the complete user- and debug-mode smoke checks from `docs/development.md`.
 - Confirm the deployed Pages workflow and personal Drive round trip.
 - Create a milestone tag only after explicit owner approval.
