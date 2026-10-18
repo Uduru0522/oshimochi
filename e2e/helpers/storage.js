@@ -1,5 +1,5 @@
-async function readItemStorage(page) {
-  return page.evaluate(async () => {
+async function readStorage(page, stores) {
+  return page.evaluate(async (storeNames) => {
     const database = await new Promise((resolve, reject) => {
       const request = indexedDB.open("oshimochi");
       request.onupgradeneeded = () => request.transaction.abort();
@@ -9,9 +9,9 @@ async function readItemStorage(page) {
 
     try {
       const records = await new Promise((resolve, reject) => {
-        const transaction = database.transaction(["items", "assets"], "readonly");
+        const transaction = database.transaction(storeNames, "readonly");
         const result = {};
-        for (const store of ["items", "assets"]) {
+        for (const store of storeNames) {
           const request = transaction.objectStore(store).getAll();
           request.onsuccess = () => { result[store] = request.result; };
         }
@@ -26,11 +26,27 @@ async function readItemStorage(page) {
             .map((byte) => byte.toString(16).padStart(2, "0")).join("")
         };
       }));
-      return { items: records.items, assets };
+      return { ...records, assets };
     } finally {
       database.close();
     }
-  });
+  }, stores);
 }
 
-module.exports = { readItemStorage };
+function readItemStorage(page) {
+  return readStorage(page, ["items", "assets"]);
+}
+
+async function readCatalogStorage(page) {
+  const { goods_types, field_definitions, app_metadata, ...records } = await readStorage(
+    page, ["goods_types", "field_definitions", "items", "assets", "app_metadata"]
+  );
+  return {
+    goodsTypes: goods_types,
+    fieldDefinitions: field_definitions,
+    metadata: app_metadata,
+    ...records
+  };
+}
+
+module.exports = { readCatalogStorage, readItemStorage };
