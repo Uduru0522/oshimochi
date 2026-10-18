@@ -100,7 +100,41 @@ Translate interface copy with `translate()`. Never translate user data.
 Keep the Japanese and Traditional Chinese catalogs in sync. After copy changes,
 check all three languages in wide and narrow layouts.
 
-### Change The Brand Icon
+### Change The Branding
+
+The visible wordmark is `オシもち。` in every interface language, with no
+subtitle. `icons/oshimochi-wordmark.svg` contains vector paths derived from
+M PLUS 1p Black (900), with fuller strokes, softened corners, and flat ends.
+The app loads this small local SVG, not a font. The heading provides the same
+Japanese text for assistive technology; the SVG itself is decorative.
+
+Wordmark source and adjustments:
+
+- [M PLUS 1p](https://fonts.google.com/specimen/M+PLUS+1p), copyright
+  2016 The M+ Project Authors, licensed under the
+  [SIL Open Font License 1.1](../icons/wordmark-OFL.txt).
+- Source: [MPLUS1p-Black.ttf](https://raw.githubusercontent.com/google/fonts/main/ofl/mplus1p/MPLUS1p-Black.ttf)
+  from Google Fonts.
+- Source SHA-256:
+  `815821a62ce085e453af318ca004768e336329d5a7d6f7bed272e97e7862d43e`.
+- Native glyphs scaled uniformly by `0.21`, centered in 200-unit character
+  cells at baseline `178`. Outlines expand by 5 design units, then corners
+  soften at radius 7. Each character remains a separate named SVG group.
+- For optical balance, `シ`'s long stroke moves 8 units left and 4 units up;
+  `ち`'s upper bar shortens by 15 units at its right end. Its left end stays
+  in place.
+- The custom `。` follows the selected app accent in both themes and keeps a
+  full 200-unit character cell with 3 extra units of spacing. The sidebar
+  displays the SVG at up to 180 pixels wide, 3 pixels from the mascot.
+- The SVG metadata records the chosen adjustment settings, including blue as
+  the standalone preview color. App accent preferences override that fallback.
+
+Authoring used FontTools 4.67.0 and Shapely 2.2.0; neither is an application
+dependency. Edit the SVG as artwork. The [OFL FAQ](https://openfontlicense.org/ofl-faq/)
+permits logos made from font outlines without imposing the font license on
+the resulting artwork or app. The source credit and license are retained for
+provenance. Normal UI fonts and technical application names remain independent
+of the wordmark.
 
 `icons/oshimochi-themeable.svg` is the shared mochi-and-tapestry geometry for
 the sidebar, favicon, and installed app. The sidebar references its
@@ -113,9 +147,9 @@ The favicon and manifest reference the SVG directly and use its fixed blue
 palette. The manifest declares a scalable ordinary icon, not a maskable or
 theme-changing launcher icon.
 
-The SVG belongs to the service-worker asset list. Follow
+Both branding SVGs belong to the service-worker asset list. Follow
 [offline asset updates](#update-offline-assets) and the
-[brand icon checklist](testing.md#brand-icon) when changing it.
+[brand icon checklist](testing.md#brand-icon) when changing them.
 
 ### Change Styles Or Motion
 

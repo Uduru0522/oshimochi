@@ -277,6 +277,14 @@ a dedicated test folder as described in the [Drive guide](google-drive-backup.md
 
 ### Brand Icon
 
+- Check that `オシもち。` is the only visible brand text in English, Japanese,
+  and Traditional Chinese, and that the heading has the same accessible name.
+- Check wordmark spacing and rounded strokes at wide and narrow layouts,
+  including a 320-pixel viewport, with no clipping or overlap with More.
+- Confirm the wordmark uses charcoal/off-white lettering in both themes,
+  while the full stop and mascot follow the selected accent.
+- Reload offline after an online visit and confirm both branding SVGs render
+  without a font request.
 - Check the shared SVG geometry at 24, 44, 48, 192, and 512 pixels.
 - Check the sidebar under all seven accents in light and dark mode and in
   the narrow layout.
