@@ -7,10 +7,12 @@ dates. See [Workflows](workflows.md) for implemented behavior.
 
 ### 1. Expand Browser Regression Coverage
 
-- Add item workflows with image handling and persistence after reload.
-- Cover editing, deletion, recovery, and local backup and restore.
-- Run the suite in CI. Startup and mode isolation are covered by the
-  [initial harness](testing.md#browser-regression-tests).
+- Cover custom-field values, item editing and image replacement, filtering,
+  sorting, deletion, recovery, and permanent purge.
+- Cover local backup and restore, including cancellation and invalid-file
+  rejection without data loss.
+- Run the suite in CI. See [Testing](testing.md#browser-regression-tests) for
+  current browser coverage.
 - Keep responsive, motion, offline-update, and real Google checks manual where
   automation would be brittle or require personal credentials.
 

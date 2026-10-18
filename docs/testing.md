@@ -1,8 +1,9 @@
 # Testing
 
 Automated tests cover domain, application, repository, adapter, and pure view
-behavior. Playwright checks startup and collection creation in a real browser.
-Layout and workflows outside that coverage still need manual verification.
+behavior. Playwright checks startup, collection creation, and item entry in a
+real browser. Layout and workflows outside that coverage still need manual
+verification.
 
 ## Commands
 
@@ -48,8 +49,10 @@ suite does not connect to a normal browser profile or Google Drive.
 | --- | --- |
 | Startup | Empty user catalog, rendered debug items, no user database creation in debug mode |
 | Collections | Confirmed metadata survives reload; cancelled reviews write nothing; debug collection edits reset and preserve an existing user catalog |
+| Item entry | Required name and image, unsaved review drafts, portrait and landscape crop output, saved image dimensions and pixel content after reload |
 
-Tests drive normal UI controls and the real browser database. Item entry,
+Tests drive normal UI controls and the real browser database. Image inputs use
+small generated PNGs and run through the app's crop and JPEG processing. Item
 editing, lifecycle, queries, backup and restore, and CI integration remain in the
 [Roadmap](roadmap.md#1-expand-browser-regression-coverage).
 
