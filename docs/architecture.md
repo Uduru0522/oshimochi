@@ -57,6 +57,8 @@ Application operations are grouped by feature:
 - **Goods types:** create one type and its protected fields atomically.
 - **Fields:** validate and apply one staged field change set.
 - **Items:** validate values, filter, sort, save content, and change lifecycle.
+- **Dashboard:** read selected collection records and calculate filtered card
+  results, coverage, and unavailable-reference states without loading images.
 - **Backups:** encode, validate, summarize, and restore complete snapshots.
 - **Local data:** reset all user collection stores atomically.
 

@@ -36,6 +36,7 @@ test("application operation composition exposes feature-owned capabilities", () 
   assert.equal(typeof operations.backups.createExport, "function");
   assert.equal(typeof operations.backups.inspect, "function");
   assert.equal(typeof operations.backups.restore, "function");
+  assert.equal(typeof operations.dashboard.readCard, "function");
   assert.equal(typeof operations.goodsTypes.create, "function");
   assert.equal(typeof operations.fields.applyChanges, "function");
   assert.equal(typeof operations.items.softDeleteItem, "function");
