@@ -7,8 +7,7 @@ dates. See [Workflows](workflows.md) for implemented behavior.
 
 ### 1. Refactor Backup Administration
 
-- Extract provider setup and controls, snapshot selection, and restore review
-  from the shared coordinator.
+- Extract snapshot selection and restore review from the shared coordinator.
 - Keep behavior unchanged and use browser regressions to verify each extraction.
 
 ### 2. Refine Oshimochi Branding
