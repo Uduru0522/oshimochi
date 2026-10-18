@@ -124,22 +124,17 @@ state so the normal incomplete-item warning remains useful.
 Unreferenced assets are preserved. Invalid data never opens a write
 transaction. An aborted transaction keeps the previous catalog.
 
-## Local Workflow
+## Restore Boundary
 
-Export reads one catalog, validates it, encodes images, and downloads one gzip
-archive. It does not change stored data. Archive creation blocks other app
-input and reports its current stage until the download is ready.
+Export reads and validates one coherent catalog, encodes images, and transfers
+a gzip archive without changing stored data. Archive creation blocks app input
+and reports its current stage.
 
-Restore follows this order:
+Both local files and cloud downloads pass through the same snapshot validation
+and review. Only the confirmed catalog replacement uses the global mutation
+lock. A successful commit reloads goods types and navigation.
 
-1. Read and decompress a selected gzip archive.
-2. Parse and validate the full snapshot.
-3. Show its date, record counts, and image size.
-4. Ask for replacement confirmation.
-5. Replace all user-data stores atomically.
-6. Reload goods types and navigation.
-
-Only step 5 uses the global mutation lock.
+See [Workflows](workflows.md#administration) for user actions.
 
 ## Cloud Provider Contract
 
@@ -159,90 +154,20 @@ The Administration view depends on a small provider interface:
 Provider code stays under `src/services/backups/`. Snapshot parsing and restore
 do not depend on Google Drive.
 
-## User-Owned Google Drive
+## Google Drive Adapter
 
-Oshimochi does not run a shared backup backend. GitHub Pages serves only the
-static interface.
+The adapter uses Google Identity Services with a short-lived, memory-only token
+and the `drive.file` scope. Google Picker selects an existing folder. The user
+supplies a Web OAuth client ID, restricted browser API key, and Cloud project
+number; there is no shared application backend. See
+[Persistence](persistence.md#browser-settings) for local configuration keys.
 
-Each browser setup supplies three public values from a user- or group-controlled
-Google Cloud project: a Web OAuth client ID, a restricted browser API key, and
-the project number. This creates separate ownership boundaries:
+Uploads retain the newest three Oshimochi snapshots in the selected folder.
+Listing and retention use the application marker described in
+[Snapshot Format](#snapshot-format). Downloaded text still passes normal
+snapshot validation and restore review.
 
-| Resource | Owner |
-| --- | --- |
-| Drive files and storage | The signed-in Google account |
-| Drive and Picker API quota | The user's Google Cloud project |
-| OAuth and API key settings | The user's Google Cloud project |
-| Live collection database | The user's browser profile |
-
-No developer-owned OAuth client, API key, storage bucket, client secret, or
-application server is used.
-
-The client ID, restricted API key, project number, and selected folder metadata
-are public configuration. Oshimochi stores them in `localStorage` on the current
-origin. Access tokens stay in memory and disappear when the page closes or
-reloads.
-
-Google Identity Services obtains a short-lived token after a user action. The
-app requests only the non-sensitive `drive.file` scope. Google Picker lets the
-user grant this app access to one existing folder without exposing the rest of
-Drive.
-
-Backups use the folder selected by the user. New uploads are gzip archives. The
-newest three Oshimochi snapshots in that folder are kept after each upload.
-Downloaded gzip snapshots still pass the normal local validation and review
-flow.
-
-## Personal Google Setup
-
-Each user creates a Google Cloud project, authorizes each browser origin, and
-chooses an existing Drive folder. The app needs a Web OAuth client ID, a
-restricted browser API key, and that project's number. It never needs a client
-secret.
-
-Follow [Google Drive Backup Setup](google-drive-backup.md) for beginner steps,
-sharing behavior, debug-mode rules, and troubleshooting.
-
-## Security Notes
-
-- Never enter or commit a client secret. Browser apps cannot keep one secret.
-- The client ID and API key are public browser configuration. Neither can read
-  Drive data without a user access token.
-- Restrict the API key to the approved websites, Google Picker API, and Google
-  Drive API to prevent use from unrelated sites.
-- Authorized JavaScript origins restrict where the browser flow can start.
-- Google Picker grants access only to the folder the user selects.
-- Access tokens are sent only to Google APIs and are not written to backups.
-- Disconnect revokes the active grant when a valid token is available.
-- Anyone with Drive account access can decompress and read the unencrypted
-  archives.
-- Users must trust the JavaScript served by the hosted origin while connected.
-
-For stronger deployment isolation, a user can fork the repository, host the
-same static app, and authorize only that origin. No backend is needed.
-
-Official references:
-
-- [Google browser token model](https://developers.google.com/identity/oauth2/web/guides/use-token-model)
-- [Create a Web OAuth client](https://developers.google.com/identity/oauth2/web/guides/get-google-api-clientid)
-- [Integrate Google Picker](https://developers.google.com/workspace/drive/picker/guides/web-picker)
-- [Choose Drive API scopes](https://developers.google.com/workspace/drive/api/guides/api-specific-auth)
-- [Drive API usage limits](https://developers.google.com/workspace/drive/api/guides/limits)
-
-## Verification
-
-Automated tests cover:
-
-- catalog integrity and atomic replacement
-- snapshot versions, JSON shape, and image round trips
-- invalid content and failed replacement behavior
-- local file transfer
-- gzip compression and decompression
-- provider configuration, Google Identity loading, and Google Picker loading
-- folder selection, Drive connection, listing, upload, retention, and guarded
-  download
-
-Manual checks cover browser downloads, file selection, popup consent,
-responsive layout, and the real Google folder picker. A personal-account Drive
-round trip has been completed on localhost and GitHub Pages. Shared-folder and
-multi-account behavior remains a separate manual verification boundary.
+The [Google Drive guide](google-drive-backup.md) owns setup instructions,
+resource ownership, sharing limitations, security notes, and troubleshooting.
+See [Testing](testing.md#backup-coverage) for automated coverage and
+[manual checks](testing.md#backup-and-restore).

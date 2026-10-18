@@ -108,7 +108,7 @@ browser suite, so responsive and pointer behavior still needs manual checks.
 
 ## Backup Coverage
 
-Backup behavior is checked at four boundaries:
+Backup behavior is checked at five boundaries:
 
 | Boundary | Covered behavior |
 | --- | --- |
@@ -138,8 +138,87 @@ Deleted-item behavior is checked at several boundaries:
 Repository failure tests assert that active items, deleted items, and assets stay
 unchanged after an aborted operation.
 
-## Manual Verification
+## Manual Browser Checks
 
-Use the grouped browser checklist in
-[Development Notes](development.md#manual-browser-checks) after changing runtime
-or UI behavior.
+Choose the groups affected by the change. For a release, run the full checklist
+in user and debug mode. Use a disposable catalog or export a backup before
+restore, purge, or reset checks. Debug-mode Drive uploads are real files; use
+a dedicated test folder as described in the [Drive guide](google-drive-backup.md#debug-mode).
+
+### Startup, Storage, And Offline Behavior
+
+- Reload user mode and confirm saved data remains.
+- Reload debug mode and confirm it returns to fixtures.
+- Confirm storage failures show a retry action, not an empty collection.
+- Confirm localhost and the hosted app keep separate data.
+- Check root and project paths from [Development](development.md#run-the-app).
+- Confirm there are no module, manifest, or service-worker errors and local
+  app-asset requests stay under the chosen base path.
+- Confirm the manifest loads and the service worker becomes active.
+- Enable DevTools offline mode and confirm the cached app shell opens. Local
+  data and file backup must remain usable without Google Identity Services.
+
+### Shell And Navigation
+
+- In wide mode, confirm Administration, Options, and GitHub stay at the bottom.
+- In narrow mode, confirm More reveals those same controls and closes on Escape
+  or an outside press.
+- Change theme, accent color, and language, then reload to confirm each persists.
+- Check narrow and wide layouts, long translated labels, keyboard navigation,
+  and reduced-motion behavior.
+
+### Goods Types And Fields
+
+- Create a goods type and confirm Items opens after save.
+- Stage add, edit, remove, and order changes before applying.
+- Confirm protected fields have no edit or remove action.
+- Leave the view and confirm unapplied field changes are discarded.
+- Reload and confirm only user-mode changes persist.
+
+### Item Forms
+
+- Enter every supported field type and review the values.
+- Confirm image selection is required.
+- Move and resize both crop orientations and check the saved image.
+- Confirm scheme-less URLs become HTTPS and HTTP URLs are rejected.
+- Confirm long labels and values do not create horizontal overflow.
+- Close, reopen, clear, save, and retry a failed draft.
+
+### Item Browser
+
+- Confirm a collection opens Items, the information action opens Overview,
+  and the return arrow opens Items again.
+- Switch between card and list views with both image orientations.
+- Apply and clear several filters and sort orders.
+- Confirm retained entries move from their old positions.
+- Confirm card exits finish before movement, then entrances begin.
+- Confirm the action toolbar stays fixed in size and aligned while scrolling.
+
+### Item Lifecycle
+
+- Soft-delete an item and confirm its image stays available.
+- Restore it and confirm values, identity, and image are unchanged.
+- Purge a deleted item and confirm both item and image are removed.
+- Confirm active filters and sorting remain after each change.
+- Check empty, failure, cancel, and confirmation states.
+
+### Backup And Restore
+
+- Export user data and confirm one `.json.gz` file downloads.
+- Restore that file and confirm collections, deleted items, and images return.
+- Select an invalid file and confirm existing data does not change.
+- Complete the [Drive round trip](google-drive-backup.md#test-the-full-flow)
+  with personal Google setup and a dedicated test folder.
+- Confirm cancelling consent leaves local data unchanged, and disconnecting
+  hides cloud actions while leaving local file actions available.
+- Change the destination and confirm new backups use the new folder.
+- Remove Drive setup and confirm all Google setup and folder data is cleared.
+- Cancel from the review state and confirm no write occurs.
+- Check the workflow in narrow and wide layouts and all interface languages.
+
+### Brand Icon
+
+- Check the shared SVG geometry at 24, 44, 48, 192, and 512 pixels.
+- Check the sidebar under all seven accents in light and dark mode and in
+  the narrow layout.
+- Confirm the favicon and manifest icon use the fixed blue palette.

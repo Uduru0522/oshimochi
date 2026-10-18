@@ -1,35 +1,34 @@
 # Documentation
 
-The documents are split into current behavior and product plans. This keeps
-implemented facts separate from unfinished work.
+Use this index as the entrypoint for development and user guides. Current
+behavior and unfinished work have separate owners.
+
+## Start A Development Session
+
+1. Read the repository rules in [AGENTS.md](../AGENTS.md).
+2. Inspect the current branch, working tree, and open pull requests.
+3. Use [Testing](testing.md) to check the baseline before changing behavior.
+4. Use the [Roadmap](roadmap.md) to discuss the next feature before implementing it.
 
 ## Current Implementation
 
 | Document | Scope |
 | --- | --- |
-| [Session Handoff](session-handoff.md) | Current baseline, decisions, limitations, and resume point |
+| [Workflows](workflows.md) | User actions available in the app |
+| [Google Drive Setup](google-drive-backup.md) | Cloud setup, sharing, round-trip checks, and troubleshooting |
+| [Development](development.md) | Local setup and coding conventions |
+| [Testing](testing.md) | Automated checks, test design, and manual browser checklists |
+| [Deployment](deployment.md) | GitHub Pages configuration and release procedure |
 | [Architecture](architecture.md) | Runtime flow, code ownership, and dependency rules |
 | [Domain Model](data-model.md) | Records, relationships, and invariants |
-| [Persistence](persistence.md) | IndexedDB, adapters, transactions, and errors |
-| [Workflows](workflows.md) | User workflows available in the app |
-| [Development](development.md) | Local commands and coding conventions |
-| [Testing](testing.md) | Test ownership, shape, and coverage |
-| [Deployment](deployment.md) | GitHub Pages release process |
-| [Data Portability](data-portability.md) | Snapshot format, local restore, and user-owned Drive backup |
-| [Google Drive Setup](google-drive-backup.md) | Beginner setup, sharing rules, testing, and troubleshooting |
-| [Brand Icon](oshimochi-brand-icon.md) | Shared SVG, accent colors, and installed-app icon |
+| [Persistence](persistence.md) | Browser settings, IndexedDB, adapters, and transactions |
+| [Data Portability](data-portability.md) | Snapshot format, validation, and cloud-provider contract |
 
 ## Planning
 
 | Document | Scope |
 | --- | --- |
-| [Roadmap](roadmap.md) | Completed work and ordered milestones |
+| [Roadmap](roadmap.md) | Unfinished work, decisions, and recommended order |
 
-## Writing Rules
-
-- Current documents describe only behavior that exists.
-- Unfinished work belongs only in a planning document.
-- Keep each paragraph focused and short.
-- Group related list items under a clear heading.
-- Link to the owning document instead of copying detailed rules.
-- Update paths and commands in the same commit as the code change.
+Documentation rules live in [AGENTS.md](../AGENTS.md#documentation). Link to the
+owning guide instead of repeating its detailed instructions.

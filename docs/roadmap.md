@@ -1,97 +1,17 @@
 # Roadmap
 
-This is a planning document. It records delivered capability groups and the
-order of unfinished work. It does not set release dates.
-
-## Delivered
-
-### Platform
-
-- Responsive local-first shell
-- User and debug modes
-- Light and dark themes with seven accent colors
-- Three interface languages
-- Offline app-shell cache
-- GitHub Pages deployment
-- Static architecture checks and unit tests
-- Pull-request verification on Node.js 24
-
-### Collection Setup
-
-- Goods-type creation
-- Protected built-in fields
-- Staged custom-field management
-- Atomic schema writes
-- Navigation refresh after changes
-- Typed local-data reset
-
-### Item Entry
-
-- Generated forms for all supported field types
-- Required image crop in two orientations
-- Review before save
-- Atomic item and image writes
-- Recoverable errors that keep the draft
-
-### Item Browser
-
-- Shared query pipeline for card and list views
-- General and field-aware filtering
-- Typed sorting
-- Context-aware card fields
-- Keyed add, edit, filter, sort, and delete motion
-
-### Item Lifecycle
-
-- Modal editing with optional image replacement
-- Soft deletion
-- Per-collection deleted-item recovery
-- Permanent item and image purge
-
-### Internal Structure
-
-- Storage-neutral application operations
-- Validated domain records
-- IndexedDB and in-memory adapter parity
-- Explicit record scopes
-- Focused source and test ownership
-
-### Portable Backup And Restore
-
-- Coherent catalog reads through both storage adapters
-- Versioned JSON snapshots with retained image data
-- Local download of active and soft-deleted records
-- Full validation and review before restore
-- Atomic replacement of all user-data stores
-- Failure behavior that preserves the previous catalog
-
-Restore is full replacement. Merge is outside the current product.
-
-### User-Owned Google Drive Backup
-
-- Provider-neutral cloud backup contract
-- User-supplied Google Cloud configuration
-- Narrow `drive.file` permission and memory-only access tokens
-- Existing-folder selection through Google Picker
-- Compressed upload, listing, download, and validated restore
-- Newest-three snapshot retention
-- Shared local and cloud restore review
-- Personal-account round trips on localhost and GitHub Pages
-
-See [Data Portability](data-portability.md) for the snapshot contract, provider
-boundary, ownership model, and setup steps.
-
-The backup milestone was tagged `v0.5.0` on 2026-10-18 after successful
-deployment and owner-confirmed manual smoke checks.
+This document records unfinished work and decisions. It does not set release
+dates. See [Workflows](workflows.md) for implemented behavior.
 
 ## Recommended Next Steps
 
-### 1. Launch Oshimochi
+### 1. Dashboard
 
-- Review and merge [PR #1](https://github.com/Uduru0522/oshimochi/pull/1).
-- Verify user and debug modes at the renamed Pages address.
-- Configure Drive backup for the Oshimochi identity and verify a new snapshot.
-- Use Oshimochi names for personal Google project branding and test folders.
+- Agree on useful collection summaries and shortcuts.
+- Define the empty-catalog, loading, and failure states.
+- Replace the current placeholder using storage-neutral application queries.
+
+Discuss the content and scope before implementation.
 
 ### 2. Define Automatic Backup Policy
 
@@ -108,11 +28,23 @@ deployment and owner-confirmed manual smoke checks.
 - Keep responsive, motion, service-worker, and real Google checks manual where
   automation would be brittle or require personal credentials.
 
+## Outstanding Drive Verification
+
+- Configure Drive for the fresh Oshimochi storage and snapshot identity.
+- Verify a new upload and restore on localhost and GitHub Pages using the
+  [Drive round-trip checklist](google-drive-backup.md#test-the-full-flow).
+- Verify the multi-account, shared-folder flow before treating it as a release
+  guarantee. Use a dedicated test folder.
+
 ## Later Milestones
+
+### Collection Details
+
+Allow editing an existing collection's name and description.
 
 ### Backup Health
 
-- Show quota and retention health to the user.
+Show quota and retention health to the user.
 
 ### Multi-Device Data
 

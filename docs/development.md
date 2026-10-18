@@ -18,7 +18,7 @@ Debug mode: http://localhost:4173/?debug=1
 Use the local server instead of opening `index.html` directly. The manifest,
 service worker, and browser storage depend on an HTTP origin.
 
-To test the GitHub Pages path:
+Stop the root-path server with `Ctrl+C` before starting the GitHub Pages path:
 
 ```powershell
 npm run start:pages
@@ -31,132 +31,14 @@ http://localhost:4173/oshimochi/
 http://localhost:4173/oshimochi/?debug=1
 ```
 
-## Automated Verification
+If PowerShell blocks `npm.ps1`, use `npm.cmd` in place of `npm`.
 
-Run the full check:
+## Verification And Review
 
-```powershell
-npm run check
-```
-
-It checks source syntax, import rules, cycles, runtime assets, offline coverage,
-test hygiene, and the complete `node:test` suite.
-
-Run the data-layer coverage guard separately:
-
-```powershell
-npm run test:coverage:data
-```
-
-See [Testing](testing.md) for test ownership and design rules.
-
-## Manual Browser Checks
-
-Choose the groups affected by the change. Test user and debug mode when storage
-or mutation behavior changes.
-
-### Startup And Storage
-
-- Reload user mode and confirm saved data remains.
-- Reload debug mode and confirm it returns to fixtures.
-- Confirm storage failures show a retry action, not an empty collection.
-- Confirm localhost and the hosted app keep separate data.
-
-### Shell And Navigation
-
-- In wide mode, confirm Administration, Options, and GitHub stay at the bottom.
-- In narrow mode, confirm More reveals those same controls and closes on Escape
-  or an outside press.
-- Change theme, accent color, and language, then reload to confirm each persists.
-
-### Goods Types And Fields
-
-- Create a goods type and confirm Items opens after save.
-- Stage add, edit, remove, and order changes before applying.
-- Confirm protected fields have no edit or remove action.
-- Leave the view and confirm unapplied field changes are discarded.
-- Reload and confirm only user-mode changes persist.
-
-### Item Forms
-
-- Enter every supported field type and review the values.
-- Confirm image selection is required.
-- Move and resize both crop orientations and check the saved image.
-- Confirm scheme-less URLs become HTTPS and HTTP URLs are rejected.
-- Confirm long labels and values do not create horizontal overflow.
-- Close, reopen, clear, save, and retry a failed draft.
-
-### Item Browser
-
-- Confirm a collection opens Items and the information action opens Overview.
-- Switch between card and list views with both image orientations.
-- Apply and clear several filters and sort orders.
-- Confirm retained entries move from their old positions.
-- Confirm card exits finish before movement, then entrances begin.
-- Confirm the action toolbar stays fixed in size and aligned while scrolling.
-
-### Item Lifecycle
-
-- Soft-delete an item and confirm its image stays available.
-- Restore it and confirm values, identity, and image are unchanged.
-- Purge a deleted item and confirm both item and image are removed.
-- Confirm active filters and sorting remain after each change.
-- Check empty, failure, cancel, and confirmation states.
-
-### Backup And Restore
-
-- Export user data and confirm one `.json.gz` file downloads.
-- Restore that file and confirm collections, deleted items, and images return.
-- Select an invalid file and confirm existing data does not change.
-- Enter a personal OAuth client ID, API key, and project number. Confirm they
-  survive reload.
-- Connect Drive and select a destination folder through Google Picker.
-- Upload and restore a snapshot from the selected folder.
-- Confirm cancelling Google consent leaves local data unchanged.
-- Confirm disconnect hides cloud actions but keeps local file actions available.
-- Change the destination and confirm new backups use the new folder.
-- Remove Drive setup and confirm all Google setup and folder data is cleared.
-- Cancel from the review state and confirm no write occurs.
-- Check the workflow in narrow and wide layouts and all interface languages.
-
-## Browser Storage
-
-Interface settings use `localStorage`:
-
-| Key | Values |
-| --- | --- |
-| `oshimochi.language` | `en`, `ja`, `zh-Hant` |
-| `oshimochi.theme` | `light`, `dark` |
-| `oshimochi.accent` | `red`, `orange`, `yellow`, `blue`, `green`, `pink`, `purple` |
-| `oshimochi.google-drive-client-id` | Personal Web OAuth client ID |
-| `oshimochi.google-drive-api-key` | Restricted browser API key |
-| `oshimochi.google-drive-project-number` | Google Cloud project number |
-| `oshimochi.google-drive-destination` | Selected folder ID and name |
-
-Useful console commands:
-
-```js
-localStorage.getItem("oshimochi.language")
-localStorage.removeItem("oshimochi.language")
-localStorage.getItem("oshimochi.theme")
-localStorage.removeItem("oshimochi.theme")
-localStorage.getItem("oshimochi.accent")
-localStorage.removeItem("oshimochi.accent")
-localStorage.getItem("oshimochi.google-drive-client-id")
-localStorage.removeItem("oshimochi.google-drive-client-id")
-localStorage.getItem("oshimochi.google-drive-api-key")
-localStorage.removeItem("oshimochi.google-drive-api-key")
-localStorage.getItem("oshimochi.google-drive-project-number")
-localStorage.removeItem("oshimochi.google-drive-project-number")
-localStorage.getItem("oshimochi.google-drive-destination")
-localStorage.removeItem("oshimochi.google-drive-destination")
-```
-
-Collection data uses IndexedDB. Debug mode uses a separate in-memory adapter and
-does not open the user database.
-
-Browser storage is origin-specific. Localhost and GitHub Pages do not share
-settings or collection data.
+Use [Testing](testing.md) for automated commands and manual browser checklists.
+Follow [AGENTS.md](../AGENTS.md#local-review-before-commits) for local review
+before committing app changes. Storage keys and origin behavior are documented
+in [Persistence](persistence.md#browser-settings).
 
 ## Common Changes
 
@@ -217,6 +99,23 @@ Translate interface copy with `translate()`. Never translate user data.
 
 Keep the Japanese and Traditional Chinese catalogs in sync. After copy changes,
 check all three languages in wide and narrow layouts.
+
+### Change The Brand Icon
+
+`icons/oshimochi-themeable.svg` is the shared mochi-and-tapestry geometry for
+the sidebar, favicon, and installed app. The sidebar references its
+`oshimochi-mark` root with an inline SVG `use`. The `.brand-mark` rule in
+`src/styles/foundation.css` supplies colors through CSS custom properties so
+the mark follows the selected accent. It is decorative because the adjacent
+heading already names the app.
+
+The favicon and manifest reference the SVG directly and use its fixed blue
+palette. The manifest declares a scalable ordinary icon, not a maskable or
+theme-changing launcher icon.
+
+The SVG belongs to the service-worker asset list. Follow
+[offline asset updates](#update-offline-assets) and the
+[brand icon checklist](testing.md#brand-icon) when changing it.
 
 ### Change Styles Or Motion
 
@@ -292,18 +191,3 @@ When a runtime file moves or is added:
 
 The worker activates new assets without reloading an open page. Use a hard
 refresh when checking a new deployment.
-
-## Related Documents
-
-### Current Implementation
-
-- [Architecture](architecture.md)
-- [Domain Model](data-model.md)
-- [Persistence](persistence.md)
-- [Workflows](workflows.md)
-- [Testing](testing.md)
-
-### Planning
-
-- [Roadmap](roadmap.md)
-- [Data Portability](data-portability.md)

@@ -250,17 +250,9 @@ goods types.
 
 ### Configure Personal Drive Backup
 
-1. Create a Google Cloud project and enable the Drive and Picker APIs.
-2. Create a Web OAuth client and add the `drive.file` scope.
-3. Add only your Google account as a test user.
-4. Authorize the Oshimochi browser origin.
-5. Create a browser API key restricted to Oshimochi, Google Picker, and Drive.
-6. Open **Administration**.
-7. Enter the client ID, API key, and project number, then save.
-
-The public setup values stay on this browser origin. They are not included in
-backups. Follow the [Google Drive setup guide](google-drive-backup.md) for the
-full Cloud Console and test steps.
+Follow the [Google Drive setup guide](google-drive-backup.md) to create public
+Google configuration and save it in **Administration**. Setup values stay on
+the current browser origin and are not included in backups.
 
 ### Back Up To Google Drive
 

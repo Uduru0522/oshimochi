@@ -2,76 +2,42 @@
 
 A local-first web app for organizing collectible goods.
 
-The app runs on GitHub Pages or a local static server. User data stays in the
-current browser profile and is stored in IndexedDB. Debug mode uses temporary
-sample data and never writes to the user database.
+[Open Oshimochi](https://uduru0522.github.io/oshimochi/) or
+[try debug mode](https://uduru0522.github.io/oshimochi/?debug=1) with temporary
+sample data.
 
-## What Works
+User data stays in IndexedDB in the current browser profile and origin. Debug
+mode uses memory and never opens the user database.
 
-### Interface
+## Features
 
-- Responsive wide and narrow layouts
-- Light and dark themes with seven accent colors
-- English, Japanese, and Traditional Chinese
-- Direct navigation to each collection's item browser
-- Separate collection overview and application settings
+- Collections with protected built-in fields and configurable custom fields
+- Image cropping, item cards and lists, search, filtering, and sorting
+- Item editing, soft deletion, recovery, and permanent purge
+- Compressed local backup and full restore, plus optional user-owned Google
+  Drive backup
+- Responsive layouts, English, Japanese, Traditional Chinese, light and dark
+  themes, seven accent colors, and offline app-shell caching
 
-### Collection Setup
-
-- Goods-type creation with protected built-in fields
-- Custom text, long-text, number, date, toggle, URL, and selection fields
-- Staged field changes with review and one atomic save
-
-### Item Management
-
-- Required image selection, cropping, review, and local storage
-- Card and list presentations over the same item set
-- General search and field-aware filters
-- Field-aware sorting
-- Item editing and soft deletion
-- Per-collection restore and permanent purge
-
-### Data Safety
-
-- Compressed complete backup with active and soft-deleted records and images
-- Validated restore review before one atomic local-data replacement
-- Optional user-owned Google Drive backup to a chosen folder, with
-  three-snapshot retention
-- Local-data reset with typed confirmation
-
-### Runtime And Quality
-
-- Persistent IndexedDB user storage
-- Isolated in-memory debug storage
-- Offline app-shell caching
-- Static architecture checks and unit tests
-- GitHub Pages deployment
-
-See the [roadmap](docs/roadmap.md) for work that is not part of the current app.
+See [Workflows](docs/workflows.md) for available user actions and the
+[Roadmap](docs/roadmap.md) for unfinished work.
 
 ## Run Locally
 
-Development requires Node.js 24 or newer. The local app installs no runtime
-packages. Configured cloud backup loads Google Identity Services on demand.
+Use Node.js 24 or newer. There are no runtime packages to install.
 
 ```powershell
 npm start
 ```
 
-Open:
+Open `http://localhost:4173/` or `http://localhost:4173/?debug=1`.
 
-```text
-User mode:  http://localhost:4173/
-Debug mode: http://localhost:4173/?debug=1
-```
+To reproduce the GitHub Pages path, run `npm run start:pages` and open
+`http://localhost:4173/oshimochi/`. Local and hosted URLs do not share browser
+data or settings.
 
-To reproduce the GitHub Pages path locally:
-
-```powershell
-npm run start:pages
-```
-
-Then open `http://localhost:4173/oshimochi/`.
+See [Development](docs/development.md) for local setup and coding conventions.
+If PowerShell blocks `npm.ps1`, use `npm.cmd` in place of `npm`.
 
 ## Verify Changes
 
@@ -79,53 +45,12 @@ Then open `http://localhost:4173/oshimochi/`.
 npm run check
 ```
 
-This command checks syntax, module boundaries, import cycles, asset graphs,
-offline coverage, test hygiene, and the full `node:test` suite.
-
-Run the data-layer coverage guard separately:
-
-```powershell
-npm run test:coverage:data
-```
-
-## Hosted Application
-
-- [User mode](https://uduru0522.github.io/oshimochi/)
-- [Debug mode](https://uduru0522.github.io/oshimochi/?debug=1)
-
-Local and hosted URLs are different browser origins. They do not share settings
-or IndexedDB data.
-
-## Repository Map
-
-| Path | Responsibility |
-| --- | --- |
-| `.github/workflows/` | GitHub Pages deployment |
-| `docs/` | Current technical docs and product plans |
-| `icons/` | Installable-app icons |
-| `scripts/` | Repository verification |
-| `src/app/` | Startup, routing, and shell behavior |
-| `src/application/` | Storage-neutral operations and queries |
-| `src/data/` | Domain records and storage adapters |
-| `src/views/` | View definitions and feature UI |
-| `src/styles/` | Tokens, layout, and feature styles |
-| `src/shared/` | Product-neutral UI helpers |
-| `test/` | Automated tests |
-| `index.html` | Document shell |
-| `server.js` | Local static server |
-| `service-worker.js` | Offline app-shell cache |
+This runs static verification, test hygiene checks, and all tests. See
+[Testing](docs/testing.md) for coverage commands and manual browser checks.
 
 ## Documentation
 
-Start with the [session handoff](docs/session-handoff.md) for the current
-baseline, then use the [documentation index](docs/README.md) for detailed
-implementation and planning documents.
+Start with the [documentation index](docs/README.md). It links to the
+architecture, data contracts, user guides, and roadmap.
 
-## Contribution Rules
-
-- Keep user data in browser-local storage.
-- Never let debug mode open or write the user database.
-- Keep browser storage APIs behind adapters and services.
-- Add or update tests for changed domain and persistence behavior.
-- Update the service-worker asset list and cache name when runtime files move.
-- Keep commits small, focused, and verifiable.
+Follow [AGENTS.md](AGENTS.md) for the Git workflow and local review rules.

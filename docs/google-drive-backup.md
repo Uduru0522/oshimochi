@@ -163,22 +163,10 @@ They must be entered again on another origin or browser profile.
 
 ## Back Up And Restore
 
-Backup is manual. Oshimochi does not upload after each edit and does not run a
-background schedule.
-
-To create a snapshot:
-
-1. Open **Administration**.
-2. Connect again if the page was reloaded.
-3. Choose **Back up now**.
-4. Wait for the upload confirmation.
-
-To restore a snapshot:
-
-1. Connect and choose **Restore from cloud**.
-2. Choose a listed snapshot.
-3. Review its counts and image size.
-4. Confirm the full replacement.
+Backup is manual. Oshimochi does not upload after each edit or run a background
+schedule. Follow [Back Up To Google Drive](workflows.md#back-up-to-google-drive)
+and [Restore From Google Drive](workflows.md#restore-from-google-drive) for the
+app steps. Reconnect after a page reload.
 
 Restore changes only the current browser database. Other devices do not update
 until they restore a snapshot themselves.
@@ -218,8 +206,8 @@ snapshot.
 
 Repeat the round trip at the hosted URL after changing authentication, transfer,
 or restore behavior. Use a separate test folder there because localhost and
-GitHub Pages are different browser origins. Personal-account round trips have
-been completed on both supported origins.
+GitHub Pages are different browser origins. Outstanding verification is tracked
+in the [Roadmap](roadmap.md#outstanding-drive-verification).
 
 ## Cost And Quota
 
@@ -278,16 +266,25 @@ marked snapshots from that folder.
 ## Security Notes
 
 - Never enter or commit a client secret.
-- Restrict the browser API key by website and API.
+- Restrict the browser API key by website and API. Authorized JavaScript origins
+  restrict where the browser flow can start.
 - The client ID, restricted API key, and project number are public app values.
-- Drive access still requires the user's short-lived OAuth token.
+- Drive access still requires the user's short-lived OAuth token. Google Picker
+  grants access to the selected folder.
+- Access tokens go only to Google APIs and are never stored in backups.
+- Disconnect revokes the active grant when a valid token is available.
+- Users must trust the JavaScript served by the hosted origin while connected.
 - Backup archives are compressed, not encrypted. Anyone with folder access can
   decompress and read them.
 - **Remove Drive setup** removes the local Google configuration from this
   origin.
 
+For deployment isolation, a user can fork and host the same static app, then
+authorize only that origin. No backend is needed.
+
 Official references:
 
+- [Google browser token model](https://developers.google.com/identity/oauth2/web/guides/use-token-model)
 - [Google Picker setup](https://developers.google.com/workspace/drive/picker/guides/web-picker)
 - [Create a Web OAuth client](https://developers.google.com/identity/oauth2/web/guides/get-google-api-clientid)
 - [Choose Drive API scopes](https://developers.google.com/workspace/drive/api/guides/api-specific-auth)

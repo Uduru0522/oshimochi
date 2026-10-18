@@ -18,6 +18,25 @@ plain domain records.
 Views never receive IndexedDB requests, transactions, store names, or browser
 storage events. User mode also never falls back to debug data after a failure.
 
+## Browser Settings
+
+Interface and Drive setup values use `localStorage`:
+
+| Key | Values |
+| --- | --- |
+| `oshimochi.language` | `en`, `ja`, `zh-Hant` |
+| `oshimochi.theme` | `light`, `dark` |
+| `oshimochi.accent` | `red`, `orange`, `yellow`, `blue`, `green`, `pink`, `purple` |
+| `oshimochi.google-drive-client-id` | Personal Web OAuth client ID |
+| `oshimochi.google-drive-api-key` | Restricted browser API key |
+| `oshimochi.google-drive-project-number` | Google Cloud project number |
+| `oshimochi.google-drive-destination` | Selected folder ID and name |
+
+Settings and IndexedDB data are specific to the browser profile and origin.
+Localhost and GitHub Pages do not share either. User and debug mode on the same
+origin share these settings, while their catalogs remain separate. Google
+access tokens stay only in memory and are lost on reload.
+
 ## IndexedDB Schema
 
 ```text
