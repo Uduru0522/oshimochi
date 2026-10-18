@@ -16,7 +16,11 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  browser:
+    uses: ./.github/workflows/browser-checks.yml
+
   deploy:
+    needs: browser
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

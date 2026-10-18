@@ -10,6 +10,7 @@ module.exports = defineConfig({
   testMatch: "**/*.spec.js",
   forbidOnly: true,
   fullyParallel: true,
+  globalTimeout: process.env.CI ? 10 * 60 * 1000 : undefined,
   workers: process.env.CI ? 1 : 2,
   reporter: [["list"], ["html", { open: "never" }]],
   use: {
