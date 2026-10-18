@@ -2,7 +2,6 @@ export const TRANSLATIONS = Object.freeze({
   ja: Object.freeze({
     "Oshimochi": "Oshimochi",
     "A local-first web app for managing multiple goods collections.": "複数のグッズコレクションを管理するローカルファースト Web アプリです。",
-    "Goods manager": "グッズ管理",
     "Main navigation": "メインナビゲーション",
     "Application views": "アプリケーション表示",
     "Main views": "メイン表示",
@@ -423,7 +422,6 @@ export const TRANSLATIONS = Object.freeze({
   "zh-Hant": Object.freeze({
     "Oshimochi": "Oshimochi",
     "A local-first web app for managing multiple goods collections.": "用於管理多種周邊收藏的本機優先 Web 應用程式。",
-    "Goods manager": "周邊管理",
     "Main navigation": "主要導覽",
     "Application views": "應用程式檢視",
     "Main views": "主要檢視",

@@ -7,6 +7,7 @@
   --line: #dce2e8;
   --line-strong: #cad3dc;
   --text: #18212b;
+  --oshimochi-wordmark-ink: #3a434b;
   --muted: #687381;
   --accent-red: #c2354b;
   --accent-orange: #b95700;
@@ -95,6 +96,7 @@
   --line: #2a333a;
   --line-strong: #3a454d;
   --text: #eef3f5;
+  --oshimochi-wordmark-ink: #dce4e8;
   --muted: #9da9b3;
   --accent-red: #e88992;
   --accent-orange: #e8a16f;
@@ -203,7 +205,7 @@ textarea {
 
 .sidebar-header {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr);
   gap: 12px;
   flex: 0 0 auto;
   align-items: center;
@@ -391,7 +393,7 @@ textarea {
 .brand {
   display: grid;
   grid-template-columns: 44px minmax(0, 1fr);
-  gap: 12px;
+  gap: 3px;
   align-items: center;
   min-width: 0;
   padding: 2px 4px;
@@ -408,26 +410,25 @@ textarea {
 }
 
 .brand h1,
-.brand p,
 .placeholder h3,
 .placeholder p {
   margin: 0;
 }
 
 .brand h1 {
-  overflow-wrap: anywhere;
-  font-size: 18px;
-  line-height: 1.2;
+  min-width: 0;
 }
 
-.brand p,
+.brand-wordmark {
+  --oshimochi-wordmark-accent: var(--accent);
+  display: block;
+  width: 180px;
+  max-width: 100%;
+  height: auto;
+}
+
 .placeholder p {
   color: var(--muted);
-}
-
-.brand p {
-  margin-top: 3px;
-  font-size: 13px;
 }
 
 .nav-list {

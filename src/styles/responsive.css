@@ -55,6 +55,7 @@
 
   .sidebar-header {
     grid-column: 1;
+    grid-template-columns: minmax(0, 1fr) auto;
   }
 
   .brand {
@@ -419,14 +420,6 @@
     grid-template-columns: 1fr;
     gap: 4px;
   }
-  .brand h1 {
-    font-size: 16px;
-  }
-
-  .brand p {
-    font-size: 12px;
-  }
-
   .nav-item {
     min-height: 40px;
     padding: 6px 9px 6px 7px;

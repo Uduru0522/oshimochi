@@ -28,7 +28,6 @@ export const APP_CONFIG = {
   serviceWorkerPath: "service-worker.js",
   selectors: {
     appShell: ".app-shell",
-    brandSubtitle: "#brandSubtitle",
     primaryNavList: "#primaryNavList",
     projectExternalIcon: "#projectExternalIcon",
     projectRepositoryIcon: "#projectRepositoryIcon",

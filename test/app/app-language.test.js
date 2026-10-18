@@ -18,7 +18,6 @@ test("app language localizes the GitHub project link metadata", () => {
   const description = createElement();
   const elements = {
     appShell: createElement(),
-    brandSubtitle: createElement(),
     primaryNavList: createElement(),
     projectRepositoryLink: createElement(),
     sidebar: createElement(),
@@ -55,7 +54,6 @@ test("app language localizes the utility menu disclosure", () => {
   const previousDocument = globalThis.document;
   const elements = {
     appShell: createElement(),
-    brandSubtitle: createElement(),
     primaryNavList: createElement(),
     projectRepositoryLink: createElement(),
     sidebar: createElement(),

@@ -5,27 +5,14 @@ dates. See [Workflows](workflows.md) for implemented behavior.
 
 ## Recommended Next Steps
 
-### 1. Refactor Backup Administration
+### 1. Refine Oshimochi Branding
 
-- Finish local review and verify the refactor pull request in CI.
+- Local review of the selected `オシもち。` wordmark is complete. Finish the
+  feature pull request and CI review, then wait for owner approval to merge.
+- Keep normal UI/body fonts, the existing mascot/icon, core functionality,
+  storage keys, and snapshot identities unchanged.
 
-### 2. Refine Oshimochi Branding
-
-- Use `オシもち！` as the visible wordmark in every UI language.
-- Remove the visible `Goods manager` subtitle from the sidebar/header branding.
-- Use Zen Maru Gothic Black (900) if feasible. Inspect the current font setup
-  and prefer a maintainable integration that works on GitHub Pages and offline.
-  Evaluate self-hosting, retain the required license, and document attribution.
-- Keep normal UI/body fonts, the existing mascot/icon, and the soft, rounded
-  brand direction. Make only small layout adjustments needed by the wordmark.
-- Preserve core functionality, internal identifiers, storage keys, snapshot
-  identities, and technical constants.
-- Update relevant branding documentation and verify the wordmark across all
-  interface languages and narrow/wide layouts.
-
-Start this feature after the backup administration refactor.
-
-### 3. Dashboard
+### 2. Dashboard
 
 - Agree on useful collection summaries and shortcuts.
 - Define the empty-catalog, loading, and failure states.
@@ -33,7 +20,7 @@ Start this feature after the backup administration refactor.
 
 Discuss the content and scope before implementation.
 
-### 4. Define Automatic Backup Policy
+### 3. Define Automatic Backup Policy
 
 - Decide which successful mutations request a backup and how requests combine.
 - Define disconnected, offline, retry, and failure behavior.

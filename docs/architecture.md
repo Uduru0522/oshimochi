@@ -135,7 +135,9 @@ Common timing tokens keep interaction motion below 200 ms:
 - `--item-layout-*` for item reordering
 
 The UI uses local Noto Sans and platform CJK font stacks. No font is fetched from
-a third-party host.
+a third-party host. The language-independent `オシもち。` wordmark uses a local
+outlined SVG; see [branding](development.md#change-the-branding) for its source
+and license.
 
 ## Dependency Direction
 
