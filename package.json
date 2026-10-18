@@ -11,6 +11,10 @@
     "start": "node server.js",
     "start:pages": "node server.js --base-path=/oshimochi/",
     "test": "node --test",
-    "test:coverage:data": "node --experimental-test-coverage --test --test-coverage-include=src/data/**/*.js --test-coverage-lines=90 --test-coverage-branches=85 --test-coverage-functions=85"
+    "test:coverage:data": "node --experimental-test-coverage --test --test-coverage-include=src/data/**/*.js --test-coverage-lines=90 --test-coverage-branches=85 --test-coverage-functions=85",
+    "test:browser": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1"
   }
 }

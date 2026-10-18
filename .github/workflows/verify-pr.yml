@@ -13,6 +13,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  browser:
+    uses: ./.github/workflows/browser-checks.yml
+
   check:
     name: Check app
     runs-on: ubuntu-latest

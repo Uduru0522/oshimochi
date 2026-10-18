@@ -1,7 +1,9 @@
 # Testing
 
 Automated tests cover domain, application, repository, adapter, and pure view
-behavior. Browser layout and full interaction flows are checked manually.
+behavior. Playwright checks startup and selected collection and item workflows
+in a real browser. Layout and workflows outside that coverage still need manual
+verification.
 
 ## Commands
 
@@ -9,11 +11,12 @@ behavior. Browser layout and full interaction flows are checked manually.
 | --- | --- |
 | `npm test` | Run the full dependency-free `node:test` suite |
 | `npm run test:coverage:data` | Enforce data-layer coverage thresholds |
-| `npm run check` | Run static checks, test hygiene, and all tests |
+| `npm run check` | Run static checks, Node test hygiene, and all Node tests |
+| `npm run test:browser` | Run the Chromium browser regression suite |
 
-GitHub Actions runs the full check for pull requests targeting `main` and during
-Pages deployment. See [Deployment](deployment.md#pull-request-verification) for
-the pull-request workflow.
+GitHub Actions runs repository checks and Chromium regressions for pull requests
+targeting `main` and before Pages deployment. See
+[Deployment](deployment.md#pull-request-verification) for the workflows.
 
 The data coverage guard requires:
 
@@ -22,6 +25,58 @@ The data coverage guard requires:
 - 85% function coverage
 
 This result covers `src/data/`, not the whole browser app.
+
+## Browser Regression Tests
+
+Install development dependencies and Chromium once:
+
+```powershell
+npm ci
+npx playwright install chromium
+```
+
+If PowerShell blocks script shims, use `npm.cmd` and `npx.cmd`.
+
+Run `npm run test:browser`. Playwright starts and stops its own root-path and
+Pages-path servers at `127.0.0.1:4187` and `127.0.0.1:4188`. Both must be free;
+an existing server is never reused. No running manual preview is needed.
+
+Each test uses a fresh browser context with disposable IndexedDB and settings.
+Every scenario runs under both URL paths. Uncaught errors and unexpected console
+errors fail the test. Rejection tests declare the exact number and pattern of
+expected error messages. The suite does not connect to a normal browser profile
+or Google Drive.
+
+| Area | Browser checks |
+| --- | --- |
+| Startup | Empty user catalog, rendered debug items, no user database creation in debug mode |
+| Collections | Confirmed metadata survives reload; cancelled reviews write nothing; debug collection edits reset and preserve an existing user catalog |
+| Custom fields | Unapplied changes are discarded and built-in fields stay protected; all seven custom types round-trip, including zero, false, dates, and normalized URLs; missing required values and HTTP URLs prevent review |
+| Item entry | Required name and image, unsaved review drafts, portrait and landscape crop output, saved image dimensions and pixel content after reload |
+| Item editing | Name changes retain identity and image bytes; replacement removes the old asset; closing review leaves stored data unchanged |
+| Item lifecycle | Cancelled deletion and purge preserve storage; deleted items survive reload and restore with the same identity and image; purge removes only its target item and asset |
+| Queries | Phrase and exclusion search, cancelled filter drafts, choice rules combined with search, clearing empty results, and numeric sorting across card/list changes |
+| Local backups | Downloaded gzip contents and image bytes; confirmed replacement including fields and deleted items; cancelled review; rejection of uncompressed, damaged, unsupported-version, and missing-image backups without data loss; debug restore isolation and reset |
+
+Tests make changes through normal UI controls. Image inputs use small generated
+PNGs and run through the app's crop and JPEG processing. Read-only IndexedDB
+checks compare item identity, asset metadata, and image-byte hashes to verify
+that edits, recovery, and purge change only the intended data.
+
+The shared [browser workflow](../.github/workflows/browser-checks.yml) installs
+the locked dependencies and Chromium with its system libraries. It runs both
+paths with one worker and a ten-minute suite limit. The HTML report, including
+failure traces and screenshots, is retained for 14 days in the workflow's
+`playwright-report` artifact. See [Deployment](deployment.md) for its callers.
+
+Tests live in `e2e/*.spec.js`, outside Node's test discovery. Playwright is a
+development dependency; running the app and `npm run check` still need no
+installed packages. Browser tests run separately from `npm run check`.
+
+Use `npm run test:browser -- --headed` to watch the browser, or add `--ui` for
+interactive debugging. Reports are written to `playwright-report/`; failed
+tests retain traces and screenshots in `test-results/`. Open the report with
+`npx playwright show-report`. Generated reports and dependencies are ignored.
 
 ## Static Checks
 
@@ -68,6 +123,7 @@ Test paths mirror production ownership:
 | `test/shared/` | Product-neutral utilities |
 | `test/views/` | Pure presentation logic and focused DOM contracts |
 | `test-support/` | Reusable fakes outside test discovery |
+| `e2e/` | Real-browser regression tests and Playwright fixtures |
 
 A test belongs to the module whose public behavior it checks. Adapter contract
 tests may cross repositories because they verify an integrated boundary.
@@ -101,14 +157,16 @@ A regression test must fail before its fix and name the broken behavior.
 | Repository | Validation, store choice, and transaction atomicity |
 | Adapter | Contract parity and lifecycle behavior |
 | View | Pure selectors, display models, and focused DOM behavior |
-| Manual browser | Layout, motion, dialogs, service worker, and real IndexedDB |
+| Browser | Startup, covered UI workflows, real IndexedDB, and image persistence |
+| Manual browser | Layout, motion, remaining workflows, Google dialogs, and service-worker updates |
 
-Node coverage is not end-to-end browser coverage. The project has no automated
-browser suite, so responsive and pointer behavior still needs manual checks.
+Node coverage is separate from browser regression coverage. Responsive layout,
+pointer interactions, offline updates, and real Google flows still need manual
+checks.
 
 ## Backup Coverage
 
-Backup behavior is checked at five boundaries:
+Backup behavior is checked at six boundaries:
 
 | Boundary | Covered behavior |
 | --- | --- |
@@ -117,10 +175,10 @@ Backup behavior is checked at five boundaries:
 | Repository | Coherent reads and atomic full replacement |
 | Application | Read-only export, validation before write, and retry behavior |
 | Services | Gzip archives, provider state, Google loading, folder selection, Drive transfer, and retention |
+| Browser | Downloaded archive contents, file selection, confirmed replacement and navigation, cancellation, invalid-file rejection, reload persistence, and debug isolation |
 
-Browser download, file selection, review layout, post-restore navigation, and a
-real Google consent, Picker selection, and Drive round trip still require manual
-checks.
+Review layout, progress presentation, real Google consent, Picker selection, and
+a Drive round trip still require manual checks.
 
 ## Lifecycle Coverage
 
@@ -133,7 +191,8 @@ Deleted-item behavior is checked at several boundaries:
 | Adapter | Matching DebugStorage and IndexedDB behavior |
 | Application | Scope selection, restore rules, and purge calls |
 | Shared UI | Dialog timing, cancellation, blocking, and reduced motion |
-| Manual browser | Empty states, failures, confirmation, motion, and reload |
+| Browser | Cancellation, confirmation, reload, identity and image retention, and targeted purge |
+| Manual browser | Layout, failure feedback, and motion |
 
 Repository failure tests assert that active items, deleted items, and assets stay
 unchanged after an aborted operation.

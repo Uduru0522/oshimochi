@@ -8,7 +8,11 @@
   behavior may be committed directly to `main` when branch protection permits.
 - Keep fixes, tests, and documentation for an in-progress feature in that
   feature's branch and pull request.
-- Keep each commit focused. Do not include unrelated working-tree changes.
+- Build features through small, focused commits as development progresses.
+  Separate test setup, workflow coverage, and refactoring when each stands alone.
+  Do not include unrelated working-tree changes.
+- Fold corrections into the relevant unpushed commit when practical. Keep
+  pushed history intact.
 - Run appropriate checks before committing or pushing. For pull requests,
   document the change, verification results, and known risks.
 - Never merge a pull request without the repository owner's explicit approval
@@ -20,11 +24,11 @@
 
 ## Local Review Before Commits
 
-- For app changes, implement locally, run appropriate checks, and provide a local
-  preview. Wait for the owner's local-testing sign-off before committing,
-  pushing, or preparing a feature pull request.
-- For documentation-only changes, review the diff and relevant links before
-  committing or pushing; no app preview is needed.
+- Show the owner the diff and wait for review sign-off before committing,
+  pushing, or preparing a feature pull request, including documentation changes.
+- For app changes, also run appropriate checks, provide a local preview, and
+  wait for the owner's local-testing sign-off.
+- For documentation-only changes, check relevant links; no app preview is needed.
 - Repeat local review after changes that alter previously approved behavior.
 
 ## Commit Attribution

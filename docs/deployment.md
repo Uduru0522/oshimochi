@@ -18,9 +18,10 @@ In the GitHub repository:
 2. Open **Pages**.
 3. Set **Build and deployment** to **GitHub Actions**.
 
-`.github/workflows/deploy-pages.yml` runs `npm run check` on Node.js 24 and
-deploys each push to `main`. It also supports manual runs from the **Actions**
-tab.
+`.github/workflows/deploy-pages.yml` runs the shared Chromium checks, then
+`npm run check` on Node.js 24 before deploying each push to `main`. It also
+supports manual runs from the **Actions** tab. Browser dependencies and reports
+stay in a separate job and are not included in the Pages upload.
 
 The workflow uses these Pages actions:
 
@@ -30,13 +31,20 @@ The workflow uses these Pages actions:
 
 ## Pull Request Verification
 
-`.github/workflows/verify-pr.yml` runs `npm run check` on Node.js 24 for pull
-requests targeting `main`, including documentation-only changes. Opening,
-reopening, or pushing commits to a pull request starts verification.
+`.github/workflows/verify-pr.yml` runs `npm run check` and the shared Chromium
+workflow on Node.js 24 for pull requests targeting `main`, including
+documentation-only changes. Opening, reopening, or pushing commits to a pull
+request starts verification.
 
 The workflow has read-only repository access. New commits cancel an older run
-for the same pull request. Results appear as **Verify pull requests / Check app**
-in the pull request checks.
+for the same pull request. Results appear under **Verify pull requests** as
+**Check app** and **Check browser workflows** in the pull request checks.
+
+Both callers use `.github/workflows/browser-checks.yml`, which runs the complete
+browser suite at the root and Pages paths. Download the `playwright-report`
+artifact from the Actions run to inspect its HTML report and any failure traces.
+Reports are retained for 14 days. See [Testing](testing.md#browser-regression-tests)
+for local commands and covered workflows.
 
 ## Before Deployment
 
