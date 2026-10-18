@@ -1,4 +1,4 @@
-const CACHE_NAME = "oshimochi-v144";
+const CACHE_NAME = "oshimochi-v147";
 
 const ASSET_GROUPS = {
   app: [
@@ -111,6 +111,9 @@ const ASSET_GROUPS = {
   ],
   views: [
     "./src/views/administration/administration-view.js",
+    "./src/views/administration/backup-channels.js",
+    "./src/views/administration/backup-progress.js",
+    "./src/views/administration/backup-restore-views.js",
     "./src/views/administration/data-portability.js",
     "./src/views/administration/field-change-review.js",
     "./src/views/administration/field-change-set.js",

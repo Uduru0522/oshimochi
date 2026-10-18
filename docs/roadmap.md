@@ -5,21 +5,11 @@ dates. See [Workflows](workflows.md) for implemented behavior.
 
 ## Recommended Next Steps
 
-### 1. Verify Browser Regression CI
+### 1. Refactor Backup Administration
 
-- Confirm the first pull-request run passes the new browser workflow. Pages
-  deployment uses the same checks before publishing. See
-  [Testing](testing.md#browser-regression-tests) for current browser coverage.
-- Keep responsive, motion, offline-update, and real Google checks manual where
-  automation would be brittle or require personal credentials.
+- Finish local review and verify the refactor pull request in CI.
 
-### 2. Refactor Backup Administration
-
-- Extract provider setup and controls, progress UI, and snapshot selection and
-  restore review from the shared coordinator.
-- Keep behavior unchanged and use browser regressions to verify each extraction.
-
-### 3. Refine Oshimochi Branding
+### 2. Refine Oshimochi Branding
 
 - Use `オシもち！` as the visible wordmark in every UI language.
 - Remove the visible `Goods manager` subtitle from the sidebar/header branding.
@@ -35,7 +25,7 @@ dates. See [Workflows](workflows.md) for implemented behavior.
 
 Start this feature after the backup administration refactor.
 
-### 4. Dashboard
+### 3. Dashboard
 
 - Agree on useful collection summaries and shortcuts.
 - Define the empty-catalog, loading, and failure states.
@@ -43,7 +33,7 @@ Start this feature after the backup administration refactor.
 
 Discuss the content and scope before implementation.
 
-### 5. Define Automatic Backup Policy
+### 4. Define Automatic Backup Policy
 
 - Decide which successful mutations request a backup and how requests combine.
 - Define disconnected, offline, retry, and failure behavior.
