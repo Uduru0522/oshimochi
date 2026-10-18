@@ -15,7 +15,6 @@ export function getAppElements() {
 
   return {
     appShell: queryRequiredElement(selectors.appShell),
-    brandSubtitle: queryRequiredElement(selectors.brandSubtitle),
     primaryNavList: queryRequiredElement(selectors.primaryNavList),
     projectExternalIcon: queryRequiredElement(selectors.projectExternalIcon),
     projectRepositoryIcon: queryRequiredElement(selectors.projectRepositoryIcon),

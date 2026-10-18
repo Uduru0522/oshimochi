@@ -20,6 +20,5 @@ export function applyAppLanguage(elements) {
   elements.utilityMenuToggle.setAttribute("title", moreLabel);
   elements.projectRepositoryLink.setAttribute("aria-label", projectLinkLabel);
   elements.projectRepositoryLink.setAttribute("title", projectLinkLabel);
-  elements.brandSubtitle.textContent = translate("Goods manager");
   delete document.documentElement.dataset.languagePending;
 }

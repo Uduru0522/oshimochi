@@ -1,4 +1,4 @@
-const CACHE_NAME = "oshimochi-v147";
+const CACHE_NAME = "oshimochi-v151";
 
 const ASSET_GROUPS = {
   app: [
@@ -71,7 +71,8 @@ const ASSET_GROUPS = {
   ],
   install: [
     "./manifest.webmanifest",
-    "./icons/oshimochi-themeable.svg"
+    "./icons/oshimochi-themeable.svg",
+    "./icons/oshimochi-wordmark.svg"
   ],
   navigation: [
     "./src/navigation/navigation.js",
