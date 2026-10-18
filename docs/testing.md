@@ -1,7 +1,8 @@
 # Testing
 
 Automated tests cover domain, application, repository, adapter, and pure view
-behavior. Browser layout and full interaction flows are checked manually.
+behavior. Playwright checks browser startup and mode isolation. Layout and
+workflows outside that coverage still need manual verification.
 
 ## Commands
 
@@ -9,7 +10,8 @@ behavior. Browser layout and full interaction flows are checked manually.
 | --- | --- |
 | `npm test` | Run the full dependency-free `node:test` suite |
 | `npm run test:coverage:data` | Enforce data-layer coverage thresholds |
-| `npm run check` | Run static checks, test hygiene, and all tests |
+| `npm run check` | Run static checks, Node test hygiene, and all Node tests |
+| `npm run test:browser` | Run the Chromium browser regression suite |
 
 GitHub Actions runs the full check for pull requests targeting `main` and during
 Pages deployment. See [Deployment](deployment.md#pull-request-verification) for
@@ -22,6 +24,35 @@ The data coverage guard requires:
 - 85% function coverage
 
 This result covers `src/data/`, not the whole browser app.
+
+## Browser Regression Tests
+
+Install development dependencies and Chromium once:
+
+```powershell
+npm ci
+npx playwright install chromium
+```
+
+If PowerShell blocks script shims, use `npm.cmd` and `npx.cmd`.
+
+Run `npm run test:browser`. Playwright starts and stops its own root-path and
+Pages-path servers at `127.0.0.1:4187` and `127.0.0.1:4188`. Both must be free;
+an existing server is never reused. No running manual preview is needed.
+
+Each test uses a fresh browser context with disposable IndexedDB and settings.
+The initial checks cover empty user startup, rendered debug fixtures, and debug
+isolation from the user database under both paths. Browser errors fail the test.
+The suite does not connect to a normal browser profile or Google Drive.
+
+Tests live in `e2e/*.spec.js`, outside Node's test discovery. Playwright is a
+development dependency; running the app and `npm run check` still need no
+installed packages. Browser tests run separately from `npm run check`.
+
+Use `npm run test:browser -- --headed` to watch the browser, or add `--ui` for
+interactive debugging. Reports are written to `playwright-report/`; failed
+tests retain traces and screenshots in `test-results/`. Open the report with
+`npx playwright show-report`. Generated reports and dependencies are ignored.
 
 ## Static Checks
 
@@ -68,6 +99,7 @@ Test paths mirror production ownership:
 | `test/shared/` | Product-neutral utilities |
 | `test/views/` | Pure presentation logic and focused DOM contracts |
 | `test-support/` | Reusable fakes outside test discovery |
+| `e2e/` | Real-browser regression tests and Playwright fixtures |
 
 A test belongs to the module whose public behavior it checks. Adapter contract
 tests may cross repositories because they verify an integrated boundary.
@@ -103,8 +135,9 @@ A regression test must fail before its fix and name the broken behavior.
 | View | Pure selectors, display models, and focused DOM behavior |
 | Manual browser | Layout, motion, dialogs, service worker, and real IndexedDB |
 
-Node coverage is not end-to-end browser coverage. The project has no automated
-browser suite, so responsive and pointer behavior still needs manual checks.
+Node coverage is separate from browser regression coverage. Responsive layout,
+pointer interactions, offline updates, and real Google flows still need manual
+checks.
 
 ## Backup Coverage
 

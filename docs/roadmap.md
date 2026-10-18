@@ -5,7 +5,22 @@ dates. See [Workflows](workflows.md) for implemented behavior.
 
 ## Recommended Next Steps
 
-### 1. Dashboard
+### 1. Expand Browser Regression Coverage
+
+- Add collection and item workflows with image handling and persistence after reload.
+- Cover editing, deletion, recovery, and local backup and restore.
+- Run the suite in CI. Startup and mode isolation are covered by the
+  [initial harness](testing.md#browser-regression-tests).
+- Keep responsive, motion, offline-update, and real Google checks manual where
+  automation would be brittle or require personal credentials.
+
+### 2. Refactor Backup Administration
+
+- Extract provider setup and controls, progress UI, and snapshot selection and
+  restore review from the shared coordinator.
+- Keep behavior unchanged and use browser regressions to verify each extraction.
+
+### 3. Dashboard
 
 - Agree on useful collection summaries and shortcuts.
 - Define the empty-catalog, loading, and failure states.
@@ -13,20 +28,13 @@ dates. See [Workflows](workflows.md) for implemented behavior.
 
 Discuss the content and scope before implementation.
 
-### 2. Define Automatic Backup Policy
+### 4. Define Automatic Backup Policy
 
 - Decide which successful mutations request a backup and how requests combine.
 - Define disconnected, offline, retry, and failure behavior.
 - Define visible last-success and pending status without blocking normal work.
 - Add reminders before destructive operations where a fresh backup matters.
 - Implement automatic backup only after these rules are agreed.
-
-### 3. Add Browser Regression Coverage
-
-- Choose a small end-to-end browser harness.
-- Cover startup, IndexedDB persistence, one item workflow, and local restore.
-- Keep responsive, motion, service-worker, and real Google checks manual where
-  automation would be brittle or require personal credentials.
 
 ## Outstanding Drive Verification
 

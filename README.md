@@ -45,8 +45,8 @@ If PowerShell blocks `npm.ps1`, use `npm.cmd` in place of `npm`.
 npm run check
 ```
 
-This runs static verification, test hygiene checks, and all tests. See
-[Testing](docs/testing.md) for coverage commands and manual browser checks.
+This runs static verification, test hygiene checks, and all Node tests. See
+[Testing](docs/testing.md) for browser tests, coverage commands, and manual checks.
 
 ## Documentation
 
