@@ -49,16 +49,18 @@ suite does not connect to a normal browser profile or Google Drive.
 | --- | --- |
 | Startup | Empty user catalog, rendered debug items, no user database creation in debug mode |
 | Collections | Confirmed metadata survives reload; cancelled reviews write nothing; debug collection edits reset and preserve an existing user catalog |
+| Custom fields | Unapplied changes are discarded and built-in fields stay protected; all seven custom types round-trip, including zero, false, dates, and normalized URLs; missing required values and HTTP URLs prevent review |
 | Item entry | Required name and image, unsaved review drafts, portrait and landscape crop output, saved image dimensions and pixel content after reload |
 | Item editing | Name changes retain identity and image bytes; replacement removes the old asset; closing review leaves stored data unchanged |
 | Item lifecycle | Cancelled deletion and purge preserve storage; deleted items survive reload and restore with the same identity and image; purge removes only its target item and asset |
+| Queries | Phrase and exclusion search, cancelled filter drafts, choice rules combined with search, clearing empty results, and numeric sorting across card/list changes |
 
 Tests make changes through normal UI controls. Image inputs use small generated
 PNGs and run through the app's crop and JPEG processing. Read-only IndexedDB
 checks compare item identity, asset metadata, and image-byte hashes to verify
 that edits, recovery, and purge change only the intended data.
 
-Custom-field entry, queries, backup and restore, and CI integration remain in the
+Backup/restore workflows and CI integration remain in the
 [Roadmap](roadmap.md#1-expand-browser-regression-coverage).
 
 Tests live in `e2e/*.spec.js`, outside Node's test discovery. Playwright is a

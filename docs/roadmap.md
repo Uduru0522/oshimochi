@@ -7,7 +7,6 @@ dates. See [Workflows](workflows.md) for implemented behavior.
 
 ### 1. Expand Browser Regression Coverage
 
-- Cover custom-field entry, filtering, sorting, and presentation changes.
 - Cover local backup and restore, including cancellation and invalid-file
   rejection without data loss.
 - Run the suite in CI. See [Testing](testing.md#browser-regression-tests) for
