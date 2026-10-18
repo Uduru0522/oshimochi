@@ -19,4 +19,12 @@ async function createItem(page, name, { collection = "Test collection" } = {}) {
   await expect(itemCard(page, name)).toBeVisible();
 }
 
-module.exports = { createItem, itemCard };
+async function softDeleteItem(page, name) {
+  await itemCard(page, name).getByRole("button", { name: `Delete ${name}`, exact: true }).click();
+  const dialog = page.getByRole("dialog", { name: "Delete item?", exact: true });
+  await dialog.getByRole("button", { name: "Delete item", exact: true }).click();
+  await expect(dialog).not.toBeVisible();
+  await expect(itemCard(page, name)).toHaveCount(0);
+}
+
+module.exports = { createItem, itemCard, softDeleteItem };

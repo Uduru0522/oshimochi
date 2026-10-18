@@ -51,13 +51,14 @@ suite does not connect to a normal browser profile or Google Drive.
 | Collections | Confirmed metadata survives reload; cancelled reviews write nothing; debug collection edits reset and preserve an existing user catalog |
 | Item entry | Required name and image, unsaved review drafts, portrait and landscape crop output, saved image dimensions and pixel content after reload |
 | Item editing | Name changes retain identity and image bytes; replacement removes the old asset; closing review leaves stored data unchanged |
+| Item lifecycle | Cancelled deletion and purge preserve storage; deleted items survive reload and restore with the same identity and image; purge removes only its target item and asset |
 
 Tests make changes through normal UI controls. Image inputs use small generated
 PNGs and run through the app's crop and JPEG processing. Read-only IndexedDB
 checks compare item identity, asset metadata, and image-byte hashes to verify
-that edits change only the intended data.
+that edits, recovery, and purge change only the intended data.
 
-Lifecycle, custom-field entry, queries, backup and restore, and CI integration remain in the
+Custom-field entry, queries, backup and restore, and CI integration remain in the
 [Roadmap](roadmap.md#1-expand-browser-regression-coverage).
 
 Tests live in `e2e/*.spec.js`, outside Node's test discovery. Playwright is a
@@ -182,7 +183,8 @@ Deleted-item behavior is checked at several boundaries:
 | Adapter | Matching DebugStorage and IndexedDB behavior |
 | Application | Scope selection, restore rules, and purge calls |
 | Shared UI | Dialog timing, cancellation, blocking, and reduced motion |
-| Manual browser | Empty states, failures, confirmation, motion, and reload |
+| Browser | Cancellation, confirmation, reload, identity and image retention, and targeted purge |
+| Manual browser | Layout, failure feedback, and motion |
 
 Repository failure tests assert that active items, deleted items, and assets stay
 unchanged after an aborted operation.
