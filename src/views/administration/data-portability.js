@@ -4,6 +4,10 @@ import { createContentTransition } from "../../shared/content-transition.js";
 import { createElement } from "../../shared/dom.js";
 import { createIcon } from "../../shared/icons.js";
 import { createMetaList } from "../../shared/ui-components.js";
+import {
+  createBlockingProgress,
+  createProgressStatus
+} from "./backup-progress.js";
 
 function formatDateTime(value) {
   const date = new Date(value);
@@ -52,77 +56,6 @@ function getGooglePickerLocale() {
   const language = document.documentElement.lang;
 
   return language === "zh-Hant" ? "zh-TW" : language;
-}
-
-function createProgressStatus(message) {
-  const status = createElement("div", { className: "creation-status" });
-
-  status.append(
-    createElement("progress", { className: "creation-progress" }),
-    createElement("span", { textContent: message })
-  );
-  return status;
-}
-
-function createBlockingProgress() {
-  const dialog = createElement("dialog", {
-    attributes: {
-      "aria-label": translate("Backup operation in progress"),
-      tabindex: "-1"
-    },
-    className: "backup-progress-dialog"
-  });
-  const message = createElement("strong", {
-    className: "backup-progress-message"
-  });
-  const content = createElement("div", {
-    attributes: {
-      "aria-live": "polite",
-      role: "status"
-    },
-    className: "backup-progress-content"
-  });
-
-  content.append(
-    createElement("span", {
-      attributes: { "aria-hidden": "true" },
-      className: "backup-progress-spinner"
-    }),
-    message
-  );
-  dialog.append(content);
-  dialog.addEventListener("cancel", (event) => event.preventDefault());
-
-  function update(value) {
-    message.textContent = value;
-  }
-
-  function close() {
-    if (dialog.open) {
-      dialog.close();
-    }
-  }
-
-  return {
-    close,
-    destroy() {
-      close();
-      dialog.remove();
-    },
-    open(value) {
-      update(value);
-
-      if (!dialog.isConnected) {
-        document.body.append(dialog);
-      }
-
-      if (!dialog.open) {
-        dialog.showModal();
-        dialog.focus();
-      }
-    },
-    update
-  };
 }
 
 function createFeedback(message, { isError = false } = {}) {

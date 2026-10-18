@@ -84,6 +84,10 @@ The view layer is split by product area:
   recovery
 - **Options:** theme, accent color, and interface language preferences
 
+Backup administration keeps operation state and subscriptions in
+`data-portability.js`. Its inline status indicator and blocking progress dialog
+live in `backup-progress.js`, which also owns dialog cleanup.
+
 The item area has smaller ownership groups:
 
 | Group | Main modules |
