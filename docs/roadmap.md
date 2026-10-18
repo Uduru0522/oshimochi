@@ -5,22 +5,62 @@ dates. See [Workflows](workflows.md) for implemented behavior.
 
 ## Recommended Next Steps
 
-### 1. Refine Oshimochi Branding
+### 1. Dashboard
 
-- Local review of the selected `オシもち。` wordmark is complete. Finish the
-  feature pull request and CI review, then wait for owner approval to merge.
-- Keep normal UI/body fonts, the existing mascot/icon, core functionality,
-  storage keys, and snapshot identities unchanged.
+Replace the placeholder with a fixed overview panel and user-defined summary
+cards. Per-card filters are part of the agreed scope.
 
-### 2. Dashboard
+#### Overview And Cards
 
-- Agree on useful collection summaries and shortcuts.
-- Define the empty-catalog, loading, and failure states.
-- Replace the current placeholder using storage-neutral application queries.
+- Show collection, active-item, and deleted-item counts in the overview.
+- Allow adding, editing, removing, and reordering named cards.
+- Support count, sum, average, minimum, and maximum calculations over selected
+  collections. Numeric calculations choose one numeric field per collection;
+  field names may differ between collections.
+- Offer number and currency formatting. Currency formatting does not convert
+  values; sources must use the same unit.
+- Provide a result preview while configuring a card, with drafts kept separate
+  from saved settings.
 
-Discuss the content and scope before implementation.
+#### Filtering And Calculation Rules
 
-### 3. Define Automatic Backup Policy
+- Configure filters within each selected collection, reusing the item browser's
+  text, number, date, two-option, and selection rules. Match every field rule;
+  selected choices within one rule are alternatives.
+- Combine the matching items from the selected collections before calculating.
+  An average uses all matching numeric values, not an average of collection
+  averages.
+- Support date ranges and a relative "this year" preset for purchase-date
+  fields. Resolve relative dates when reading the dashboard.
+- Default to active items, with a per-card option to include deleted items.
+- Exclude missing numeric values, retain zero, and show how many matching items
+  contribute a value. A count may be zero; numeric calculations without values
+  show an empty result instead of implying a measured zero.
+- Store collection, field, and choice references by stable IDs. Renaming labels
+  must preserve the card. An unavailable source or field must show a repair
+  state rather than silently dropping a condition or displaying a partial total.
+- Explain unavailable references using the affected collection, field, or choice
+  names and a specific action, such as choosing a replacement field or removing
+  a collection from the card. Keep enough label context to identify a reference
+  after it becomes unavailable; avoid a generic "Card needs repair" message.
+
+#### Persistence And Verification
+
+- Save card definitions and ordering with the catalog and include them in local
+  and Drive backups. Restore must replace matching card configuration along
+  with its collections and fields.
+- Define the catalog and snapshot version changes before implementing storage.
+  Preserve import of released backups without cards as an empty card list.
+- Keep user and debug card storage isolated. Use storage-neutral application
+  queries and avoid loading image blobs for dashboard calculations.
+- Cover empty catalogs, no cards, no matching values, loading, read failures,
+  and unavailable card references in all interface languages and layouts.
+- Build small reviewable slices: calculation rules and regression tests; card
+  persistence and backup round trips; dashboard and card editor; browser checks
+  and documentation. Follow the local review and commit rules in
+  [AGENTS.md](../AGENTS.md#local-review-before-commits).
+
+### 2. Define Automatic Backup Policy
 
 - Decide which successful mutations request a backup and how requests combine.
 - Define disconnected, offline, retry, and failure behavior.
