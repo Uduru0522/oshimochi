@@ -14,9 +14,9 @@ verification.
 | `npm run check` | Run static checks, Node test hygiene, and all Node tests |
 | `npm run test:browser` | Run the Chromium browser regression suite |
 
-GitHub Actions runs the full check for pull requests targeting `main` and during
-Pages deployment. See [Deployment](deployment.md#pull-request-verification) for
-the pull-request workflow.
+GitHub Actions runs repository checks and Chromium regressions for pull requests
+targeting `main` and before Pages deployment. See
+[Deployment](deployment.md#pull-request-verification) for the workflows.
 
 The data coverage guard requires:
 
@@ -42,8 +42,10 @@ Pages-path servers at `127.0.0.1:4187` and `127.0.0.1:4188`. Both must be free;
 an existing server is never reused. No running manual preview is needed.
 
 Each test uses a fresh browser context with disposable IndexedDB and settings.
-Every scenario runs under both URL paths. Browser errors fail the test. The
-suite does not connect to a normal browser profile or Google Drive.
+Every scenario runs under both URL paths. Uncaught errors and unexpected console
+errors fail the test. Rejection tests declare the exact number and pattern of
+expected error messages. The suite does not connect to a normal browser profile
+or Google Drive.
 
 | Area | Browser checks |
 | --- | --- |
@@ -54,14 +56,18 @@ suite does not connect to a normal browser profile or Google Drive.
 | Item editing | Name changes retain identity and image bytes; replacement removes the old asset; closing review leaves stored data unchanged |
 | Item lifecycle | Cancelled deletion and purge preserve storage; deleted items survive reload and restore with the same identity and image; purge removes only its target item and asset |
 | Queries | Phrase and exclusion search, cancelled filter drafts, choice rules combined with search, clearing empty results, and numeric sorting across card/list changes |
+| Local backups | Downloaded gzip contents and image bytes; confirmed replacement including fields and deleted items; cancelled review; rejection of uncompressed, damaged, unsupported-version, and missing-image backups without data loss; debug restore isolation and reset |
 
 Tests make changes through normal UI controls. Image inputs use small generated
 PNGs and run through the app's crop and JPEG processing. Read-only IndexedDB
 checks compare item identity, asset metadata, and image-byte hashes to verify
 that edits, recovery, and purge change only the intended data.
 
-Backup/restore workflows and CI integration remain in the
-[Roadmap](roadmap.md#1-expand-browser-regression-coverage).
+The shared [browser workflow](../.github/workflows/browser-checks.yml) installs
+the locked dependencies and Chromium with its system libraries. It runs both
+paths with one worker and a ten-minute suite limit. The HTML report, including
+failure traces and screenshots, is retained for 14 days in the workflow's
+`playwright-report` artifact. See [Deployment](deployment.md) for its callers.
 
 Tests live in `e2e/*.spec.js`, outside Node's test discovery. Playwright is a
 development dependency; running the app and `npm run check` still need no
@@ -160,7 +166,7 @@ checks.
 
 ## Backup Coverage
 
-Backup behavior is checked at five boundaries:
+Backup behavior is checked at six boundaries:
 
 | Boundary | Covered behavior |
 | --- | --- |
@@ -169,10 +175,10 @@ Backup behavior is checked at five boundaries:
 | Repository | Coherent reads and atomic full replacement |
 | Application | Read-only export, validation before write, and retry behavior |
 | Services | Gzip archives, provider state, Google loading, folder selection, Drive transfer, and retention |
+| Browser | Downloaded archive contents, file selection, confirmed replacement and navigation, cancellation, invalid-file rejection, reload persistence, and debug isolation |
 
-Browser download, file selection, review layout, post-restore navigation, and a
-real Google consent, Picker selection, and Drive round trip still require manual
-checks.
+Review layout, progress presentation, real Google consent, Picker selection, and
+a Drive round trip still require manual checks.
 
 ## Lifecycle Coverage
 

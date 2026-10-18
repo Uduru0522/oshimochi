@@ -5,12 +5,11 @@ dates. See [Workflows](workflows.md) for implemented behavior.
 
 ## Recommended Next Steps
 
-### 1. Expand Browser Regression Coverage
+### 1. Verify Browser Regression CI
 
-- Cover local backup and restore, including cancellation and invalid-file
-  rejection without data loss.
-- Run the suite in CI. See [Testing](testing.md#browser-regression-tests) for
-  current browser coverage.
+- Confirm the first pull-request run passes the new browser workflow. Pages
+  deployment uses the same checks before publishing. See
+  [Testing](testing.md#browser-regression-tests) for current browser coverage.
 - Keep responsive, motion, offline-update, and real Google checks manual where
   automation would be brittle or require personal credentials.
 
