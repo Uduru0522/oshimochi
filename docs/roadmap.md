@@ -7,8 +7,7 @@ dates. See [Workflows](workflows.md) for implemented behavior.
 
 ### 1. Refactor Backup Administration
 
-- Extract snapshot selection and restore review from the shared coordinator.
-- Keep behavior unchanged and use browser regressions to verify each extraction.
+- Finish local review and verify the refactor pull request in CI.
 
 ### 2. Refine Oshimochi Branding
 

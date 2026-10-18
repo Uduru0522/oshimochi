@@ -88,6 +88,9 @@ Backup administration keeps operation state and subscriptions in
 `data-portability.js`. Channel copy, provider setup controls, and connection
 status live in `backup-channels.js`. The inline status indicator and blocking
 progress dialog live in `backup-progress.js`, which also owns dialog cleanup.
+`backup-restore-views.js` builds snapshot selection, restore review, and the
+post-restore refresh error screen. Validation, mutation locking, retries, and
+refresh handling remain in the coordinator.
 
 The item area has smaller ownership groups:
 
