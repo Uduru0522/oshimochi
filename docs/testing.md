@@ -1,8 +1,8 @@
 # Testing
 
 Automated tests cover domain, application, repository, adapter, and pure view
-behavior. Playwright checks startup, collection creation, and item entry in a
-real browser. Layout and workflows outside that coverage still need manual
+behavior. Playwright checks startup and selected collection and item workflows
+in a real browser. Layout and workflows outside that coverage still need manual
 verification.
 
 ## Commands
@@ -50,10 +50,14 @@ suite does not connect to a normal browser profile or Google Drive.
 | Startup | Empty user catalog, rendered debug items, no user database creation in debug mode |
 | Collections | Confirmed metadata survives reload; cancelled reviews write nothing; debug collection edits reset and preserve an existing user catalog |
 | Item entry | Required name and image, unsaved review drafts, portrait and landscape crop output, saved image dimensions and pixel content after reload |
+| Item editing | Name changes retain identity and image bytes; replacement removes the old asset; closing review leaves stored data unchanged |
 
-Tests drive normal UI controls and the real browser database. Image inputs use
-small generated PNGs and run through the app's crop and JPEG processing. Item
-editing, lifecycle, queries, backup and restore, and CI integration remain in the
+Tests make changes through normal UI controls. Image inputs use small generated
+PNGs and run through the app's crop and JPEG processing. Read-only IndexedDB
+checks compare item identity, asset metadata, and image-byte hashes to verify
+that edits change only the intended data.
+
+Lifecycle, custom-field entry, queries, backup and restore, and CI integration remain in the
 [Roadmap](roadmap.md#1-expand-browser-regression-coverage).
 
 Tests live in `e2e/*.spec.js`, outside Node's test discovery. Playwright is a
@@ -144,7 +148,8 @@ A regression test must fail before its fix and name the broken behavior.
 | Repository | Validation, store choice, and transaction atomicity |
 | Adapter | Contract parity and lifecycle behavior |
 | View | Pure selectors, display models, and focused DOM behavior |
-| Manual browser | Layout, motion, dialogs, service worker, and real IndexedDB |
+| Browser | Startup, covered UI workflows, real IndexedDB, and image persistence |
+| Manual browser | Layout, motion, remaining workflows, Google dialogs, and service-worker updates |
 
 Node coverage is separate from browser regression coverage. Responsive layout,
 pointer interactions, offline updates, and real Google flows still need manual

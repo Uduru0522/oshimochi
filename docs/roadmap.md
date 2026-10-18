@@ -7,8 +7,8 @@ dates. See [Workflows](workflows.md) for implemented behavior.
 
 ### 1. Expand Browser Regression Coverage
 
-- Cover custom-field values, item editing and image replacement, filtering,
-  sorting, deletion, recovery, and permanent purge.
+- Cover custom-field entry, filtering, sorting, presentation changes, deletion,
+  recovery, and permanent purge.
 - Cover local backup and restore, including cancellation and invalid-file
   rejection without data loss.
 - Run the suite in CI. See [Testing](testing.md#browser-regression-tests) for

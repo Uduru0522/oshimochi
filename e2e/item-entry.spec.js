@@ -1,12 +1,7 @@
 const { test, expect } = require("./fixtures.js");
 const { createCollection } = require("./helpers/collections.js");
 const { chooseImage, readImage } = require("./helpers/images.js");
-
-function itemCard(page, name) {
-  return page.getByRole("list", { name: "Collection item cards" })
-    .getByRole("listitem")
-    .filter({ has: page.getByRole("heading", { name, exact: true }) });
-}
+const { itemCard } = require("./helpers/items.js");
 
 async function openEntry(page) {
   await page.goto("./");

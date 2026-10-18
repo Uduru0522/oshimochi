@@ -1,17 +1,17 @@
 const { expect } = require("../fixtures.js");
 
-async function chooseImage(page, dialog, orientation = "Portrait") {
-  const base64 = await page.evaluate(() => {
+async function chooseImage(page, dialog, orientation = "Portrait", colors = ["#c63d3d", "#305cb8"]) {
+  const base64 = await page.evaluate(([leftColor, rightColor]) => {
     const canvas = document.createElement("canvas");
     canvas.width = 200;
     canvas.height = 200;
     const context = canvas.getContext("2d");
-    context.fillStyle = "#c63d3d";
+    context.fillStyle = leftColor;
     context.fillRect(0, 0, 100, 200);
-    context.fillStyle = "#305cb8";
+    context.fillStyle = rightColor;
     context.fillRect(100, 0, 100, 200);
     return canvas.toDataURL("image/png").split(",")[1];
-  });
+  }, colors);
   const chooser = page.waitForEvent("filechooser");
   await dialog.getByRole("button", { name: /^(Choose|Replace) image$/ }).click();
   await (await chooser).setFiles({
