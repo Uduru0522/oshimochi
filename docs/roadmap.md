@@ -7,7 +7,7 @@ dates. See [Workflows](workflows.md) for implemented behavior.
 
 ### 1. Expand Browser Regression Coverage
 
-- Add collection and item workflows with image handling and persistence after reload.
+- Add item workflows with image handling and persistence after reload.
 - Cover editing, deletion, recovery, and local backup and restore.
 - Run the suite in CI. Startup and mode isolation are covered by the
   [initial harness](testing.md#browser-regression-tests).

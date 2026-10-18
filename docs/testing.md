@@ -1,8 +1,8 @@
 # Testing
 
 Automated tests cover domain, application, repository, adapter, and pure view
-behavior. Playwright checks browser startup and mode isolation. Layout and
-workflows outside that coverage still need manual verification.
+behavior. Playwright checks startup and collection creation in a real browser.
+Layout and workflows outside that coverage still need manual verification.
 
 ## Commands
 
@@ -41,9 +41,17 @@ Pages-path servers at `127.0.0.1:4187` and `127.0.0.1:4188`. Both must be free;
 an existing server is never reused. No running manual preview is needed.
 
 Each test uses a fresh browser context with disposable IndexedDB and settings.
-The initial checks cover empty user startup, rendered debug fixtures, and debug
-isolation from the user database under both paths. Browser errors fail the test.
-The suite does not connect to a normal browser profile or Google Drive.
+Every scenario runs under both URL paths. Browser errors fail the test. The
+suite does not connect to a normal browser profile or Google Drive.
+
+| Area | Browser checks |
+| --- | --- |
+| Startup | Empty user catalog, rendered debug items, no user database creation in debug mode |
+| Collections | Confirmed metadata survives reload; cancelled reviews write nothing; debug collection edits reset and preserve an existing user catalog |
+
+Tests drive normal UI controls and the real browser database. Item entry,
+editing, lifecycle, queries, backup and restore, and CI integration remain in the
+[Roadmap](roadmap.md#1-expand-browser-regression-coverage).
 
 Tests live in `e2e/*.spec.js`, outside Node's test discovery. Playwright is a
 development dependency; running the app and `npm run check` still need no
