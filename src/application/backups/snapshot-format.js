@@ -11,7 +11,7 @@ import {
 } from "./base64.js";
 
 export const SNAPSHOT_APPLICATION = "oshimochi";
-export const SNAPSHOT_FORMAT_VERSION = 1;
+export const SNAPSHOT_FORMAT_VERSION = 2;
 export const SNAPSHOT_MIME_TYPE = "application/json";
 
 function defaultIdGenerator() {
@@ -82,13 +82,19 @@ function requireVersion(value, expected, fieldName) {
   return value;
 }
 
-function requireSnapshotData(value) {
+function requireSnapshotData(value, legacy) {
   const data = requireRecord(value, "Snapshot data");
 
   for (const key of ["goodsTypes", "fieldDefinitions", "items", "assets"]) {
     if (!Array.isArray(data[key])) {
       throw new TypeError(`Snapshot ${key} must be an array.`);
     }
+  }
+  if (legacy && data.dashboardCards !== undefined) {
+    throw new TypeError("Version-1 snapshots cannot contain dashboard cards.");
+  }
+  if (!legacy && !Array.isArray(data.dashboardCards)) {
+    throw new TypeError("Snapshot dashboardCards must be an array.");
   }
 
   return data;
@@ -127,6 +133,7 @@ export async function createPortableSnapshot(
       goodsTypes: sortRecords(catalog.goodsTypes),
       fieldDefinitions: sortRecords(catalog.fieldDefinitions),
       items: sortRecords(catalog.items),
+      dashboardCards: sortRecords(catalog.dashboardCards),
       assets
     }
   });
@@ -139,14 +146,15 @@ export async function parsePortableSnapshot(value) {
     throw new TypeError("This file is not an Oshimochi snapshot.");
   }
 
+  const legacy = input.exportFormatVersion === 1 && input.domainModelVersion === 1;
   requireVersion(
     input.exportFormatVersion,
-    SNAPSHOT_FORMAT_VERSION,
+    legacy ? 1 : SNAPSHOT_FORMAT_VERSION,
     "snapshot format version"
   );
   requireVersion(
     input.domainModelVersion,
-    DOMAIN_MODEL_VERSION,
+    legacy ? 1 : DOMAIN_MODEL_VERSION,
     "domain model version"
   );
 
@@ -155,11 +163,12 @@ export async function parsePortableSnapshot(value) {
     canonical: true
   });
   const createdAt = requireTimestamp(input.createdAt, "createdAt");
-  const data = requireSnapshotData(input.data);
+  const data = requireSnapshotData(input.data, legacy);
   const decodedAssets = await Promise.all(data.assets.map(decodeAsset));
   const catalog = parseDataCatalog({
     assets: decodedAssets.map(({ domain }) => domain),
     fieldDefinitions: data.fieldDefinitions,
+    dashboardCards: legacy ? [] : data.dashboardCards,
     goodsTypes: data.goodsTypes,
     items: data.items
   });
@@ -170,12 +179,15 @@ export async function parsePortableSnapshot(value) {
       goodsTypes: sortRecords(catalog.goodsTypes),
       fieldDefinitions: sortRecords(catalog.fieldDefinitions),
       items: sortRecords(catalog.items),
+      ...(!legacy ? { dashboardCards: sortRecords(catalog.dashboardCards) } : {}),
       assets: decodedAssets
         .map(({ portable }) => portable)
         .sort(compareIds)
     }
   });
 
+  snapshot.exportFormatVersion = input.exportFormatVersion;
+  snapshot.domainModelVersion = input.domainModelVersion;
   return { catalog, snapshot };
 }
 

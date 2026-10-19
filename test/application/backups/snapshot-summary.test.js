@@ -32,6 +32,7 @@ test("snapshot summary separates active, deleted, and binary totals", () => {
     application: "oshimochi",
     assetBytes: 25,
     counts: {
+      dashboardCards: { total: 0 },
       assets: { total: 2 },
       fieldDefinitions: { active: 1, deleted: 0, total: 1 },
       goodsTypes: { active: 1, deleted: 1, total: 2 },

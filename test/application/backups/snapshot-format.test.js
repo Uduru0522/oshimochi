@@ -27,7 +27,7 @@ test("portable snapshot uses the current identity and versions", async () => {
 
   assert.equal(snapshot.application, SNAPSHOT_APPLICATION);
   assert.equal(snapshot.exportFormatVersion, SNAPSHOT_FORMAT_VERSION);
-  assert.equal(snapshot.domainModelVersion, 1);
+  assert.equal(snapshot.domainModelVersion, 2);
   assert.equal(snapshot.snapshotId, SNAPSHOT_ID);
   assert.equal(snapshot.createdAt, CREATED_AT);
 });
@@ -107,7 +107,7 @@ test("portable snapshot rejects another application identity", async () => {
 
 test("portable snapshot rejects an unsupported format version", async () => {
   const snapshot = await createSnapshot();
-  snapshot.exportFormatVersion = 2;
+  snapshot.exportFormatVersion = 999;
 
   await assert.rejects(
     parsePortableSnapshot(snapshot),
