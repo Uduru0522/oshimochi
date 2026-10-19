@@ -4,6 +4,8 @@ import { renderAdministrationView } from "./administration/administration-view.j
 import { renderItemsView } from "./items/items-view.js";
 import { renderGoodsTypeOverview } from "./goods-types/goods-type-overview.js";
 import { renderOptionsView } from "./options/options-view.js";
+import { renderDashboardView } from "./dashboard/dashboard-view.js";
+import { VIEW_IDS } from "./view-metadata.js";
 
 export function renderPlaceholderView(view) {
   const article = createElement("article", { className: "placeholder" });
@@ -30,6 +32,12 @@ export function createViewRenderer({
   themeController
 }) {
   const renderers = {
+    [RENDERERS.dashboard]: () => renderDashboardView({
+      operations: operations.dashboard,
+      getAsset: operations.items.getAsset,
+      mutationController,
+      onCreateCollection: () => onNavigate(VIEW_IDS.administration)
+    }),
     [RENDERERS.administration]: () => renderAdministrationView({
       backupFileService,
       backupOperations: operations.backups,

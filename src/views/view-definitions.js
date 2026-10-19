@@ -44,20 +44,14 @@ export function createViewDefinitions(goodsTypes) {
   return [
     {
       id: VIEW_IDS.dashboard,
-      label: translate("Dashboard"),
+      label: translate("My collection"),
       icon: "dashboard",
       section: translate("Overview"),
-      title: translate("Dashboard"),
-      renderer: RENDERERS.placeholder,
+      title: translate("My collection"),
+      renderer: RENDERERS.dashboard,
       nav: {
         group: NAV_GROUPS.primary,
         kind: NAV_KINDS.view
-      },
-      content: {
-        heading: translate("Start by creating a goods type."),
-        description: translate(
-          "User mode will show collection summaries after goods types exist. Go to Administration to define your first type, or open Debug mode to preview the planned goods-type navigation with temporary sample data."
-        )
       }
     },
     ...createGoodsTypeViews(goodsTypes),
