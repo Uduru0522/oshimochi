@@ -501,13 +501,14 @@
 
 .dashboard-view .value-number {
   display: inline-block;
+  flex: 0 0 auto;
   max-width: 100%;
   font-size: 34px;
   font-weight: 850;
   line-height: 1.15;
   letter-spacing: -.04em;
   text-align: center;
-  overflow-wrap: anywhere;
+  white-space: nowrap;
 }
 
 .dashboard-view .value-number.long { font-size: 22px; }

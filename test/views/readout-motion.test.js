@@ -97,3 +97,15 @@ test('cleanup from a replaced reveal cannot finish or overwrite its successor', 
     assert.equal(frames.size, 0); assert.equal(listeners.size, 0);
   });
 });
+
+test('counting leaves externally owned number sizing intact', () => {
+  motionHarness(({ options, numberElement, visible, frame }) => {
+    numberElement.style.minWidth = '24px';
+    const stop = playReadoutMotion({ ...options, reserveWidth: false });
+    visible(); frame(0); frame(16);
+    assert.equal(numberElement.style.minWidth, '24px');
+    numberElement.style.minWidth = '80px';
+    stop();
+    assert.equal(numberElement.style.minWidth, '80px');
+  });
+});

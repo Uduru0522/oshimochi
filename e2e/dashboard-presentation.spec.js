@@ -220,7 +220,11 @@ test('animated values keep the final decimal precision and unit position while s
       await storage.replaceDataCatalog(catalog);
     } finally { storage.close(); }
   });
-  await page.reload(); await addSpending(page, 'Decimal spending');
+  await page.reload();
+  // Emulate a wider system font, including on machines where the default font
+  // happens to fit. The whole number must stay on one line throughout counting.
+  await page.addStyleTag({ content: '.summary-card[aria-label="Decimal spending"] .value-number { font-family: monospace; font-size: 40px; }' });
+  await addSpending(page, 'Decimal spending');
   await page.getByRole('radiogroup', { name: 'Unit', exact: true }).getByRole('radio', { name: 'NTD — Taiwan dollar', exact: true }).check();
   await saveSummary(page);
   await page.getByRole('button', { name: 'Figures', exact: true }).click(); await expect(page.locator('.dashboard-view')).toHaveCount(0);
@@ -233,12 +237,15 @@ test('animated values keep the final decimal precision and unit position while s
       if (!card) continue;
       const number = card.querySelector('.value-number'), unit = card.querySelector('.value-unit'), box = unit.getBoundingClientRect();
       samples.push({ text: number.textContent, running: card.querySelector('.card-readout').dataset.motion === 'running',
-        unitY: box.y - card.getBoundingClientRect().y });
+        unitY: box.y - card.getBoundingClientRect().y,
+        numberHeight: number.getBoundingClientRect().height, lineHeight: parseFloat(getComputedStyle(number).lineHeight),
+        fits: number.scrollWidth <= number.clientWidth + 1 });
     }
     return samples;
   });
   expect(samples.some(sample => sample.running)).toBe(true);
   expect(samples.every(sample => /^\d[\d,]*\.\d$/.test(sample.text))).toBe(true);
+  expect(samples.every(sample => Math.abs(sample.numberHeight - sample.lineHeight) < 1 && sample.fits)).toBe(true);
   expect(samples.at(-1).text).toBe('5,700.2');
   const running = samples.filter(sample => sample.running);
   expect(Math.max(...running.map(sample => sample.unitY)) - Math.min(...running.map(sample => sample.unitY))).toBeLessThan(4);

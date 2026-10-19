@@ -4,7 +4,7 @@ const active = new WeakMap();
 // Data visualization is deliberately slower than buttons, dialogs, and routing.
 export const DASHBOARD_REVEAL_MS = 600;
 
-export function playReadoutMotion({ element, numberElement, value, formatNumber, reveal = () => {}, enabled = true, integer = false, duration = MAX_UI_MOTION_MS }) {
+export function playReadoutMotion({ element, numberElement, value, formatNumber, reveal = () => {}, enabled = true, integer = false, reserveWidth = true, duration = MAX_UI_MOTION_MS }) {
   active.get(element)?.();
   const finalText = formatNumber(value);
   const query = globalThis.matchMedia?.('(prefers-reduced-motion: reduce)');
@@ -16,7 +16,7 @@ export function playReadoutMotion({ element, numberElement, value, formatNumber,
     cancelAnimationFrame(frame);
     observer?.disconnect();
     numberElement.textContent = finalText;
-    numberElement.style.minWidth = originalWidth;
+    if (reserveWidth) numberElement.style.minWidth = originalWidth;
     reveal(1);
     element.dataset.motion = 'done';
     query?.removeEventListener('change', onPreferenceChange);
@@ -26,7 +26,7 @@ export function playReadoutMotion({ element, numberElement, value, formatNumber,
   if (!enabled || prefersReducedMotion() || document.hidden || value === null || !Number.isFinite(value) || value === 0 || !element.isConnected) {
     finish(); return () => {};
   }
-  numberElement.style.minWidth = `${numberElement.getBoundingClientRect().width}px`;
+  if (reserveWidth) numberElement.style.minWidth = `${numberElement.getBoundingClientRect().width}px`;
   // IntersectionObserver runs after paint. Prepare the empty sweep now so a
   // newly mounted chart cannot flash its complete shape before the reveal.
   reveal(0);

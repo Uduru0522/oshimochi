@@ -1,4 +1,4 @@
-const CACHE_NAME = "oshimochi-v189";
+const CACHE_NAME = "oshimochi-v190";
 
 const ASSET_GROUPS = {
   app: [
@@ -141,6 +141,7 @@ const ASSET_GROUPS = {
     "./src/views/dashboard/dashboard-view.js",
     "./src/views/dashboard/readout-motion.js",
     "./src/views/dashboard/number-format.js",
+    "./src/views/dashboard/number-layout.js",
     "./src/views/dashboard/ring-interaction.js",
     "./src/views/dashboard/ring-shape.js",
     "./src/views/dashboard/recent-items.js",

@@ -2,6 +2,7 @@ import { DASHBOARD_REVEAL_MS, playReadoutMotion } from './readout-motion.js';
 import { createRingInteraction } from './ring-interaction.js';
 import { createRingRevealPath, createRingShapeMotion } from './ring-shape.js';
 import { createNumberFormatter } from './number-format.js';
+import { createNumberLayout } from './number-layout.js';
 import { translate as t } from '../../localization/translate.js';
 
 let sweepSequence = 0;
@@ -125,14 +126,16 @@ export function createReadout(card, result, { colorFor, animate = false, interac
     const plain = element('div', '', 'plain-result'); plain.append(display); wrapper.append(plain);
   }
   if (result.status === 'overflow') wrapper.append(element('p', t('Result too large to display'), 'composition-note'));
+  const numberLayout = createNumberLayout(display, numeric, finalText);
   return {
     element: wrapper,
     finishMotion() { stopMotion(); reveal(1); },
     play() {
+      numberLayout.refresh();
       stopMotion = playReadoutMotion({ element: wrapper, numberElement: numeric, value: result.value,
         formatNumber: value => value === null ? '—' : counterFormat.format(value), reveal, enabled: animate && !interaction?.isInteracting(),
-        duration: DASHBOARD_REVEAL_MS, integer: card.calculation === 'count' });
+        duration: DASHBOARD_REVEAL_MS, integer: card.calculation === 'count', reserveWidth: false });
     },
-    destroy() { interaction?.destroy(); shapes.forEach(shape => shape.destroy()); stopMotion(); }
+    destroy() { numberLayout.destroy(); interaction?.destroy(); shapes.forEach(shape => shape.destroy()); stopMotion(); }
   };
 }
