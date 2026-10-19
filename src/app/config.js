@@ -59,7 +59,7 @@ export const APP_CONFIG = {
       values: ["red", "orange", "yellow", "blue", "green", "pink", "purple"]
     },
     colors: {
-      dark: "#101417"
+      dark: "#171c1b"
     },
     dark: "dark",
     light: "light",

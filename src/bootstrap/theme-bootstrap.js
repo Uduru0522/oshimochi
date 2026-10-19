@@ -8,7 +8,7 @@
     red: "#c2354b",
     yellow: "#d3ad00"
   };
-  const DARK_THEME_COLOR = "#101417";
+  const DARK_THEME_COLOR = "#171c1b";
   const DEFAULT_ACCENT = "green";
 
   try {

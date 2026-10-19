@@ -4,6 +4,8 @@ import { createNavigation } from "../navigation/navigation.js";
 import { createViewDefinitions } from "../views/view-definitions.js";
 import { createViewRenderer } from "../views/view-renderer.js";
 import { createApplicationOperations } from "../application/create-application-operations.js";
+import { createOverlayScrollbar } from "../shared/overlay-scrollbar.js";
+import { translate } from "../localization/translate.js";
 
 export function mountAppRuntime({
   backupFileService,
@@ -58,9 +60,11 @@ export function mountAppRuntime({
     viewTitle: elements.viewTitle
   });
 
+  const scrollbar = createOverlayScrollbar(elements.viewPanel, { label: translate('Scroll content') });
   navigation.render();
   router.setActiveView(initialViewId);
   return () => {
+    scrollbar.destroy();
     navigation.destroy();
     router.destroy();
   };

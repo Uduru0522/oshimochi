@@ -6,8 +6,8 @@
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#eef1f4",
-  "theme_color": "#2f6f73",
+  "background_color": "#f3f0e8",
+  "theme_color": "#168078",
   "icons": [
     {
       "src": "icons/oshimochi-themeable.svg",

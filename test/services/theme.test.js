@@ -98,5 +98,5 @@ test("dark mode keeps dark browser chrome when the accent changes", () => {
   controller.initialize();
   controller.setAccent("yellow");
 
-  assert.equal(documentRef.getThemeColor(), "#101417");
+  assert.equal(documentRef.getThemeColor(), "#171c1b");
 });
