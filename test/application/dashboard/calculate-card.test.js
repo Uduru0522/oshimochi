@@ -169,6 +169,31 @@ test("dashboard broken references require repair and never expose partial totals
   }
 });
 
+test("dashboard unavailable references retain names and prefer current labels when available", () => {
+  const definition = card();
+  const source = definition.sources[0];
+  source.goodsTypeName = "Figures";
+  source.fieldName = "Purchase price";
+  source.filter = { rules: [{
+    fieldId: "figures-status", fieldName: "Status", values: ["wish"],
+    choiceLabels: [{ id: "wish", label: "Wish list" }]
+  }] };
+  const data = catalog();
+  data[0].goodsType.displayName = "Collectible figures";
+  data[0].fields.splice(0, 1);
+  data[0].fields.find(({ id }) => id === "figures-status").options.choices.pop();
+  const result = calculateDashboardCard(definition, data);
+  assert.equal(result.value, null);
+  assert.deepEqual(result.issues, [
+    { code: "field-unavailable", goodsTypeId: "figures", goodsTypeName: "Collectible figures",
+      fieldId: "figures-price", fieldName: "Purchase price" },
+    { code: "choice-unavailable", goodsTypeId: "figures", goodsTypeName: "Collectible figures",
+      fieldId: "figures-status", fieldName: "Status", choiceId: "wish", choiceName: "Wish list" }
+  ]);
+  data.shift();
+  assert.equal(calculateDashboardCard(definition, data).issues[0].goodsTypeName, "Figures");
+});
+
 test("dashboard duplicate sources and unsupported calculations are rejected", () => {
   assert.throws(() => calculateDashboardCard({ ...card(), sources: [] }, catalog()), /at least one/);
   const definition = card(); definition.sources.push({ ...definition.sources[0] });
