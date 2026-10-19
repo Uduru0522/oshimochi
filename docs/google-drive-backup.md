@@ -148,7 +148,7 @@ belong to the same project as the OAuth client and API key.
 ## 7. Connect Oshimochi
 
 1. Open Oshimochi.
-2. Open **More > Administration**.
+2. Open **Administration** from the sidebar, or **More** on a narrow screen.
 3. Find **Google Drive** under **Backup and restore**.
 4. Enter the **Google OAuth client ID**.
 5. Enter the **Google Picker API key**.
@@ -195,9 +195,9 @@ Use this sequence for a safe local test:
 4. Select `Oshimochi Test Backups`.
 5. Choose **Back up now**.
 6. Confirm that one `.json.gz` file appears in that Drive folder.
-7. Edit or delete one debug item.
+7. Edit or delete one debug item and change a summary card's name or order.
 8. Choose **Restore from cloud** and restore the snapshot.
-9. Confirm that the earlier sample catalog returns.
+9. Confirm that the earlier items, images, card configuration, and order return.
 10. Refresh the page.
 
 After step 10, debug fixtures return, the setup and folder remain, and the
