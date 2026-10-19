@@ -5,60 +5,18 @@ dates. See [Workflows](workflows.md) for implemented behavior.
 
 ## Recommended Next Steps
 
-### 1. Dashboard
+### 1. Prepare The My Collection Pull Request
 
-Replace the placeholder with a fixed overview panel and user-defined summary
-cards. Per-card filters are part of the agreed scope.
+My collection, the card editor, and Recent items are feature-complete on the
+feature branch. The owner has approved the final diff and local testing,
+including the refactor and embedded-browser scroll/focus fix. See
+[My collection workflows](workflows.md#my-collection) for the completed scope.
 
-#### Overview And Cards
-
-- Show collection, active-item, and deleted-item counts in the overview.
-- Allow adding, editing, removing, and reordering named cards.
-- Support count, sum, average, minimum, and maximum calculations over selected
-  collections. Numeric calculations choose one numeric field per collection;
-  field names may differ between collections.
-- Offer number and currency formatting. Currency formatting does not convert
-  values; sources must use the same unit.
-- Provide a result preview while configuring a card, with drafts kept separate
-  from saved settings.
-
-#### Filtering And Calculation Rules
-
-- Configure filters within each selected collection, reusing the item browser's
-  text, number, date, two-option, and selection rules. Match every field rule;
-  selected choices within one rule are alternatives.
-- Combine the matching items from the selected collections before calculating.
-  An average uses all matching numeric values, not an average of collection
-  averages.
-- Support date ranges and a relative "this year" preset for purchase-date
-  fields. Resolve relative dates when reading the dashboard.
-- Default to active items, with a per-card option to include deleted items.
-- Exclude missing numeric values, retain zero, and show how many matching items
-  contribute a value. A count may be zero; numeric calculations without values
-  show an empty result instead of implying a measured zero.
-- Store collection, field, and choice references by stable IDs. Renaming labels
-  must preserve the card. An unavailable source or field must show a repair
-  state rather than silently dropping a condition or displaying a partial total.
-- Explain unavailable references using the affected collection, field, or choice
-  names and a specific action, such as choosing a replacement field or removing
-  a collection from the card. Keep enough label context to identify a reference
-  after it becomes unavailable; avoid a generic "Card needs repair" message.
-
-#### Persistence And Verification
-
-- Save card definitions and ordering with the catalog and include them in local
-  and Drive backups. Restore must replace matching card configuration along
-  with its collections and fields.
-- Define the catalog and snapshot version changes before implementing storage.
-  Preserve import of released backups without cards as an empty card list.
-- Keep user and debug card storage isolated. Use storage-neutral application
-  queries and avoid loading image blobs for dashboard calculations.
-- Cover empty catalogs, no cards, no matching values, loading, read failures,
-  and unavailable card references in all interface languages and layouts.
-- Build small reviewable slices: calculation rules and regression tests; card
-  persistence and backup round trips; dashboard and card editor; browser checks
-  and documentation. Follow the local review and commit rules in
-  [AGENTS.md](../AGENTS.md#local-review-before-commits).
+The refactor addresses card packing and scroll stability, rendering and preview
+lifecycle ownership, and shared calculation work. Organize the approved changes
+into small, focused commits and prepare one feature pull request. Follow
+[AGENTS.md](../AGENTS.md#local-review-before-commits); merging still requires
+explicit owner approval.
 
 ### 2. Define Automatic Backup Policy
 
@@ -78,9 +36,25 @@ cards. Per-card filters are part of the agreed scope.
 
 ## Later Milestones
 
+### Wide Navigation Scroll Hints
+
+Add top and bottom fade hints to the wide category list, matching the narrow
+navigation's edge hint. Show each hint only while more categories remain in
+that direction.
+
+### Field Editing Confirmation
+
+Make pending field changes and the final confirmation action easier to notice.
+Clearly distinguish staged edits from saved changes so users know when they
+still need to confirm them.
+
 ### Collection Details
 
 Allow editing an existing collection's name and description.
+
+### Item Details In Collections
+
+Reuse the dashboard's read-only item detail dialog in the collection item browser.
 
 ### Backup Health
 

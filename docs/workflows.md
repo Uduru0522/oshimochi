@@ -24,6 +24,99 @@ unchanged.
 4. The app saves both choices and applies them at once.
 5. The next page load applies them before first paint.
 
+## My Collection
+
+**My collection** shows active collection and item counts, plus deleted-item counts
+within those collections. **Recent items** shows the five newest active items
+by creation time. Select an entry to view its image, collection, and fields.
+The detail window keeps a large image beside independently scrolling fields,
+or above them on phones. Missing images have a labeled placeholder. This
+read-only detail window is currently opened from Recent items.
+Editing an older item does not move it to the top. Its three-dot menu lets you
+move or hide the card. The plus tile can add it again.
+
+### Create A Summary Card
+
+1. Choose the plus tile and **Summary card**.
+2. Name the card and use the visible choices for count, total, average, lowest,
+   or highest value.
+3. Select collections. For numeric calculations, choose one number field in each
+   collection; field names may differ.
+4. Optionally open the filter button beside each collection's name. Search and
+   typed field rules use the item browser's conditions; date rules also offer
+   **This year**. **Include deleted items** applies to all selected collections.
+5. Choose no unit, yen (`¥`), dollars (`$`), NTD, or a custom unit. Only the custom
+   choice has an editable text box. Choose its position and display preference.
+6. Check the live preview, then save. Cancel discards the draft.
+
+Filters match every rule; selected choices within a rule are alternatives.
+Cards use active items unless **Include deleted items** is enabled. Missing
+numeric values are excluded, while zero counts as a value. An average combines
+individual values across collections. An empty numeric result shows `—`.
+
+Counts and sums can show a ring broken down by collection or a selection or
+two-option field. Category fields are chosen separately for each collection.
+Uncategorized values form their own segment. Automatic display uses a plain
+number when only one category contributes; Number only and Ring override it.
+Negative category totals use a numerical breakdown instead of misleading ring
+proportions. Units affect display only and never convert values. A unit that
+does not fit beside its number moves onto one line of its own, with an ellipsis
+if needed. Hovering it reveals the full unit text.
+
+Number-only cards are compact and use the readable accent color. Rings use
+shades of that accent around a neutral number, with no background track behind
+the segments. Cards pack independently into up to three compact columns on
+larger screens and follow saved order in one column on narrow screens. Each
+column change animates retained card positions and dimensions from their visible
+bounds, with a slight settling tilt, without scaling text or charts. Addition
+and removal also animate. The page title keeps a fixed size; its decorative image wraps above it
+when space is tight. These transitions respect reduced-motion preferences. Each
+600 ms count and ring reveal starts when visible and respects reduced-motion
+preferences. Counters start quickly and slow toward the final value, keeping
+the final number's decimal precision throughout the animation. The centered
+ring shows the total, with the largest segment selected with the same thick
+band as a clicked pin, and its name and value (percentage) below. This selection
+stays steady while hovering or focusing another segment to preview it temporarily.
+Its reshaped edges leave matching clearance to both neighbors. Very small
+segments use a smaller matched lift and gap to keep the shape visible.
+Click or tap to pin that segment. Its band becomes slightly thicker while
+keeping the hover gap and outer edge. The pin and its details stay steady until
+another segment is pinned; Escape restores the largest default. Clicking the same segment keeps
+its pin. Hover and keyboard previews still work with a pin set: another segment
+lifts gently and shows a separate tooltip beside the pointer. Pointer targeting includes space
+around the inner and outer edges of the band. Crossing into a neighboring
+segment updates its preview immediately; a short leave delay applies only
+outside the band.
+Enter or Space pins the focused segment. Pins last while using
+the current My collection page, including reordering cards, and reset after
+leaving and returning to the largest default.
+The full numerical breakdown remains in **Details**, including zero-value groups.
+Long card titles use an ellipsis; their full names remain available on hover.
+
+### Manage Cards
+
+Use a card's three-dot menu for **Details**, editing, **Rearrange cards**, or removal. Details
+contains source collections, filters, value coverage, and the exact breakdown.
+Removing a summary card leaves its items intact.
+
+**Rearrange cards** opens an edit mode with the same card layout and drag handles. Cards
+shake slightly while editable. Drag with a mouse or touch; the page scrolls
+near its top or bottom edge. Focus a handle and use arrow keys to reorder with
+the keyboard. **Save order** applies the draft; **Cancel** restores the previous
+order without changing saved cards. A lightweight placeholder follows the
+pointer while dragging. The layout shown before saving matches the saved view.
+Escape cancels an active drag first, then
+leaves edit mode. Reduced-motion preferences disable shaking and movement.
+
+Renaming a collection, field, or choice preserves its card references. An
+unavailable reference names what changed and asks for a replacement through
+**Edit card**; the app does not show a partial total. Changes made in another
+tab reject a stale save instead of overwriting the newer configuration.
+
+Card definitions, Recent items visibility, and ordering are saved with the
+catalog and included in local and Drive backups. Debug changes remain temporary
+and separate from user data.
+
 ## Collections
 
 ### Create A Goods Type
@@ -229,20 +322,21 @@ item and its retained image in one transaction.
 2. Choose **Export backup**.
 3. The app validates one complete catalog and downloads a `.json.gz` archive.
 
-The file includes active and soft-deleted goods types, fields, items, and all
-retained images. Export is read-only. Theme, accent, language, and cached app
-files are not included.
+The file includes active and soft-deleted goods types, fields, items, all
+retained images, and saved cards with their ordering. Export is
+read-only. Theme, accent, language, and cached app files are not included.
 
 ### Restore Local Data
 
 1. Open **Administration** and choose **Restore from file**.
 2. Select an Oshimochi `.json.gz` backup.
-3. Review its date, record counts, and total image size.
+3. Review its date, record counts (including saved cards), and total image size.
 4. Confirm the replacement.
 
 The app parses and validates the complete file before a write starts. Confirmed
-restore replaces every local collection, field, item, and image in one
-transaction. It does not merge data.
+restore replaces every local collection, field, item, image, and saved card
+in one transaction. It does not merge data. Released version-1 backups restore
+with an empty card list.
 
 An invalid file leaves local data unchanged. A failed replacement also keeps the
 previous catalog. After a successful commit, navigation reloads from the restored
@@ -326,8 +420,8 @@ Soft-deleting a field keeps existing item values.
 3. Type `RESET`.
 4. Confirm the operation.
 
-The app clears goods types, fields, items, and images in one transaction. It
-keeps theme and language settings and cached app files.
+The app clears goods types, fields, items, images, and saved cards in one
+transaction. It keeps theme and language settings and cached app files.
 
 ## Shared Mutation State
 

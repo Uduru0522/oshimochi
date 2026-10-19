@@ -136,6 +136,14 @@ the resulting artwork or app. The source credit and license are retained for
 provenance. Normal UI fonts and technical application names remain independent
 of the wordmark.
 
+The dashboard borrows the wordmark's weight and soft corners: a cream collection
+desk in light mode, charcoal surfaces in dark mode, asymmetric paper cards,
+framed thumbnails, and keepsake-card decoration. The shared
+shell uses the same warm neutrals. Headings and result numbers use heavier
+weights in the existing UI font stack; the logo remains its original SVG.
+Use the selected accent for emphasis and ring shades, with neutral numbers
+inside rings. Keep the mochi and tapestry white in both themes.
+
 `icons/oshimochi-themeable.svg` is the shared mochi-and-tapestry geometry for
 the sidebar, favicon, and installed app. The sidebar references its
 `oshimochi-mark` root with an inline SVG `use`. The `.brand-mark` rule in
@@ -165,8 +173,22 @@ Both branding SVGs belong to the service-worker asset list. Follow
 Preserve this import order. Add every new runtime stylesheet to
 `service-worker.js`.
 
-Prefer tokens over hardcoded values. Keep motion at or below 200 ms and use the
-shared timing tokens.
+Prefer tokens over hardcoded values. Keep interaction motion at or below 200 ms
+and use the shared timing tokens. Dashboard chart/count reveals use a separate
+600 ms duration so the circumference sweep remains legible; they start when
+visible and respect reduced motion.
+Prepare chart geometry at zero before waiting for visibility so the completed
+ring never paints ahead of its reveal. Card editor dialogs keep a fixed
+responsive outer height and scroll changing content inside that frame.
+
+Dashboard card packing owns explicit card positions and the container height.
+Measure intrinsic heights at the target column width without clearing previous
+positions or collapsing the container. Commit positions and height together so
+measurement cannot temporarily clamp a scrolled page back to the top.
+
+The dashboard controller is created before its view is mounted.
+`card-geometry.js` resolves the current scrollport for both card motion and
+dragging, so scrolling is not mistaken for card movement.
 
 Use `content-transition.js` for stateful workflow replacement. Use
 `motion.js` when JavaScript needs a CSS timing value.
@@ -213,6 +235,16 @@ Current scroll areas are:
 
 Narrow navigation also uses `scrollable-row.js` for wheel scrolling and the
 right-edge hint.
+
+Wide navigation reserves a stable native scrollbar gutter so height changes
+do not resize its category tabs when the list starts overflowing. Narrow
+navigation removes that gutter for its horizontal layout.
+
+The page and card editor use `overlay-scrollbar.js`. Native scrolling handles
+wheel, touch, and content focus; a draggable scrollbar overlays the right edge
+without reserving content width. It appears while scrolling, approaching the
+edge, or using its keyboard controls, and otherwise hides. The helper owns its
+wrapper, observers, and cleanup.
 
 ### Update Offline Assets
 

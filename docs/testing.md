@@ -50,6 +50,7 @@ or Google Drive.
 | Area | Browser checks |
 | --- | --- |
 | Startup | Empty user catalog, rendered debug items, no user database creation in debug mode |
+| Navigation resizing | Native scrollbars enabled: stable category widths and dashboard positions across height-driven overflow, preserved deep scroll positions through resize and card reflow, steady visible card positions during focus refreshes after scrolling and height increases, selected collection resizing, and gutter-free horizontal navigation on narrow screens |
 | Collections | Confirmed metadata survives reload; cancelled reviews write nothing; debug collection edits reset and preserve an existing user catalog |
 | Custom fields | Unapplied changes are discarded and built-in fields stay protected; all seven custom types round-trip, including zero, false, dates, and normalized URLs; missing required values and HTTP URLs prevent review |
 | Item entry | Required name and image, unsaved review drafts, portrait and landscape crop output, saved image dimensions and pixel content after reload |
@@ -57,8 +58,14 @@ or Google Drive.
 | Item lifecycle | Cancelled deletion and purge preserve storage; deleted items survive reload and restore with the same identity and image; purge removes only its target item and asset |
 | Queries | Phrase and exclusion search, cancelled filter drafts, choice rules combined with search, clearing empty results, and numeric sorting across card/list changes |
 | Local backups | Downloaded gzip contents and image bytes; confirmed replacement including fields and deleted items; cancelled review; rejection of uncompressed, damaged, unsupported-version, and missing-image backups without data loss; debug restore isolation and reset |
+| Dashboard storage | Card ordering, labels, category mappings, and units after reopening; backup replacement and reset; released version-1 backup import and database upgrade; conflicting saves through separate connections |
+| Dashboard lifecycle | Late previews cannot replace newer results; preview failures clear old results and disable saving; closing/reopening discards old errors; a pending dashboard read creates no partial readouts and cannot render after unmounting |
+| Dashboard UI | Empty overview, visible calculation/display choices, numeric field selection per collection, NTD/custom units and draft cancellation, single-line ellipsis for long units in either position, compact filters and deleted-item scope, saved typed/relative-date filters, Recent items details and visibility, ordering after reload, named repair, accent rings and reduced motion, steady largest-segment defaults and pins during pointer/keyboard previews, generous hit areas and pointer-adjacent tooltips, touch pin switching with route reset, first-frame resize continuity and settling tilt without scaling type, retained card nodes and animated entry/exit, mouse/touch/keyboard arrangement drafts with save/cancel and Escape, drag anchoring while scrolling, matching draft/saved positions at three widths, quiet window-focus refresh, long-title truncation, large item images with independently scrolling fields, debug isolation, failed-read retry, offline editing, matching translated view/navigation titles, Japanese and Traditional Chinese on narrow screens |
 
-Tests make changes through normal UI controls. Image inputs use small generated
+Workflow tests make changes through normal UI controls. Dashboard fixtures seed
+disposable catalogs before opening the app; storage tests also exercise the real
+adapter directly to cover transaction behavior beyond the Node repository fakes.
+Image inputs use small generated
 PNGs and run through the app's crop and JPEG processing. Read-only IndexedDB
 checks compare item identity, asset metadata, and image-byte hashes to verify
 that edits, recovery, and purge change only the intended data.

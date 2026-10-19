@@ -58,7 +58,11 @@ Application operations are grouped by feature:
 - **Fields:** validate and apply one staged field change set.
 - **Items:** validate values, filter, sort, save content, and change lifecycle.
 - **Dashboard:** read selected collection records and calculate filtered card
-  results, coverage, and unavailable-reference states without loading images.
+  results, coverage, and named unavailable-reference states without loading
+  images; select matching items once for both the total and its collection or
+  category breakdown, using one calendar instant; read the newest active item
+  metadata across active collections by creation time; read and replace validated saved cards with
+  conflict detection, including built-in card visibility and position.
 - **Backups:** encode, validate, summarize, and restore complete snapshots.
 - **Local data:** reset all user collection stores atomically.
 
@@ -79,6 +83,7 @@ sample records, and loses changes on reload. It never opens IndexedDB.
 
 The view layer is split by product area:
 
+- **Dashboard:** overview, summary-card editor, category rings, and Recent items
 - **Administration:** goods-type creation, field management, backup and restore,
   and local-data reset
 - **Goods types:** collection overview and the matching view toolbar action
@@ -112,6 +117,34 @@ Dialogs share `dialog-close-controller.js` for close timing and cancellation.
 Stateful content uses `content-transition.js`. Scroll surfaces use
 `drag-scroll.js`.
 
+Dashboard routing starts `dashboard-controller.js`, which coordinates loading,
+mutations, and dialogs. `card-board.js` reads a complete generation before
+committing it, retains unchanged nodes, and owns each card's readout, interaction
+state, and cleanup. Superseded reads cannot mutate the mounted cards.
+`card-editor.js` owns drafts; `card-preview.js` owns async preview validity and
+readout cleanup across editor sessions. `card-filters.js` reuses item-filter
+controls. `card-readout.js`, `readout-motion.js`, and `card-layout.js` own result
+presentation, animation, and independent packing. `card-packing.js` calculates
+positions; the layout owns card widths and container height without temporarily
+collapsing the scroll range. `number-format.js` keeps notation and decimal
+precision stable throughout a count reveal. Loading status is removed before card layout
+is measured, so the first reveal starts at its final page position.
+Initial dashboard content uses a fade without per-card tilt or slide; later
+card additions, removals, resizing, and arrangement retain layout motion.
+The ring reveal clips the filled segments with a sector rather than a dashed
+stroke mask, keeping the unrevealed region clear.
+Unchanged card nodes and readouts are retained across
+updates. `card-layout-motion.js` tracks visible bounds across interrupted
+resizes, entry, exit, and tilt; `card-arrangement.js` owns drag/keyboard drafts
+and explicit save/cancel, using the same packing as the saved view. Drag previews
+use a viewport overlay outside the scrolling panel. Both motion and dragging
+use `card-geometry.js` for current scroll offsets and unrotated card bounds.
+Window-focus refreshes keep
+existing content visible without inserting a loading row.
+`recent-items.js` reuses the item thumbnail loader and
+disposes image URLs on view or dialog teardown. Views use application operations
+and never open storage adapters directly.
+
 Interface text passes through `translate()`. User-entered names and values are
 data and are never translated.
 
@@ -125,6 +158,7 @@ cascade.
 | `foundation.css` | Tokens, themes, shell, navigation, and shared controls |
 | `items.css` | Item browser, dialogs, filtering, sorting, and recovery |
 | `administration.css` | Administration and Options |
+| `dashboard.css` | Scoped dashboard cards, dialogs, rings, and responsive packing |
 | `responsive.css` | Narrow layout and reduced-motion overrides |
 
 Common timing tokens keep interaction motion below 200 ms:
@@ -135,6 +169,10 @@ Common timing tokens keep interaction motion below 200 ms:
 - `--motion-layout` for shell layout changes
 - `--item-card-*-duration` for ordered card membership changes
 - `--item-layout-*` for item reordering
+
+Dashboard chart/count reveals take 600 ms, separate from
+interaction timing, and start when visible. Reduced motion shows the final value
+immediately.
 
 The UI uses local Noto Sans and platform CJK font stacks. No font is fetched from
 a third-party host. The language-independent `オシもち。` wordmark uses a local
