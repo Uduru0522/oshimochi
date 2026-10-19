@@ -38,13 +38,14 @@ function readItemStorage(page) {
 }
 
 async function readCatalogStorage(page) {
-  const { goods_types, field_definitions, app_metadata, ...records } = await readStorage(
-    page, ["goods_types", "field_definitions", "items", "assets", "app_metadata"]
+  const { goods_types, field_definitions, app_metadata, dashboard_cards, ...records } = await readStorage(
+    page, ["goods_types", "field_definitions", "items", "assets", "app_metadata", "dashboard_cards"]
   );
   return {
     goodsTypes: goods_types,
     fieldDefinitions: field_definitions,
     metadata: app_metadata,
+    dashboardCards: dashboard_cards,
     ...records
   };
 }

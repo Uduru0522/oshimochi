@@ -67,12 +67,13 @@ test("a downloaded gzip backup contains the complete catalog without changing st
   expect(archive.name).toMatch(/^oshimochi-backup-\d{4}-\d{2}-\d{2}T[\d-]+Z\.json\.gz$/);
   const snapshot = JSON.parse(gunzipSync(archive.buffer).toString("utf8"));
   expect(snapshot).toMatchObject({
-    application: "oshimochi", exportFormatVersion: 1, domainModelVersion: 1,
+    application: "oshimochi", exportFormatVersion: 2, domainModelVersion: 2,
     snapshotId: expect.any(String), createdAt: expect.any(String)
   });
   expect(snapshot.data.goodsTypes).toEqual(before.goodsTypes);
   expect(snapshot.data.fieldDefinitions).toEqual(before.fieldDefinitions);
   expect(snapshot.data.items).toEqual(before.items);
+  expect(snapshot.data.dashboardCards).toEqual(before.dashboardCards);
   expect(snapshot.data.items.filter(({ isDeleted }) => isDeleted)).toHaveLength(1);
   expect(snapshot.data.assets.map(({ encoding, content, ...metadata }) => {
     expect(encoding).toBe("base64");
