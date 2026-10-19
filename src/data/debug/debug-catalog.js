@@ -5,6 +5,7 @@ import {
   createDebugItems
 } from "./debug-fixtures.js";
 import { parseAssetRecord } from "../models/asset.js";
+import { parseDashboardCards } from "../models/dashboard-card.js";
 import { parseFieldDefinitionRecord } from "../models/field-definition.js";
 import { parseGoodsTypeRecord } from "../models/goods-type.js";
 import { parseItemRecord } from "../models/item.js";
@@ -18,6 +19,7 @@ export function createDebugCatalog(options = {}) {
 
   return {
     assets: assets.map(parseAssetRecord),
+    dashboardCards: parseDashboardCards(options.dashboardCards ?? []),
     fieldDefinitions: fieldDefinitions.map(parseFieldDefinitionRecord),
     goodsTypes: goodsTypes.map(parseGoodsTypeRecord),
     items: items.map(parseItemRecord)

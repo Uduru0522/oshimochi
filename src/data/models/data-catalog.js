@@ -1,4 +1,5 @@
 import { parseAssetRecord } from "./asset.js";
+import { parseDashboardCards } from "./dashboard-card.js";
 import { BUILT_IN_ITEM_FIELDS } from "./built-in-fields.js";
 import { parseFieldDefinitionRecord } from "./field-definition.js";
 import { parseGoodsTypeRecord } from "./goods-type.js";
@@ -182,6 +183,7 @@ export function parseDataCatalog(value) {
     .map(parseFieldDefinitionRecord);
   const items = requireArray(input.items, "items").map(parseItemRecord);
   const assets = requireArray(input.assets, "assets").map(parseAssetRecord);
+  const dashboardCards = parseDashboardCards(input.dashboardCards === undefined ? [] : input.dashboardCards);
 
   assertUnique(goodsTypes, ({ id }) => id, "Goods type");
   assertUnique(fieldDefinitions, ({ id }) => id, "Field definition");
@@ -190,5 +192,5 @@ export function parseDataCatalog(value) {
   assertFieldCatalog(goodsTypes, fieldDefinitions);
   assertItemCatalog(goodsTypes, fieldDefinitions, items, assets);
 
-  return { assets, fieldDefinitions, goodsTypes, items };
+  return { assets, dashboardCards, fieldDefinitions, goodsTypes, items };
 }
