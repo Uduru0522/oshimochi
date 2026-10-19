@@ -7,6 +7,7 @@ import { openDatabase } from "./connection.js";
 import { createGoodsTypeRepository } from "./goods-type-repository.js";
 import { createFieldDefinitionRepository } from "./field-definition-repository.js";
 import { createLocalDataRepository } from "./local-data-repository.js";
+import { createDashboardCardRepository } from "./dashboard-card-repository.js";
 import { createItemRepository } from "./item-repository.js";
 
 export function createIndexedDbStorage({
@@ -17,6 +18,7 @@ export function createIndexedDbStorage({
   let goodsTypeRepository = null;
   let fieldDefinitionRepository = null;
   let localDataRepository = null;
+  let dashboardCardRepository = null;
   let itemRepository = null;
   let initializationPromise = null;
 
@@ -26,6 +28,7 @@ export function createIndexedDbStorage({
       !goodsTypeRepository ||
       !fieldDefinitionRepository ||
       !localDataRepository ||
+      !dashboardCardRepository ||
       !itemRepository
     ) {
       throw new StorageError("IndexedDB storage has not been initialized.", {
@@ -46,6 +49,7 @@ export function createIndexedDbStorage({
       goodsTypeRepository = createGoodsTypeRepository(database);
       fieldDefinitionRepository = createFieldDefinitionRepository(database);
       localDataRepository = createLocalDataRepository(database);
+      dashboardCardRepository = createDashboardCardRepository(database);
       itemRepository = createItemRepository(database);
       database.onversionchange = () => close();
     } finally {
@@ -56,6 +60,16 @@ export function createIndexedDbStorage({
   async function listGoodsTypes(options) {
     assertInitialized();
     return goodsTypeRepository.list(options);
+  }
+
+  async function listDashboardCards() {
+    assertInitialized();
+    return dashboardCardRepository.list();
+  }
+
+  async function replaceDashboardCards(change) {
+    assertInitialized();
+    return dashboardCardRepository.replace(change);
   }
 
   async function createGoodsType(bundle) {
@@ -124,6 +138,7 @@ export function createIndexedDbStorage({
     goodsTypeRepository = null;
     fieldDefinitionRepository = null;
     localDataRepository = null;
+    dashboardCardRepository = null;
     itemRepository = null;
   }
 
@@ -135,6 +150,8 @@ export function createIndexedDbStorage({
     initialize,
     listFieldDefinitions,
     listGoodsTypes,
+    listDashboardCards,
+    replaceDashboardCards,
     listItems,
     purgeItem,
     readDataCatalog,

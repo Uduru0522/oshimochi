@@ -1,12 +1,13 @@
 import { DOMAIN_MODEL_VERSION } from "../models/domain-model.js";
 
 export const DATABASE_NAME = "oshimochi";
-export const DATABASE_VERSION = 1;
+export const DATABASE_VERSION = 2;
 
 export { DOMAIN_MODEL_VERSION };
 
 export const OBJECT_STORES = Object.freeze({
   assets: "assets",
+  dashboardCards: "dashboard_cards",
   fieldDefinitions: "field_definitions",
   goodsTypes: "goods_types",
   items: "items",
@@ -57,8 +58,16 @@ function createVersionOneSchema(database) {
   metadata.put({ key: "domainModelVersion", value: DOMAIN_MODEL_VERSION });
 }
 
-export function upgradeDatabase(database, oldVersion) {
+export function upgradeDatabase(database, oldVersion, transaction) {
   if (oldVersion < 1) {
     createVersionOneSchema(database);
+  }
+  if (oldVersion < 2) {
+    database.createObjectStore(OBJECT_STORES.dashboardCards, { keyPath: "id" });
+    if (oldVersion >= 1) {
+      transaction.objectStore(OBJECT_STORES.metadata).put({
+        key: "domainModelVersion", value: DOMAIN_MODEL_VERSION
+      });
+    }
   }
 }

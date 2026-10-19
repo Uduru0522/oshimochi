@@ -10,7 +10,8 @@ export const USER_DATA_STORES = Object.freeze([
   OBJECT_STORES.goodsTypes,
   OBJECT_STORES.fieldDefinitions,
   OBJECT_STORES.items,
-  OBJECT_STORES.assets
+  OBJECT_STORES.assets,
+  OBJECT_STORES.dashboardCards
 ]);
 
 export function createLocalDataRepository(database) {
@@ -36,6 +37,7 @@ export function createLocalDataRepository(database) {
     try {
       return structuredClone(parseDataCatalog({
         assets: records[USER_DATA_STORES.indexOf(OBJECT_STORES.assets)],
+        dashboardCards: records[USER_DATA_STORES.indexOf(OBJECT_STORES.dashboardCards)],
         fieldDefinitions: records[
           USER_DATA_STORES.indexOf(OBJECT_STORES.fieldDefinitions)
         ],
@@ -64,6 +66,7 @@ export function createLocalDataRepository(database) {
 
     const recordsByStore = new Map([
       [OBJECT_STORES.assets, parsedCatalog.assets],
+      [OBJECT_STORES.dashboardCards, parsedCatalog.dashboardCards],
       [OBJECT_STORES.fieldDefinitions, parsedCatalog.fieldDefinitions],
       [OBJECT_STORES.goodsTypes, parsedCatalog.goodsTypes],
       [OBJECT_STORES.items, parsedCatalog.items]
