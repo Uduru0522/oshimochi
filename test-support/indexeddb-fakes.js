@@ -194,6 +194,7 @@ export function createClearDatabase({ failAt = -1 } = {}) {
 export function createCatalogDatabase(initialCatalog, { failAt = -1 } = {}) {
   const recordsByStore = new Map([
     [OBJECT_STORES.assets, structuredClone(initialCatalog.assets)],
+    [OBJECT_STORES.dashboardCards, structuredClone(initialCatalog.dashboardCards ?? [])],
     [
       OBJECT_STORES.fieldDefinitions,
       structuredClone(initialCatalog.fieldDefinitions)
@@ -206,6 +207,7 @@ export function createCatalogDatabase(initialCatalog, { failAt = -1 } = {}) {
   function readCatalog() {
     return {
       assets: structuredClone(recordsByStore.get(OBJECT_STORES.assets)),
+      dashboardCards: structuredClone(recordsByStore.get(OBJECT_STORES.dashboardCards)),
       fieldDefinitions: structuredClone(
         recordsByStore.get(OBJECT_STORES.fieldDefinitions)
       ),
@@ -225,8 +227,14 @@ export function createCatalogDatabase(initialCatalog, { failAt = -1 } = {}) {
         ])
       );
       let scheduled = false;
+      let processed = 0;
+      let aborted = false;
       const transaction = {
         error: null,
+        abort() {
+          aborted = true;
+          transaction.onabort?.();
+        },
         objectStore(storeName) {
           function queue(operation, value) {
             const request = {};
@@ -235,6 +243,7 @@ export function createCatalogDatabase(initialCatalog, { failAt = -1 } = {}) {
             if (!scheduled) {
               scheduled = true;
               queueMicrotask(() => {
+                if (aborted) return;
                 const failedRequest = requests[failAt];
 
                 if (failedRequest) {
@@ -242,11 +251,13 @@ export function createCatalogDatabase(initialCatalog, { failAt = -1 } = {}) {
                   transaction.error = failure;
                   failedRequest.request.error = failure;
                   failedRequest.request.onerror();
-                  transaction.onabort();
+                  transaction.abort();
                   return;
                 }
 
-                requests.forEach((entry) => {
+                const batch = requests.slice(processed);
+                processed = requests.length;
+                batch.forEach((entry) => {
                   if (entry.operation === "getAll") {
                     entry.request.result = structuredClone(
                       workingRecords.get(entry.storeName)
@@ -263,13 +274,14 @@ export function createCatalogDatabase(initialCatalog, { failAt = -1 } = {}) {
                   entry.request.onsuccess();
                 });
 
-                if (mode === "readwrite") {
-                  workingRecords.forEach((records, store) => {
-                    recordsByStore.set(store, records);
-                  });
-                }
-
-                transaction.oncomplete();
+                scheduled = false;
+                queueMicrotask(() => {
+                  if (aborted || scheduled || processed < requests.length) return;
+                  if (mode === "readwrite") {
+                    workingRecords.forEach((records, store) => recordsByStore.set(store, records));
+                  }
+                  transaction.oncomplete();
+                });
               });
             }
 

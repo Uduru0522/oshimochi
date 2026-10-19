@@ -12,6 +12,7 @@ Every backup contains:
 
 - active and soft-deleted records
 - retained image assets
+- saved dashboard card definitions and ordering
 - snapshot and domain-model versions
 - a unique snapshot ID and UTC creation time
 
@@ -47,7 +48,8 @@ A catalog contains all user collection data:
   goodsTypes: [],
   fieldDefinitions: [],
   items: [],
-  assets: []
+  assets: [],
+  dashboardCards: []
 }
 ```
 
@@ -55,28 +57,29 @@ Both storage adapters expose:
 
 | Method | Rule |
 | --- | --- |
-| `readDataCatalog()` | Read all four sets in one read-only operation |
-| `replaceDataCatalog(catalog)` | Validate, clear, and write all four sets atomically |
+| `readDataCatalog()` | Read all five sets in one read-only operation |
+| `replaceDataCatalog(catalog)` | Validate, clear, and write all five sets atomically |
 
 The IndexedDB adapter keeps `app_metadata` during replacement. The debug
 adapter replaces its temporary catalog and resets on reload.
 
 ## Snapshot Format
 
-Format version `1` uses this envelope:
+New exports use format and domain-model version `2`:
 
 ```js
 {
   application: "oshimochi",
-  exportFormatVersion: 1,
-  domainModelVersion: 1,
+  exportFormatVersion: 2,
+  domainModelVersion: 2,
   snapshotId: "generated-uuid",
   createdAt: "2026-10-17T00:00:00.000Z",
   data: {
     goodsTypes: [],
     fieldDefinitions: [],
     items: [],
-    assets: []
+    assets: [],
+    dashboardCards: []
   }
 }
 ```
@@ -95,6 +98,11 @@ An asset keeps its metadata and replaces the domain `Blob` with:
 ```
 
 Import rebuilds the `Blob` and checks its byte count.
+
+Released version-1 snapshots remain importable with an empty card list. Their
+review retains the original version numbers. Restoring one replaces any current
+cards with that empty list, alongside replacing the collection data. Version-2
+snapshots require a valid `dashboardCards` array; a missing array is an error.
 
 Canonical output has these rules:
 
@@ -117,6 +125,13 @@ Checks cover:
 - item values and collection relationships
 - image references, ownership, types, and byte sizes
 - timestamps and soft-deletion state
+- card calculations, source and filter shapes, category-field mappings, formatting,
+  unique IDs and positions
+
+Saved card references may point to unavailable collections, fields, or choices.
+Restore keeps these definitions and their remembered labels, so the dashboard
+can identify what needs updating. It does not remove conditions or substitute a
+partial calculation.
 
 Older items may lack a required custom value added later. Restore keeps that
 state so the normal incomplete-item warning remains useful.

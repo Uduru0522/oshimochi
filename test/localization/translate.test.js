@@ -38,8 +38,8 @@ function listJavaScriptFiles(directoryUrl) {
 function collectStaticTranslationKeys() {
   const keys = new Set();
   const stringPatterns = [
-    /translate\(\s*"((?:[^"\\]|\\.)*)"/g,
-    /translate\(\s*'((?:[^'\\]|\\.)*)'/g
+    /\b(?:translate|t)\(\s*"((?:[^"\\]|\\.)*)"/g,
+    /\b(?:translate|t)\(\s*'((?:[^'\\]|\\.)*)'/g
   ];
 
   listJavaScriptFiles(new URL("../../src/", import.meta.url)).forEach((fileUrl) => {
@@ -65,7 +65,7 @@ test("language normalization accepts supported browser locale variants", () => {
 
 test("translations use the document language and interpolate named values", () => {
   withDocumentLanguage("ja", () => {
-    assert.equal(translate("Dashboard"), "ダッシュボード");
+    assert.equal(translate("My collection"), "マイコレクション");
     assert.equal(
       translate("{name} items", { name: "フィギュア" }),
       "フィギュアのアイテム"
@@ -73,14 +73,14 @@ test("translations use the document language and interpolate named values", () =
   });
 
   withDocumentLanguage("zh-Hant", () => {
-    assert.equal(translate("Dashboard"), "儀表板");
+    assert.equal(translate("My collection"), "我的收藏");
     assert.equal(translate("Add item"), "新增項目");
   });
 });
 
 test("English and missing catalog entries fall back to source copy", () => {
   withDocumentLanguage("en", () => {
-    assert.equal(translate("Dashboard"), "Dashboard");
+    assert.equal(translate("My collection"), "My collection");
     assert.equal(translate("Unknown copy"), "Unknown copy");
   });
 });

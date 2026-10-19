@@ -5,22 +5,18 @@ dates. See [Workflows](workflows.md) for implemented behavior.
 
 ## Recommended Next Steps
 
-### 1. Refine Oshimochi Branding
+### 1. Review The My Collection Pull Request
 
-- Local review of the selected `オシもち。` wordmark is complete. Finish the
-  feature pull request and CI review, then wait for owner approval to merge.
-- Keep normal UI/body fonts, the existing mascot/icon, core functionality,
-  storage keys, and snapshot identities unchanged.
+My collection, the card editor, and Recent items are feature-complete on the
+feature branch in [PR #11](https://github.com/Uduru0522/oshimochi/pull/11). See
+[My collection workflows](workflows.md#my-collection) for the scope.
 
-### 2. Dashboard
+Review CI and the final diff before the owner approves a merge. After deployment,
+complete the [production checks](deployment.md#after-deployment), including saved
+card configuration, backup/restore, and offline behavior. Release tagging waits
+for the owner's version and release approval.
 
-- Agree on useful collection summaries and shortcuts.
-- Define the empty-catalog, loading, and failure states.
-- Replace the current placeholder using storage-neutral application queries.
-
-Discuss the content and scope before implementation.
-
-### 3. Define Automatic Backup Policy
+### 2. Define Automatic Backup Policy
 
 - Decide which successful mutations request a backup and how requests combine.
 - Define disconnected, offline, retry, and failure behavior.
@@ -38,9 +34,32 @@ Discuss the content and scope before implementation.
 
 ## Later Milestones
 
+### Visual Consistency Across Views
+
+Use [Design Philosophy](design.md) to adapt collection browsing, Administration,
+and Options to the style established by My collection. Preserve each view's
+workflow and choose the layout that suits its content. Discuss each view's
+scope before implementation.
+
+### Wide Navigation Scroll Hints
+
+Add top and bottom fade hints to the wide category list, matching the narrow
+navigation's edge hint. Show each hint only while more categories remain in
+that direction.
+
+### Field Editing Confirmation
+
+Make pending field changes and the final confirmation action easier to notice.
+Clearly distinguish staged edits from saved changes so users know when they
+still need to confirm them.
+
 ### Collection Details
 
 Allow editing an existing collection's name and description.
+
+### Item Details In Collections
+
+Reuse the dashboard's read-only item detail dialog in the collection item browser.
 
 ### Backup Health
 

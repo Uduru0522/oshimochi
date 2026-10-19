@@ -147,6 +147,10 @@ export function createRestoreReview({ summary, fileName }) {
         value: formatLifecycleCount(summary.counts.items)
       },
       {
+        label: translate("Saved cards"),
+        value: String(summary.counts.dashboardCards.total)
+      },
+      {
         label: translate("Images"),
         value: translate("{count} files, {size}", {
           count: summary.counts.assets.total,

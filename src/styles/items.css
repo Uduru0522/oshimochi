@@ -2252,6 +2252,51 @@ button.item-card-more:focus-visible {
   line-height: 1.55;
 }
 
+/* Shared read-only details: keep the picture visible as the values scroll. */
+.item-detail-dialog {
+  width: min(960px, calc(100vw - 32px));
+  height: min(780px, calc(100dvh - 40px));
+  max-width: none;
+  max-height: none;
+  padding: 0;
+  overflow: hidden;
+  color: var(--text);
+  background: var(--surface);
+  border: 1.5px solid var(--line-strong);
+  border-radius: 28px 28px 3px 28px;
+  box-shadow: 0 6px 0 color-mix(in oklab, var(--text) 8%, transparent), 0 24px 64px #18212b30;
+}
+
+.item-detail-dialog[open] { display: flex; flex-direction: column; animation: dialog-enter var(--motion-fast) ease-out both; }
+.item-detail-dialog[data-closing=true] { animation: dialog-exit var(--motion-fast) ease-in both; }
+.item-detail-dialog::backdrop { background: #18212b75; animation: backdrop-enter var(--motion-fast) ease-out both; }
+.item-detail-dialog[data-closing=true]::backdrop { animation: backdrop-exit var(--motion-fast) ease-in both; }
+.item-detail-header { display: flex; flex-shrink: 0; align-items: center; gap: 20px; padding: 20px 24px; border-bottom: 1px solid var(--line); }
+.item-detail-title { flex: 1; min-width: 0; margin: 0; overflow: hidden; font-size: 23px; font-weight: 800; white-space: nowrap; text-overflow: ellipsis; }
+/* Initial reading focus belongs to the heading; controls keep their focus rings. */
+.item-detail-title:focus { outline: none; }
+.item-detail-dialog .item-detail-close { display: grid; flex: 0 0 auto; width: 36px; height: 36px; min-height: 0; padding: 8px; place-items: center; color: var(--text); background: var(--surface); border: 1px solid var(--line-strong); border-radius: 10px; cursor: pointer; }
+.item-detail-close:hover { background: var(--surface-muted); }
+.item-detail-dialog :is(button, dl):focus-visible { outline: 3px solid var(--focus-ring); outline-offset: -3px; }
+.item-detail-layout { display: grid; flex: 1; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); min-height: 0; }
+.item-detail-picture { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; min-width: 0; min-height: 0; padding: 28px; color: var(--muted); background: var(--thumbnail-surface); border-right: 1px solid var(--line); }
+.item-detail-picture img { display: block; width: 100%; height: 100%; min-height: 0; object-fit: contain; }
+.item-detail-picture > .nav-svg { width: 64px; height: 64px; stroke-width: 1; }
+.item-detail-image-status { margin: 0; font-size: 14px; }
+.item-detail-values { display: block; min-width: 0; min-height: 0; margin: 0; padding: 28px; overflow-y: auto; overscroll-behavior: contain; font-size: 14px; line-height: 1.6; }
+.item-detail-values dt { color: var(--muted); font-size: 12px; font-weight: 650; overflow-wrap: anywhere; }
+.item-detail-values dd { margin: 4px 0 22px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.item-detail-values dd:last-child { margin-bottom: 0; }
+
+@media (max-width: 620px) {
+  .item-detail-dialog { height: calc(100dvh - 32px); }
+  .item-detail-header { padding: 16px 20px; }
+  .item-detail-title { font-size: 20px; }
+  .item-detail-layout { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(150px, 36%) minmax(0, 1fr); }
+  .item-detail-picture { padding: 18px; border-right: 0; border-bottom: 1px solid var(--line); }
+  .item-detail-values { padding: 20px; }
+}
+
 @keyframes dialog-enter {
   from {
     opacity: 0;

@@ -1,4 +1,5 @@
 export const STORAGE_ERROR_CODES = Object.freeze({
+  conflict: "conflict",
   initializationFailed: "initialization-failed",
   invalidAdapter: "invalid-adapter",
   invalidData: "invalid-data",
@@ -11,6 +12,8 @@ export const STORAGE_ERROR_CODES = Object.freeze({
 const REQUIRED_STORAGE_METHODS = Object.freeze([
   "initialize",
   "listGoodsTypes",
+  "listDashboardCards",
+  "replaceDashboardCards",
   "createGoodsType",
   "createItem",
   "updateItemContent",

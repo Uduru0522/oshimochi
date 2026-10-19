@@ -11,6 +11,8 @@ mode uses memory and never opens the user database.
 
 ## Features
 
+- My collection overview with Recent items and customizable summary cards for
+  counts, spending, and category breakdowns
 - Collections with protected built-in fields and configurable custom fields
 - Image cropping, item cards and lists, search, filtering, and sorting
 - Item editing, soft deletion, recovery, and permanent purge

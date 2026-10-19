@@ -1,9 +1,9 @@
 # Testing
 
-Automated tests cover domain, application, repository, adapter, and pure view
-behavior. Playwright checks startup and selected collection and item workflows
-in a real browser. Layout and workflows outside that coverage still need manual
-verification.
+Automated tests cover domain, application, repository, adapter, and view
+behavior. Playwright checks startup, collections, items, backups, and My
+collection in a real browser. Visual quality, real Google flows, and workflows
+outside that coverage still need manual verification.
 
 ## Commands
 
@@ -50,6 +50,7 @@ or Google Drive.
 | Area | Browser checks |
 | --- | --- |
 | Startup | Empty user catalog, rendered debug items, no user database creation in debug mode |
+| Navigation resizing | Native scrollbars enabled: stable category widths and dashboard positions across height-driven overflow, preserved deep scroll positions through resize and card reflow, steady visible card positions during focus refreshes after scrolling and height increases, selected collection resizing, and gutter-free horizontal navigation on narrow screens |
 | Collections | Confirmed metadata survives reload; cancelled reviews write nothing; debug collection edits reset and preserve an existing user catalog |
 | Custom fields | Unapplied changes are discarded and built-in fields stay protected; all seven custom types round-trip, including zero, false, dates, and normalized URLs; missing required values and HTTP URLs prevent review |
 | Item entry | Required name and image, unsaved review drafts, portrait and landscape crop output, saved image dimensions and pixel content after reload |
@@ -57,11 +58,22 @@ or Google Drive.
 | Item lifecycle | Cancelled deletion and purge preserve storage; deleted items survive reload and restore with the same identity and image; purge removes only its target item and asset |
 | Queries | Phrase and exclusion search, cancelled filter drafts, choice rules combined with search, clearing empty results, and numeric sorting across card/list changes |
 | Local backups | Downloaded gzip contents and image bytes; confirmed replacement including fields and deleted items; cancelled review; rejection of uncompressed, damaged, unsupported-version, and missing-image backups without data loss; debug restore isolation and reset |
+| Dashboard storage | Card ordering, labels, category mappings, and units after reopening; backup replacement and reset; released version-1 backup import and database upgrade; conflicting saves through separate connections |
+| Dashboard lifecycle | Late previews cannot replace newer results; preview failures clear old results and disable saving; closing/reopening discards old errors; a pending dashboard read creates no partial readouts and cannot render after unmounting |
+| Debug examples | Seeded spending, collection/category rings, filters, and average cards render and remain editable; price-field mappings survive editor round trips; reloading restores defaults and user storage stays isolated |
+| Card editor | Calculation/display choices, number-field selection per collection, NTD/custom units, draft cancellation, filters and deleted-item scope, saved typed/relative-date rules, and named repair actions |
+| Ring interaction | Accent shades, reduced motion, largest-segment defaults, independent hover/focus previews and pins, generous hit areas, pointer-adjacent tooltips, touch switching, and route reset |
+| Card arrangement | Mouse/touch/keyboard drafts, save/cancel and Escape, drag anchoring while scrolling, and matching draft/saved positions at three widths |
+| Card presentation | Stable decimal precision and unit position with wider fonts, long-title/unit truncation, resize continuity without text scaling, retained nodes, animated entry/exit, and quiet focus refresh |
+| Recent items and integration | Item details with large images and scrolling fields, card visibility, empty and failed-read states, offline editing, matching translated titles, and narrow Japanese/Traditional Chinese layouts |
 
-Tests make changes through normal UI controls. Image inputs use small generated
-PNGs and run through the app's crop and JPEG processing. Read-only IndexedDB
-checks compare item identity, asset metadata, and image-byte hashes to verify
-that edits, recovery, and purge change only the intended data.
+Workflow tests make changes through normal UI controls. Dashboard fixtures seed
+disposable catalogs before opening the app; storage tests also exercise the real
+adapter directly to cover transaction behavior beyond the Node repository fakes.
+Image inputs use small generated PNGs and run through the app's crop and JPEG
+processing. Read-only IndexedDB checks compare item identity, asset metadata,
+and image-byte hashes to verify that edits, recovery, and purge change only the
+intended data.
 
 The shared [browser workflow](../.github/workflows/browser-checks.yml) installs
 the locked dependencies and Chromium with its system libraries. It runs both
@@ -160,9 +172,10 @@ A regression test must fail before its fix and name the broken behavior.
 | Browser | Startup, covered UI workflows, real IndexedDB, and image persistence |
 | Manual browser | Layout, motion, remaining workflows, Google dialogs, and service-worker updates |
 
-Node coverage is separate from browser regression coverage. Responsive layout,
-pointer interactions, offline updates, and real Google flows still need manual
-checks.
+Node coverage measures executed JavaScript, while browser tests verify the
+workflows listed above. Neither replaces visual review or real Google checks.
+Use the manual checklist for motion quality, interactions, and service-worker
+updates even where a browser regression also exists.
 
 ## Backup Coverage
 
@@ -226,6 +239,26 @@ a dedicated test folder as described in the [Drive guide](google-drive-backup.md
 - Check narrow and wide layouts, long translated labels, keyboard navigation,
   and reduced-motion behavior.
 
+### My Collection
+
+- Confirm collection, active-item, and deleted-item counts against the catalog.
+- Check that Recent items orders additions across collections by creation time;
+  editing an older item must not move it to the top. Open image details, then
+  hide and re-add the card.
+- Create a total from differently named number fields in two collections. Check
+  zero and missing values, a fractional average, a filter, and custom units.
+  Inspect **Details** and confirm a cancelled edit changes nothing.
+- Compare collection and category rings. Check the largest default, independent
+  hover/focus previews, click/touch pins, Escape, and reset after leaving the view.
+- Rearrange with pointer, touch, and keyboard. Check save/cancel and that the saved
+  layout matches the preview. Resize width and height while scrolled, and return
+  focus from another window without a jump.
+- Check long titles and units, count/reveal motion, reduced motion, and all three
+  languages in narrow and wide layouts. Follow [Design Philosophy](design.md)
+  when judging spacing, color, and hierarchy.
+- Reload user mode to confirm card settings and order persist. Reload debug mode
+  to confirm the sample cards return. Check card editing while offline.
+
 ### Goods Types And Fields
 
 - Create a goods type and confirm Items opens after save.
@@ -264,7 +297,8 @@ a dedicated test folder as described in the [Drive guide](google-drive-backup.md
 ### Backup And Restore
 
 - Export user data and confirm one `.json.gz` file downloads.
-- Restore that file and confirm collections, deleted items, and images return.
+- Restore that file and confirm collections, deleted items, images, summary
+  configuration, Recent items visibility, and card order return.
 - Select an invalid file and confirm existing data does not change.
 - Complete the [Drive round trip](google-drive-backup.md#test-the-full-flow)
   with personal Google setup and a dedicated test folder.

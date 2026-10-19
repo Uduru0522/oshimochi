@@ -15,8 +15,9 @@ domain and storage code, and browser views.
 6. The runtime creates views, navigation, and the router.
 7. A storage failure shows a retryable error instead of an empty collection.
 
-After a successful data change, the startup coordinator reloads goods types and
-rebuilds data-based navigation. It does not reopen the database.
+Changes that affect navigation, such as collection creation or catalog restore,
+ask the startup coordinator to reload goods types and rebuild the runtime. It
+reuses the open database. Item and card changes refresh their own views.
 
 ## Code Ownership
 
@@ -57,6 +58,10 @@ Application operations are grouped by feature:
 - **Goods types:** create one type and its protected fields atomically.
 - **Fields:** validate and apply one staged field change set.
 - **Items:** validate values, filter, sort, save content, and change lifecycle.
+- **Dashboard:** read selected collection records and calculate filtered card
+  results, coverage, and unavailable references without loading images. Reuse
+  one selection and calendar instant for totals and breakdowns. Read recent item
+  metadata and save card configuration with conflict detection.
 - **Backups:** encode, validate, summarize, and restore complete snapshots.
 - **Local data:** reset all user collection stores atomically.
 
@@ -77,6 +82,7 @@ sample records, and loses changes on reload. It never opens IndexedDB.
 
 The view layer is split by product area:
 
+- **Dashboard:** overview, summary-card editor, category rings, and Recent items
 - **Administration:** goods-type creation, field management, backup and restore,
   and local-data reset
 - **Goods types:** collection overview and the matching view toolbar action
@@ -113,7 +119,53 @@ Stateful content uses `content-transition.js`. Scroll surfaces use
 Interface text passes through `translate()`. User-entered names and values are
 data and are never translated.
 
+### My Collection
+
+The visible view is My collection; its route and source directory retain the
+technical name `dashboard`. Modules under `src/views/dashboard/` have these
+boundaries:
+
+| Concern | Owner |
+| --- | --- |
+| Loading, mutations, and dialogs | `dashboard-controller.js` |
+| Complete card reads, retained nodes, interaction state, and disposal | `card-board.js` |
+| Editor drafts, async preview validity, and filters | `card-editor.js`, `card-preview.js`, `card-filters.js` |
+| Readouts, decimal precision, and measured number widths | `card-readout.js`, `number-format.js`, `number-layout.js` |
+| Count reveals, ring selection, and sector geometry | `readout-motion.js`, `ring-interaction.js`, `ring-shape.js` |
+| Card sizing, positions, and movement | `card-layout.js`, `card-packing.js`, `card-layout-motion.js` |
+| Drag and keyboard arrangement drafts | `card-arrangement.js` |
+| Current scroll offsets and unrotated bounds | `card-geometry.js` |
+| Recent item thumbnails and entry actions | `recent-items.js` |
+
+Card reads commit a complete generation. Superseded reads cannot update mounted
+cards, and unchanged nodes retain their readouts and interaction state. Preview
+validity and cleanup belong to the editor session. Window-focus refreshes keep
+existing content visible without inserting a loading row.
+
+Layout measures intrinsic card heights at the target width, then commits
+positions and container height together. It never clears the scroll range while
+measuring. Loading status leaves the flow before the first layout. Motion tracks
+visible bounds through interrupted resizing; arrangement uses the same packing
+for draft and saved order. Drag previews use a viewport overlay. Motion and
+dragging resolve the current scrollport when needed because controllers are
+created before mounting.
+
+Number layout reserves the final formatted text's measured width, fitting wider
+system fonts onto one line before counting. Reveals prepare their initial state
+before paint; ring reveals clip filled segments with a sector. Initial content
+fades in, while later card changes use layout motion. Timing lives in
+[Styles](#styles).
+
+Recent items reuse the thumbnail loader and the read-only
+`src/views/items/item-detail-dialog.js`. Each owner releases its image URLs on
+replacement or teardown. See [Workflows](workflows.md#my-collection) for controls
+and [Persistence](persistence.md#dashboard-card-writes) for the save boundary.
+
 ### Styles
+
+The [Design Philosophy](design.md) records the visual direction and reusable
+interaction patterns established by My collection. Use it when adapting other
+views; this section defines stylesheet ownership and shared timing.
 
 `src/styles/app.css` is an import-only entrypoint. Its import order defines the
 cascade.
@@ -123,6 +175,7 @@ cascade.
 | `foundation.css` | Tokens, themes, shell, navigation, and shared controls |
 | `items.css` | Item browser, dialogs, filtering, sorting, and recovery |
 | `administration.css` | Administration and Options |
+| `dashboard.css` | Scoped dashboard cards, dialogs, rings, and responsive packing |
 | `responsive.css` | Narrow layout and reduced-motion overrides |
 
 Common timing tokens keep interaction motion below 200 ms:
@@ -134,10 +187,14 @@ Common timing tokens keep interaction motion below 200 ms:
 - `--item-card-*-duration` for ordered card membership changes
 - `--item-layout-*` for item reordering
 
-The UI uses local Noto Sans and platform CJK font stacks. No font is fetched from
-a third-party host. The language-independent `オシもち。` wordmark uses a local
-outlined SVG; see [branding](development.md#change-the-branding) for its source
-and license.
+Dashboard chart/count reveals take 600 ms, separate from
+interaction timing, and start when visible. Reduced motion shows the final value
+immediately.
+
+The UI uses system fonts, including installed Noto Sans and platform CJK fonts.
+No font is fetched from a third-party host. The language-independent
+`オシもち。` wordmark uses a local outlined SVG; see
+[branding](development.md#change-the-branding) for its source and license.
 
 ## Dependency Direction
 
@@ -246,11 +303,8 @@ asynchronous work.
 Static verification follows JavaScript imports and CSS imports from
 `index.html`. Every reachable runtime asset must appear in the cache.
 
-When a cached runtime file changes or moves:
-
-1. update the service-worker asset list
-2. bump `CACHE_NAME`
-3. run `npm run check`
+Follow [offline asset updates](development.md#update-offline-assets) whenever a
+cached runtime file changes. New or moved files also need asset-list changes.
 
 The worker checks for updates without the HTTP cache. It does not reload an open
 page because that could discard a draft.

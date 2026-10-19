@@ -214,6 +214,56 @@ New items require one processed JPEG:
 The source file stays in the form draft and is not persisted. Older records with
 `imageAssetId: null` remain readable.
 
+## Dashboard Cards
+
+Saved cards are catalog records defined by `dashboard-card.js`. Each has a stable
+`id`, a unique non-negative `position`, and creation and update timestamps.
+Summary cards also have a `title` and one calculation: `count`, `sum`, `average`,
+`minimum`, or `maximum`. Removing a summary card removes its configuration
+permanently; summary cards have no soft-delete state.
+
+The built-in Recent items card uses `type: "recent-items"` and a boolean
+`visible`, without calculation fields or a stored title. At most one such record
+is allowed. Keeping a hidden record preserves the decision to hide it across
+reloads and backups. Visibility and ordering share the summary-card storage and
+snapshot transaction. Without a saved record, the view shows the default card
+without writing to storage. Its first configuration change saves an explicit
+record with the other cards. See [My collection workflows](workflows.md#my-collection).
+
+Each source selects one collection by `goodsTypeId`. Numeric calculations also
+select one `fieldId` per source. Count cards have no numeric field. Saved sources
+remember collection and field names, and selection filters remember choice
+labels. Calculations use IDs; remembered names identify references that later
+become unavailable. Stale references remain valid card records and produce an
+unavailable-reference result instead of a partial total.
+
+Sources contain their own search query and typed field rules. Rules support the
+item browser's text, number, date, two-option, and selection conditions. A date
+rule stores either an absolute range or `datePreset: "this-year"`, resolved when
+the card is read. `includeDeleted` defaults to `false` for the whole card.
+
+`groupBy` defaults to `{ type: "collection" }`. Sum and count cards may instead
+use `{ type: "field", fields: [...] }`, mapping one selection or two-option
+field to each selected collection. Mappings remember field names, choice IDs
+and labels, or the two boolean labels. Group identity uses the collection,
+field, and stable choice ID (or boolean value), so label renames preserve it.
+Choices from independent collections remain distinct. Missing category values
+form an Uncategorized group; `false` remains a real category. Grouping changes
+the breakdown, not the total or the card's filters.
+
+`displayMode` defaults to `"auto"`; `"number"` and `"ring"` are explicit display
+preferences saved with the card and included in backups. Ring mode applies only
+to sums and counts. The automatic mode lets the view omit a ring when there is
+only one contributing category.
+
+`format` stores either `{ type: "number", currency: null }` or
+`{ type: "currency", currency: "JPY" }`. Currency uses a three-letter uppercase
+code and changes presentation only; it does not convert values. Count cards use
+number formatting. Number formats may also carry
+`unit: { symbol: "kg", position: "suffix" }` (or `"prefix"`). Symbols are
+user-defined text of up to 32 characters and change presentation only. Units are
+preserved in card storage and backups; they do not convert quantities.
+
 ## Lifecycle
 
 Lifecycle records use:
@@ -241,7 +291,7 @@ item and its image in one transaction.
 
 ## Versions
 
-The domain-model version is `1`. It is defined in
+The domain-model version is `2`. It is defined in
 `src/data/models/domain-model.js`.
 
 The domain-model version describes record meaning. The IndexedDB version

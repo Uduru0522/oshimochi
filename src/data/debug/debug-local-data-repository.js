@@ -16,6 +16,7 @@ export function createDebugLocalDataRepository(catalog) {
     );
     catalog.items.splice(0, catalog.items.length, ...replacement.items);
     catalog.assets.splice(0, catalog.assets.length, ...replacement.assets);
+    catalog.dashboardCards.splice(0, catalog.dashboardCards.length, ...replacement.dashboardCards);
 
     return structuredClone(replacement);
   }
@@ -25,6 +26,7 @@ export function createDebugLocalDataRepository(catalog) {
     catalog.fieldDefinitions.splice(0, catalog.fieldDefinitions.length);
     catalog.items.splice(0, catalog.items.length);
     catalog.assets.splice(0, catalog.assets.length);
+    catalog.dashboardCards.splice(0, catalog.dashboardCards.length);
   }
 
   return { readCatalog, replaceCatalog, reset };

@@ -31,6 +31,13 @@ http://localhost:4173/oshimochi/
 http://localhost:4173/oshimochi/?debug=1
 ```
 
+The root and `/oshimochi/` paths on the same host and port share browser data
+and settings. A path change does not create a separate test catalog; see
+[browser settings](persistence.md#browser-settings).
+
+The server serves updated files but does not reload an open page automatically.
+Refresh the preview after edits.
+
 If PowerShell blocks `npm.ps1`, use `npm.cmd` in place of `npm`.
 
 ## Verification And Review
@@ -59,7 +66,8 @@ Do not parse route strings inside components.
 
 Edit sample records in `src/data/debug/debug-fixture-data.js`.
 `debug-fixtures.js` turns those definitions into validated records and image
-assets.
+assets. `debug-dashboard-fixtures.js` creates the default cards from those
+collections and fields.
 
 The default catalog covers:
 
@@ -68,6 +76,21 @@ The default catalog covers:
 - custom two-option labels
 - portrait and landscape images
 - at least 20 Tapestries items for query and layout checks
+- purchase prices across all three collections, including zero and missing prices
+- purchases in the current and earlier years, with dates relative to startup
+- mixed-collection Recent items, with an older item edited today to check ordering
+
+Debug mode opens with Recent items and six editable summary cards: Total spent,
+Collection mix, Spent this year, Tapestry condition, Average figure price, and
+Tapestries on display. They cover collection and category rings, date and
+two-option filters, number-only cards, and fractional averages. All sample
+purchase prices use yen; the figure collection deliberately calls its price
+field Paid price to exercise selecting different fields across collections.
+
+Refreshing debug mode restores the sample cards and items. When constructing a
+focused test catalog, explicit data overrides suppress unrelated default cards;
+pass `dashboardCards: []` for an empty dashboard. A `now` option can anchor the
+relative fixture dates in tests.
 
 Keep fixture IDs stable. Build records through domain factories so invalid
 fixtures fail during startup and tests.
@@ -136,6 +159,10 @@ the resulting artwork or app. The source credit and license are retained for
 provenance. Normal UI fonts and technical application names remain independent
 of the wordmark.
 
+See [Design Philosophy](design.md) for how My collection and the shared shell
+carry the wordmark's weight, soft corners, and accent into the interface.
+Keep the mochi and tapestry white in both themes.
+
 `icons/oshimochi-themeable.svg` is the shared mochi-and-tapestry geometry for
 the sidebar, favicon, and installed app. The sidebar references its
 `oshimochi-mark` root with an inline SVG `use`. The `.brand-mark` rule in
@@ -153,20 +180,21 @@ Both branding SVGs belong to the service-worker asset list. Follow
 
 ### Change Styles Or Motion
 
-`src/styles/app.css` only imports owned style files:
+Follow [Design Philosophy](design.md) when adapting another view to the
+collection-desk style.
 
-| File | Use |
-| --- | --- |
-| `foundation.css` | Tokens, shell, navigation, and shared UI |
-| `items.css` | Item browsing and item dialogs |
-| `administration.css` | Administration and Options |
-| `responsive.css` | Narrow layout and reduced motion |
+1. Find the owning stylesheet and shared timing token in
+   [Architecture](architecture.md#styles). Preserve the import order in
+   `src/styles/app.css`.
+2. Reuse semantic tokens and existing motion helpers. New runtime stylesheets
+   must be included in the [offline asset list](#update-offline-assets).
+3. Check the affected view in both themes, all languages, narrow layouts, and
+   reduced motion using [Testing](testing.md#manual-browser-checks).
 
-Preserve this import order. Add every new runtime stylesheet to
-`service-worker.js`.
-
-Prefer tokens over hardcoded values. Keep motion at or below 200 ms and use the
-shared timing tokens.
+For dashboard changes, preserve the measurement and cleanup boundaries in
+[My collection architecture](architecture.md#my-collection). Verify long values
+with different system fonts, stable unit placement, and scrolled layouts during
+window resizing and focus changes.
 
 Use `content-transition.js` for stateful workflow replacement. Use
 `motion.js` when JavaScript needs a CSS timing value.
@@ -214,11 +242,22 @@ Current scroll areas are:
 Narrow navigation also uses `scrollable-row.js` for wheel scrolling and the
 right-edge hint.
 
+Wide navigation reserves a stable native scrollbar gutter so height changes
+do not resize its category tabs when the list starts overflowing. Narrow
+navigation removes that gutter for its horizontal layout.
+
+The page and card editor use `overlay-scrollbar.js`. Native scrolling handles
+wheel, touch, and content focus; a draggable scrollbar overlays the right edge
+without reserving content width. It appears while scrolling, approaching the
+edge, or using its keyboard controls, and otherwise hides. The helper owns its
+wrapper, observers, and cleanup.
+
 ### Update Offline Assets
 
-When a runtime file moves or is added:
+Whenever a cached runtime file changes:
 
-1. update `service-worker.js`
+1. update the asset list in `service-worker.js` if files were added, moved,
+   or removed
 2. bump `CACHE_NAME`
 3. run `npm run check`
 4. load the changed path through the local server

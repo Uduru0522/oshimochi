@@ -9,6 +9,7 @@ export const NAV_KINDS = {
 };
 
 export const RENDERERS = {
+  dashboard: "dashboard",
   administration: "administration",
   goodsTypeOverview: "goodsTypeOverview",
   goodsTypeItems: "goodsTypeItems",

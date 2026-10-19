@@ -57,6 +57,7 @@ export function createDataCatalogFixture() {
 
   return {
     assets: [asset],
+    dashboardCards: [],
     fieldDefinitions: [...fieldDefinitions, customField],
     goodsTypes: [goodsType],
     items: [item]

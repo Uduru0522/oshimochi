@@ -1,14 +1,14 @@
 :root {
   color-scheme: light;
-  --bg: #eef1f4;
-  --surface: #fbfcfd;
-  --surface-muted: #f5f7f9;
-  --thumbnail-surface: #edf1f3;
-  --line: #dce2e8;
-  --line-strong: #cad3dc;
-  --text: #18212b;
+  --bg: #f3f0e8;
+  --surface: #fffdf8;
+  --surface-muted: #f6f3ec;
+  --thumbnail-surface: #ece9e1;
+  --line: #e0ddd3;
+  --line-strong: #ccc8bc;
+  --text: #343e3b;
   --oshimochi-wordmark-ink: #3a434b;
-  --muted: #687381;
+  --muted: #5d6761;
   --accent-red: #c2354b;
   --accent-orange: #b95700;
   --accent-yellow: #d3ad00;
@@ -59,6 +59,7 @@
 :root[data-accent="yellow"] {
   --accent: var(--accent-yellow);
   --accent-ink: #806b00;
+  --accent-foreground: var(--text);
 }
 
 :root[data-accent="blue"] {
@@ -89,15 +90,15 @@
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --bg: #101417;
-  --surface: #151a1e;
-  --surface-muted: #1d2429;
-  --thumbnail-surface: #101518;
-  --line: #2a333a;
-  --line-strong: #3a454d;
-  --text: #eef3f5;
+  --bg: #171c1b;
+  --surface: #202624;
+  --surface-muted: #272e2b;
+  --thumbnail-surface: #1a201e;
+  --line: #36413b;
+  --line-strong: #4b5750;
+  --text: #f0f2e9;
   --oshimochi-wordmark-ink: #dce4e8;
-  --muted: #9da9b3;
+  --muted: #adb6ad;
   --accent-red: #e88992;
   --accent-orange: #e8a16f;
   --accent-yellow: #ddc75b;
@@ -273,6 +274,7 @@ textarea {
   padding-right: var(--sidebar-nav-scrollbar-gutter);
   position: relative;
   scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+  scrollbar-gutter: stable;
   scrollbar-width: thin;
   touch-action: pan-y;
   transform-origin: top left;
@@ -340,27 +342,9 @@ textarea {
   grid-template-columns: 28px minmax(0, 1fr) 16px;
 }
 
-.utility-nav-item:hover,
-.sidebar-project-link:hover {
-  color: var(--text);
-  background: var(--accent-tint);
-}
-
-.utility-nav-item[aria-current="page"] {
-  color: var(--text);
-  background: var(--accent-soft);
-  border-color: var(--accent);
-}
-
 .utility-nav-item:active,
 .sidebar-project-link:active {
   transform: translateY(1px);
-}
-
-.utility-nav-item:focus-visible,
-.sidebar-project-link:focus-visible {
-  outline: 3px solid var(--focus-ring);
-  outline-offset: 2px;
 }
 
 .utility-separator {
@@ -435,6 +419,7 @@ textarea {
   display: grid;
   gap: 6px;
   min-width: 0;
+  padding: 4px;
 }
 
 .utility-nav-list {
@@ -442,6 +427,7 @@ textarea {
   gap: 6px;
   width: 100%;
   min-width: 0;
+  padding: 4px;
 }
 
 .nav-separator {
@@ -485,20 +471,63 @@ textarea {
   transform: translateY(1px);
 }
 
-.nav-item:hover {
-  background: var(--surface-muted);
-  border-color: var(--line);
+/* Share the bubble shape across navigation; horizontal tabs move its tail below. */
+:is(.nav-item, .utility-nav-item, .sidebar-project-link) {
+  --nav-bubble-fill: transparent;
+  --nav-bubble-stroke: transparent;
+  position: relative;
+  width: calc(100% - 10px);
+  margin-right: 10px;
+  overflow: visible;
+  background: var(--nav-bubble-fill);
+  border: 2px solid var(--nav-bubble-stroke);
+  border-radius: 8px;
 }
 
-.nav-item:focus-visible {
-  outline: 3px solid var(--focus-ring);
-  outline-offset: 2px;
+:is(.nav-item, .utility-nav-item, .sidebar-project-link)::after {
+  position: absolute;
+  top: 50%;
+  right: -4px;
+  width: 10px;
+  height: 10px;
+  pointer-events: auto;
+  content: "";
+  opacity: 0;
+  background: var(--nav-bubble-fill);
+  border-top: 2px solid var(--nav-bubble-stroke);
+  border-right: 2px solid var(--nav-bubble-stroke);
+  border-radius: 0 2px 0 0;
+  transform: translateY(-50%) rotate(45deg);
+  transition:
+    background-color var(--motion-fast) ease,
+    border-color var(--motion-fast) ease,
+    opacity var(--motion-fast) ease;
 }
 
-.nav-item[aria-current="page"] {
+:is(.nav-item, .utility-nav-item, .sidebar-project-link):is(:hover, :focus-visible) {
+  --nav-bubble-fill: color-mix(in srgb, var(--accent) 7%, var(--surface-muted));
+  --nav-bubble-stroke: color-mix(in oklab, var(--accent) 40%, var(--line));
   color: var(--text);
-  background: var(--accent-soft);
-  border-color: var(--accent);
+}
+
+:is(.nav-item, .utility-nav-item, .sidebar-project-link):is(:hover, :focus-visible, [aria-current="page"])::after {
+  opacity: 1;
+}
+
+:is(.nav-item, .utility-nav-item)[aria-current="page"] {
+  --nav-bubble-fill: var(--accent-soft);
+  --nav-bubble-stroke: color-mix(in oklab, var(--accent) 65%, var(--line));
+  color: var(--text);
+  box-shadow: 0 2px 0 var(--accent-tint);
+}
+
+:is(.nav-item, .utility-nav-item, .sidebar-project-link):focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+:is(.nav-item, .utility-nav-item, .sidebar-project-link):focus-visible::after {
+  box-shadow: 2px -2px 0 1px var(--focus-ring);
 }
 
 .nav-icon {
@@ -809,6 +838,17 @@ textarea {
   display: none;
 }
 
+.overlay-scroll-frame { position: relative; display: grid; grid-template: minmax(0, 1fr) / minmax(0, 1fr); flex: 1 1 auto; min-width: 0; min-height: 0; overflow: hidden; }
+.overlay-scroll-frame:has(> .view-panel) { grid-row: 2; }
+.overlay-scroll-frame > .overlay-scroll-content { grid-area: 1 / 1; min-width: 0; min-height: 0; scrollbar-width: none; scrollbar-gutter: auto; }
+.overlay-scroll-frame > .overlay-scroll-content::-webkit-scrollbar { width: 0; height: 0; }
+.overlay-scrollbar { position: absolute; z-index: 6; top: 4px; bottom: 4px; right: 2px; width: 12px; opacity: 0; pointer-events: none; touch-action: none; transition: opacity var(--motion-fast) ease; }
+.overlay-scroll-frame[data-scrollbar-visible=true] > .overlay-scrollbar { opacity: 1; pointer-events: auto; }
+.overlay-scroll-thumb { position: absolute; top: 0; right: 2px; width: 6px; border-radius: 8px; background: var(--scrollbar-thumb); }
+.overlay-scrollbar:hover > .overlay-scroll-thumb { background: var(--scrollbar-thumb-hover); }
+.overlay-scrollbar:focus-visible { outline: none; }
+.overlay-scrollbar:focus-visible > .overlay-scroll-thumb { box-shadow: 0 0 0 2px var(--focus-ring); }
+
 .view-panel {
   grid-row: 2;
   display: grid;
@@ -820,7 +860,7 @@ textarea {
   padding: 32px;
   position: relative;
   background: var(--surface);
-  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+  scrollbar-color: transparent transparent;
   scrollbar-gutter: stable;
   scrollbar-width: thin;
   touch-action: pan-y;
@@ -841,12 +881,17 @@ textarea {
 }
 
 .view-panel::-webkit-scrollbar-thumb {
-  background: var(--scrollbar-thumb);
+  background: transparent;
   border: var(--scrollbar-thumb-border) solid transparent;
   border-radius: 999px;
   background-clip: padding-box;
 }
 
+.view-panel:is([data-scrolling], [data-scrollbar-edge]) {
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+.view-panel:is([data-scrolling], [data-scrollbar-edge])::-webkit-scrollbar-thumb,
 .view-panel::-webkit-scrollbar-thumb:hover {
   background: var(--scrollbar-thumb-hover);
   border: var(--scrollbar-thumb-border) solid transparent;

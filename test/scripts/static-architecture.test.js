@@ -86,6 +86,7 @@ test("static stylesheet graph includes every owned style layer", () => {
     [
       "./src/styles/administration.css",
       "./src/styles/app.css",
+      "./src/styles/dashboard.css",
       "./src/styles/foundation.css",
       "./src/styles/items.css",
       "./src/styles/responsive.css"

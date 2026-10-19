@@ -28,7 +28,7 @@ test("DebugStorage lists fixture fields in position order", async () => {
 
   assert.deepEqual(
     (await storage.listFieldDefinitions("figures")).map(({ key }) => key),
-    ["id", "name", "image", "manufacturer", "scale", "edition"]
+    ["id", "name", "image", "manufacturer", "scale", "edition", "cost", "purchased_on"]
   );
 });
 
@@ -58,6 +58,7 @@ test("DebugStorage rejects duplicate field keys without a partial write", async 
     goodsTypeId: "figures",
     fieldDefinitions: [customField]
   });
+  const before = await storage.listFieldDefinitions("figures");
 
   await assert.rejects(
     storage.saveFieldDefinitions({
@@ -66,5 +67,5 @@ test("DebugStorage rejects duplicate field keys without a partial write", async 
     }),
     (error) => error.code === STORAGE_ERROR_CODES.operationFailed
   );
-  assert.equal((await storage.listFieldDefinitions("figures")).length, 7);
+  assert.deepEqual(await storage.listFieldDefinitions("figures"), before);
 });

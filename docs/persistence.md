@@ -41,7 +41,7 @@ access tokens stay only in memory and are lost on reload.
 
 ```text
 Name:    oshimochi
-Version: 1
+Version: 2
 ```
 
 Oshimochi uses its own database and `oshimochi.*` preference keys. It does not
@@ -58,10 +58,16 @@ the database version.
 | `field_definitions` | `id` | `by_goods_type`, unique `by_goods_type_and_key` | Field records |
 | `items` | `id` | `by_goods_type`, `by_goods_type_and_updated_at` | Items for all goods types |
 | `assets` | `id` | none | Processed image blobs |
+| `dashboard_cards` | `id` | none | Saved card definitions and ordering |
 | `app_metadata` | `key` | none | Domain metadata |
 
 IndexedDB cannot use booleans as index keys. Repositories query by parent ID and
 then apply lifecycle scope in memory.
+
+Upgrading a version-1 database adds the card store and updates domain metadata.
+Existing collections, fields, items, and image blobs are preserved. Cards belong
+to the catalog, rather than browser appearance settings. Debug cards stay in
+the temporary debug catalog and never write to the user database.
 
 ## Storage Contract
 
@@ -75,6 +81,7 @@ The adapter contract is grouped by responsibility:
 | Items | `listItems`, `createItem`, `updateItemContent` |
 | Item lifecycle | `updateItemLifecycle`, `purgeItem` |
 | Assets | `getAsset` |
+| Dashboard cards | `listDashboardCards`, `replaceDashboardCards` |
 | Complete catalog | `readDataCatalog`, `replaceDataCatalog` |
 | Maintenance | `resetData` |
 
@@ -100,6 +107,16 @@ catalog is being read.
 `purgeItem` accepts a deleted item ID. It rereads the item inside the write
 transaction and removes both the item and its retained image.
 
+### Dashboard Card Writes
+
+`listDashboardCards()` returns validated records in position order.
+`replaceDashboardCards({ cards, expectedCards })` replaces the complete ordered
+list. It validates both lists and compares `expectedCards` to the current saved
+records within the write transaction. A mismatch returns the `conflict` error
+code without writing, so one window cannot silently overwrite another window's
+card changes. Callers reload before retrying. Add, edit, remove, and reorder use
+this same boundary.
+
 ## Transactions
 
 Validation, image processing, and user confirmation finish before a transaction
@@ -114,12 +131,13 @@ starts. Each operation chooses its full store set at the start.
 | Replace item image | `assets`, `items` |
 | Delete or restore item | `items` |
 | Purge deleted item | `items`, `assets` |
-| Read backup catalog | `goods_types`, `field_definitions`, `items`, `assets` |
-| Restore backup catalog | `goods_types`, `field_definitions`, `items`, `assets` |
-| Reset local data | `goods_types`, `field_definitions`, `items`, `assets` |
+| Replace dashboard cards | `dashboard_cards` |
+| Read backup catalog | `goods_types`, `field_definitions`, `items`, `assets`, `dashboard_cards` |
+| Restore backup catalog | `goods_types`, `field_definitions`, `items`, `assets`, `dashboard_cards` |
+| Reset local data | `goods_types`, `field_definitions`, `items`, `assets`, `dashboard_cards` |
 
 Image replacement removes the old asset in the same transaction. Backup reads
-use one read-only transaction. Restore clears and rewrites all four user stores
+use one read-only transaction. Restore clears and rewrites all five user stores
 in one write transaction. Restore and reset keep `app_metadata`.
 
 The global mutation controller blocks overlapping writes. IndexedDB protects
@@ -137,6 +155,7 @@ Current error groups cover:
 - initialization or upgrade failure
 - invalid adapter or invalid persisted data
 - blocked upgrade
+- conflicting dashboard card changes
 - failed operation
 
 Startup follows one sequence:
@@ -182,7 +201,7 @@ Two versions are active in the current app:
 `app_metadata` stores:
 
 ```js
-{ key: "domainModelVersion", value: 1 }
+{ key: "domainModelVersion", value: 2 }
 ```
 
 The physical schema imports the domain version. It does not define domain

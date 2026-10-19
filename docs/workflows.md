@@ -24,6 +24,95 @@ unchanged.
 4. The app saves both choices and applies them at once.
 5. The next page load applies them before first paint.
 
+## My Collection
+
+**My collection** shows active collection and item counts, plus deleted-item counts
+within those collections. Cards show recent additions and saved calculations.
+Their layout adapts to the available width while keeping the saved order.
+
+### Recent Items
+
+**Recent items** shows the five newest active items across active collections,
+ordered by when they were added. Editing an older item does not move it to the
+top.
+
+Select an entry to open its read-only image and field details. The picture stays
+beside the text on wide screens and above it on phones. Missing or failed images
+have a labeled placeholder.
+
+Use the card's three-dot menu to rearrange or hide it. The plus tile can add it
+again. This detail window currently opens from Recent items only.
+
+### Create A Summary Card
+
+1. Choose the plus tile and **Summary card**.
+2. Name the card and use the visible choices for count, total, average, lowest,
+   or highest value.
+3. Select collections. For numeric calculations, choose one number field in each
+   collection; field names may differ.
+4. Optionally open the filter button beside each collection's name. Search and
+   field rules use the [item browser's conditions](#filter-items); date rules
+   also offer **This year**. **Include deleted items** applies to all selected
+   collections.
+5. Choose no unit, yen (`¥`), dollars (`$`), NTD, or a custom unit. Only the custom
+   choice has an editable text box. Choose its position and display preference.
+6. Check the live preview, then save. Cancel discards the draft.
+
+### Read A Summary Card
+
+Filters match every rule; selected choices within a rule are alternatives.
+Cards use active items unless **Include deleted items** is enabled. Missing
+numeric values are excluded, while zero counts as a value. An average combines
+individual values across collections. An empty numeric result shows `—`.
+
+Counts and sums can show a ring broken down by collection or by a selection or
+two-option field. Choose the category field separately for each collection.
+Missing category values appear as Uncategorized. **Automatic** uses a plain
+number when only one category contributes; **Number only** and **Ring** override
+that preference. Negative category totals use a numerical breakdown.
+
+The ring starts with its largest segment selected. Its name, value, and
+percentage appear below. Hover or focus another segment to preview it without
+changing that selection. Click, tap, or press Enter or Space to pin a new
+segment. Escape restores the largest default. Pins remain during card
+rearrangement and reset after leaving and returning to My collection.
+
+Open **Details** in the three-dot menu for source collections, filters, value
+coverage, and the full breakdown, including zero-value groups. An unavailable
+collection, field, or choice is named with an **Edit card** action to replace it;
+the app does not show a partial total.
+
+Units change presentation only and never convert values. A long unit moves to
+one line below the number and uses an ellipsis if needed. Its full text, and
+truncated card titles, remain available on hover. Count and ring animations
+respect reduced-motion preferences.
+
+### Manage Cards
+
+Use a summary card's three-dot menu for **Details**, **Edit card**,
+**Rearrange cards**, or **Remove**. Removing a card leaves its items intact.
+The plus tile creates another summary card or restores a hidden Recent items
+card.
+
+Renaming a collection, field, or choice preserves its card references. If
+another tab changes the saved cards, a stale save is rejected. Cancel the edit
+and reload the saved cards before trying again.
+
+Card definitions, Recent items visibility, and ordering are saved with the
+catalog and included in local and Drive backups. Debug changes remain temporary
+and separate from user data.
+
+### Rearrange Cards
+
+1. Choose **Rearrange cards** from any card's three-dot menu.
+2. Drag a handle with a mouse or touch, or focus a handle and use arrow keys.
+   The page scrolls when dragging near its top or bottom edge.
+3. Choose **Save order** to apply the layout or **Cancel** to discard the draft.
+
+The preview uses the same layout as the saved view. Cards shake slightly while
+editable unless reduced motion is enabled. Escape cancels an active drag first,
+then leaves edit mode.
+
 ## Collections
 
 ### Create A Goods Type
@@ -229,20 +318,21 @@ item and its retained image in one transaction.
 2. Choose **Export backup**.
 3. The app validates one complete catalog and downloads a `.json.gz` archive.
 
-The file includes active and soft-deleted goods types, fields, items, and all
-retained images. Export is read-only. Theme, accent, language, and cached app
-files are not included.
+The file includes active and soft-deleted goods types, fields, items, all
+retained images, and saved cards with their ordering. Export is
+read-only. Theme, accent, language, and cached app files are not included.
 
 ### Restore Local Data
 
 1. Open **Administration** and choose **Restore from file**.
 2. Select an Oshimochi `.json.gz` backup.
-3. Review its date, record counts, and total image size.
+3. Review its date, record counts (including saved cards), and total image size.
 4. Confirm the replacement.
 
 The app parses and validates the complete file before a write starts. Confirmed
-restore replaces every local collection, field, item, and image in one
-transaction. It does not merge data.
+restore replaces every local collection, field, item, image, and saved card
+in one transaction. It does not merge data. Released version-1 backups restore
+with an empty card list.
 
 An invalid file leaves local data unchanged. A failed replacement also keeps the
 previous catalog. After a successful commit, navigation reloads from the restored
@@ -326,8 +416,8 @@ Soft-deleting a field keeps existing item values.
 3. Type `RESET`.
 4. Confirm the operation.
 
-The app clears goods types, fields, items, and images in one transaction. It
-keeps theme and language settings and cached app files.
+The app clears goods types, fields, items, images, and saved cards in one
+transaction. It keeps theme and language settings and cached app files.
 
 ## Shared Mutation State
 

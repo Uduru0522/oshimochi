@@ -3,6 +3,7 @@ import {
   StorageError
 } from "../contracts/storage-contract.js";
 import { createDebugCatalog } from "./debug-catalog.js";
+import { createDebugDashboardCardRepository } from "./debug-dashboard-card-repository.js";
 import {
   createDebugFieldDefinitionRepository
 } from "./debug-field-definition-repository.js";
@@ -16,6 +17,7 @@ export function createDebugStorage(options = {}) {
   const goodsTypeRepository = createDebugGoodsTypeRepository(catalog);
   const itemRepository = createDebugItemRepository(catalog);
   const localDataRepository = createDebugLocalDataRepository(catalog);
+  const dashboardCardRepository = createDebugDashboardCardRepository(catalog);
   let isInitialized = false;
 
   function assertInitialized() {
@@ -49,6 +51,14 @@ export function createDebugStorage(options = {}) {
       return itemRepository.getAsset(assetId);
     },
     initialize,
+    async listDashboardCards() {
+      assertInitialized();
+      return dashboardCardRepository.list();
+    },
+    async replaceDashboardCards(change) {
+      assertInitialized();
+      return dashboardCardRepository.replace(change);
+    },
     async listFieldDefinitions(goodsTypeId, options) {
       assertInitialized();
       return fieldDefinitionRepository.list(goodsTypeId, options);

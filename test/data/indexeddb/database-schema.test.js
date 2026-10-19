@@ -9,7 +9,7 @@ import {
 } from "../../../src/data/indexeddb/database-schema.js";
 import { createSchemaDatabase } from "../../../test-support/indexeddb-fakes.js";
 
-test("version 1 schema creates stable stores, indexes, and metadata", () => {
+test("current schema creates stable stores, indexes, and metadata", () => {
   const database = createSchemaDatabase();
 
   upgradeDatabase(database, 0);
@@ -26,10 +26,22 @@ test("version 1 schema creates stable stores, indexes, and metadata", () => {
   ]);
 });
 
-test("version 1 schema leaves an existing version unchanged", () => {
+test("current schema leaves an existing version unchanged", () => {
   const database = createSchemaDatabase();
 
-  upgradeDatabase(database, 1);
+  upgradeDatabase(database, 2);
 
   assert.equal(database.stores.size, 0);
+});
+
+test("version 1 upgrade adds dashboard storage and preserves existing collection records", () => {
+  const database = createSchemaDatabase();
+  upgradeDatabase(database, 0);
+  database.stores.delete(OBJECT_STORES.dashboardCards);
+  const goodsTypes = database.stores.get(OBJECT_STORES.goodsTypes);
+  goodsTypes.records.push({ id: "existing" });
+  upgradeDatabase(database, 1, { objectStore: (name) => database.stores.get(name) });
+  assert.deepEqual(goodsTypes.records, [{ id: "existing" }]);
+  assert.deepEqual(database.stores.get(OBJECT_STORES.dashboardCards).options, { keyPath: "id" });
+  assert.equal(database.stores.get(OBJECT_STORES.metadata).records.at(-1).value, DOMAIN_MODEL_VERSION);
 });

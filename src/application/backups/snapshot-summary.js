@@ -16,6 +16,7 @@ export function createSnapshotSummary(snapshot) {
       0
     ),
     counts: {
+      dashboardCards: { total: snapshot.data.dashboardCards?.length ?? 0 },
       assets: { total: snapshot.data.assets.length },
       fieldDefinitions: summarizeLifecycleRecords(
         snapshot.data.fieldDefinitions

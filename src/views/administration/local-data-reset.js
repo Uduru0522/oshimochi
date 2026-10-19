@@ -22,7 +22,7 @@ export function createLocalDataReset({ mutationController, onReset, resetLocalDa
       createElement("h3", { textContent: translate("Reset local data") }),
       createElement("p", {
         textContent: translate(
-          "Clear all collections, fields, items, and images currently loaded by this app. Exported files, offline app files, and appearance settings are not affected."
+          "Clear all collections, fields, items, images, and saved cards currently loaded by this app. Exported files, offline app files, and appearance settings are not affected."
         )
       })
     );

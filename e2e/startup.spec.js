@@ -4,7 +4,7 @@ test("fresh user mode opens an empty catalog", async ({ page }) => {
   await page.goto("./");
 
   await expect(page).toHaveTitle("Oshimochi");
-  await expect(page.getByRole("button", { name: "Dashboard", exact: true }))
+  await expect(page.getByRole("button", { name: "My collection", exact: true }))
     .toHaveAttribute("aria-current", "page");
   await expect(page.getByText("No goods types yet", { exact: true })).toBeVisible();
 
