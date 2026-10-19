@@ -8,16 +8,13 @@ dates. See [Workflows](workflows.md) for implemented behavior.
 ### 1. Review The My Collection Pull Request
 
 My collection, the card editor, and Recent items are feature-complete on the
-feature branch. The owner has approved the final diff and local testing,
-including the refactor and embedded-browser scroll/focus fix. See
-[My collection workflows](workflows.md#my-collection) for the completed scope.
+feature branch in [PR #11](https://github.com/Uduru0522/oshimochi/pull/11). See
+[My collection workflows](workflows.md#my-collection) for the scope.
 
-The refactor addresses card packing and scroll stability, rendering and preview
-lifecycle ownership, and shared calculation work. The approved changes are
-committed and pushed in [PR #11](https://github.com/Uduru0522/oshimochi/pull/11).
-Review its CI results and final branch diff. Follow
-[AGENTS.md](../AGENTS.md#local-review-before-commits); merging still requires
-explicit owner approval.
+Review CI and the final diff before the owner approves a merge. After deployment,
+complete the [production checks](deployment.md#after-deployment), including saved
+card configuration, backup/restore, and offline behavior. Release tagging waits
+for the owner's version and release approval.
 
 ### 2. Define Automatic Backup Policy
 
