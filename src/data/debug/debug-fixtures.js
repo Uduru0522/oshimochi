@@ -30,14 +30,16 @@ function createTapestryCatalogEntry(record, index) {
   setOptionalValue(customValues, "tapestries-release_date", record.releaseDate);
   setOptionalValue(customValues, "tapestries-source", record.source);
   setOptionalValue(customValues, "tapestries-condition", record.condition);
+  setOptionalValue(customValues, "tapestries-purchase_price", record.purchasePrice);
 
   return {
     id,
     goodsTypeId: "tapestries",
     name: record.name,
     customValues,
-    createdAt: `2026-01-${String(index + 1).padStart(2, "0")}T09:00:00.000Z`,
-    updatedAt: `2026-02-${String(TAPESTRY_CATALOG.length - index).padStart(2, "0")}T12:00:00.000Z`,
+    addedDaysAgo: record.addedDaysAgo ?? 31 - index,
+    updatedDaysAgo: record.updatedDaysAgo,
+    purchasedDaysAgo: record.purchasedDaysAgo,
     image: record.image
   };
 }
@@ -114,10 +116,26 @@ export function createDebugFieldDefinitions(goodsTypes = createDebugGoodsTypes()
   });
 }
 
-export function createDebugItems() {
-  return ITEM_FIXTURES.map((record) =>
-    createItemRecord(record, { now: () => FIXTURE_TIMESTAMP })
-  );
+export function createDebugItems({ now = () => new Date().toISOString() } = {}) {
+  const anchor = new Date(now());
+  function daysAgo(days) {
+    const date = new Date(anchor);
+    date.setDate(date.getDate() - days);
+    return date;
+  }
+  return ITEM_FIXTURES.map((record) => {
+    const addedDaysAgo = record.addedDaysAgo;
+    const createdAt = daysAgo(addedDaysAgo).toISOString();
+    const updatedAt = daysAgo(record.updatedDaysAgo ?? Math.min(3, addedDaysAgo)).toISOString();
+    const customValues = { ...record.customValues };
+    if (record.purchasedDaysAgo !== undefined) {
+      const date = daysAgo(record.purchasedDaysAgo);
+      customValues[`${record.goodsTypeId}-purchased_on`] = [date.getFullYear(),
+        String(date.getMonth() + 1).padStart(2, "0"), String(date.getDate()).padStart(2, "0")].join("-");
+    }
+    return createItemRecord({ ...record, customValues, createdAt, updatedAt,
+      deletedAt: record.isDeleted ? updatedAt : null }, { now: () => anchor.toISOString() });
+  });
 }
 
 export function createDebugAssets() {

@@ -42,7 +42,9 @@ export const CUSTOM_FIELD_FIXTURES = Object.freeze({
           { id: "displayed", label: "Displayed" }
         ]
       }
-    }
+    },
+    { key: "purchase_price", displayName: "Purchase price", dataType: "number" },
+    { key: "purchased_on", displayName: "Purchased on", dataType: "date" }
   ]),
   figures: Object.freeze([
     { key: "manufacturer", displayName: "Manufacturer", dataType: "text" },
@@ -64,7 +66,9 @@ export const CUSTOM_FIELD_FIXTURES = Object.freeze({
       dataType: "boolean",
       isRequired: true,
       options: { falseLabel: "Standard", trueLabel: "Limited" }
-    }
+    },
+    { key: "cost", displayName: "Paid price", dataType: "number" },
+    { key: "purchased_on", displayName: "Purchased on", dataType: "date" }
   ]),
   "acrylic-goods": Object.freeze([
     {
@@ -79,7 +83,9 @@ export const CUSTOM_FIELD_FIXTURES = Object.freeze({
         ]
       }
     },
-    { key: "event", displayName: "Event", dataType: "text" }
+    { key: "event", displayName: "Event", dataType: "text" },
+    { key: "purchase_price", displayName: "Purchase price", dataType: "number" },
+    { key: "purchased_on", displayName: "Purchased on", dataType: "date" }
   ])
 });
 
@@ -88,6 +94,9 @@ export const CUSTOM_FIELD_FIXTURES = Object.freeze({
 export const TAPESTRY_CATALOG = Object.freeze([
   {
     key: "summer-festival",
+    purchasePrice: 3800,
+    purchasedDaysAgo: 8,
+    addedDaysAgo: 5,
     name: "Summer Festival B2 Tapestry",
     series: "Starlight Memories",
     notes: "Convention edition with the original storage sleeve.",
@@ -100,6 +109,9 @@ export const TAPESTRY_CATALOG = Object.freeze([
   },
   {
     key: "winter-cafe",
+    purchasePrice: 0,
+    purchasedDaysAgo: 380,
+    updatedDaysAgo: 0,
     name: "Winter Cafe Wall Scroll",
     series: "Cafe Collection",
     widthCm: 72.8,
@@ -117,6 +129,8 @@ export const TAPESTRY_CATALOG = Object.freeze([
   },
   {
     key: "moonlit-concert",
+    purchasePrice: 5500,
+    purchasedDaysAgo: 42,
     name: "Moonlit Concert Tapestry",
     series: "Starlight Memories",
     notes: "First-print bonus artwork.",
@@ -129,6 +143,8 @@ export const TAPESTRY_CATALOG = Object.freeze([
   },
   {
     key: "spring-market",
+    purchasePrice: 4200,
+    purchasedDaysAgo: 450,
     name: "Spring Market Wall Scroll",
     series: "Seasonal Market",
     notes: "Purchased at the spring pop-up store.",
@@ -140,6 +156,8 @@ export const TAPESTRY_CATALOG = Object.freeze([
   },
   {
     key: "anniversary-key-visual",
+    purchasePrice: 12800,
+    purchasedDaysAgo: 65,
     name: "10th Anniversary Exhibition Main Visual Extra-Large Tapestry",
     series: "Anniversary Archive",
     notes:
@@ -153,6 +171,8 @@ export const TAPESTRY_CATALOG = Object.freeze([
   },
   {
     key: "seaside-vacation",
+    purchasePrice: 3500,
+    purchasedDaysAgo: 125,
     name: "Seaside Vacation Tapestry",
     series: "Holiday Sketches",
     widthCm: 51.5,
@@ -163,6 +183,8 @@ export const TAPESTRY_CATALOG = Object.freeze([
   },
   {
     key: "autumn-reading-room",
+    purchasePrice: 4000,
+    purchasedDaysAgo: 550,
     name: "Autumn Reading Room Scroll",
     series: "Cafe Collection",
     notes: "Minor crease near the lower edge; sleeve retained.",
@@ -174,6 +196,8 @@ export const TAPESTRY_CATALOG = Object.freeze([
   },
   {
     key: "new-year-shrine",
+    purchasePrice: 4200,
+    purchasedDaysAgo: 75,
     name: "New Year Shrine Visit Tapestry",
     series: "Holiday Sketches",
     notes: "Lucky-bag exclusive.",
@@ -185,6 +209,8 @@ export const TAPESTRY_CATALOG = Object.freeze([
   },
   {
     key: "cherry-blossom-picnic",
+    purchasePrice: 5200,
+    purchasedDaysAgo: 30,
     name: "Cherry Blossom Picnic Wall Scroll",
     series: "Seasonal Market",
     widthCm: 72.8,
@@ -196,6 +222,8 @@ export const TAPESTRY_CATALOG = Object.freeze([
   },
   {
     key: "rainy-day-cafe",
+    purchasePrice: 4500,
+    purchasedDaysAgo: 60,
     name: "Rainy Day Cafe Tapestry",
     series: "Cafe Collection",
     notes: "Standard online-store release.",
@@ -208,6 +236,8 @@ export const TAPESTRY_CATALOG = Object.freeze([
   },
   {
     key: "starry-night-festival",
+    purchasePrice: 7800,
+    purchasedDaysAgo: 600,
     name: "Starry Night Festival B1 Tapestry",
     series: "Starlight Memories",
     notes: "The widest regular fixture, useful for numeric range filtering.",
@@ -219,6 +249,8 @@ export const TAPESTRY_CATALOG = Object.freeze([
   },
   {
     key: "halloween-limited",
+    purchasePrice: 4800,
+    purchasedDaysAgo: 90,
     name: "Halloween Limited Scroll",
     series: "Seasonal Market",
     widthCm: 42,
@@ -230,6 +262,8 @@ export const TAPESTRY_CATALOG = Object.freeze([
   },
   {
     key: "winter-uniform",
+    purchasePrice: 3900,
+    purchasedDaysAgo: 45,
     name: "Winter Uniform Portrait Tapestry",
     series: "School Days",
     notes: "Displayed once, then returned to its sleeve.",
@@ -241,6 +275,8 @@ export const TAPESTRY_CATALOG = Object.freeze([
   },
   {
     key: "summer-uniform-group",
+    purchasePrice: 6800,
+    purchasedDaysAgo: 365,
     name: "Summer Uniform Group Tapestry",
     series: "School Days",
     widthCm: 72.8,
@@ -251,6 +287,8 @@ export const TAPESTRY_CATALOG = Object.freeze([
   },
   {
     key: "birthday-celebration",
+    purchasePrice: 5000,
+    purchasedDaysAgo: 210,
     name: "Birthday Celebration Wall Scroll",
     series: "Anniversary Archive",
     notes: "Made-to-order release; order card stored separately.",
@@ -263,6 +301,8 @@ export const TAPESTRY_CATALOG = Object.freeze([
   },
   {
     key: "retro-game-collaboration",
+    purchasePrice: 6400,
+    purchasedDaysAgo: 700,
     name: "Retro Game Collaboration Tapestry",
     series: "Collaboration Works",
     widthCm: 60,
@@ -274,6 +314,8 @@ export const TAPESTRY_CATALOG = Object.freeze([
   },
   {
     key: "orchestra-performance",
+    purchasePrice: 5500,
+    purchasedDaysAgo: 300,
     name: "Orchestra Performance Main Visual",
     series: "Starlight Memories",
     notes: "Venue-exclusive horizontal artwork.",
@@ -285,6 +327,8 @@ export const TAPESTRY_CATALOG = Object.freeze([
   },
   {
     key: "museum-collaboration",
+    purchasePrice: 4800,
+    purchasedDaysAgo: 400,
     name: "Museum Collaboration Art Tapestry",
     series: "Collaboration Works",
     notes:
@@ -298,6 +342,8 @@ export const TAPESTRY_CATALOG = Object.freeze([
   },
   {
     key: "sports-day-banner",
+    purchasePrice: 6300,
+    purchasedDaysAgo: 180,
     name: "Sports Day Team Banner",
     series: "School Days",
     widthCm: 145.6,
@@ -308,6 +354,8 @@ export const TAPESTRY_CATALOG = Object.freeze([
   },
   {
     key: "tea-party",
+    purchasePrice: 4500,
+    purchasedDaysAgo: 21,
     name: "Afternoon Tea Party Tapestry",
     series: "Cafe Collection",
     notes: "Bonus postcard is still sealed with the package.",
@@ -320,6 +368,8 @@ export const TAPESTRY_CATALOG = Object.freeze([
   },
   {
     key: "travel-memories",
+    purchasePrice: 0,
+    purchasedDaysAgo: 800,
     name: "Travel Memories Panorama Scroll",
     series: "Holiday Sketches",
     widthCm: 210.5,
@@ -330,6 +380,9 @@ export const TAPESTRY_CATALOG = Object.freeze([
   },
   {
     key: "midnight-blue-edition",
+    purchasePrice: 16800,
+    purchasedDaysAgo: 3,
+    addedDaysAgo: 2,
     name: "Midnight Blue Limited Edition",
     series: "Anniversary Archive",
     notes: "Numbered edition 041 of 300.",
@@ -342,6 +395,7 @@ export const TAPESTRY_CATALOG = Object.freeze([
   },
   {
     key: "prototype-sample",
+    addedDaysAgo: 18,
     name: "Uncatalogued Prototype Sample",
     notes: "Intentionally missing the required Series value for warning-state testing.",
     widthCm: 48.3,
@@ -354,31 +408,34 @@ export const TAPESTRY_CATALOG = Object.freeze([
 export const OTHER_ITEM_CATALOG = Object.freeze([
   {
     id: "figure-limited-edition",
+    purchasedDaysAgo: 7,
+    addedDaysAgo: 1,
     goodsTypeId: "figures",
     name: "Limited Edition Scale Figure",
     customValues: {
+      "figures-cost": 18501,
       "figures-manufacturer": "Example Works",
       "figures-scale": "one_seventh",
       "figures-edition": true
     },
-    createdAt: "2026-01-06T09:00:00.000Z",
-    updatedAt: "2026-02-09T12:00:00.000Z",
     image: { label: "LIMITED", orientation: "portrait", color: "#86556f" }
   },
   {
     id: "figure-prize-release",
+    purchasedDaysAgo: 20,
+    addedDaysAgo: 15,
     goodsTypeId: "figures",
     name: "Prize Figure",
     customValues: {
       "figures-scale": "non_scale",
-      "figures-edition": false
+      "figures-edition": false,
+      "figures-cost": 0
     },
-    createdAt: "2026-01-07T09:00:00.000Z",
-    updatedAt: "2026-02-08T12:00:00.000Z",
     image: { label: "PRIZE", orientation: "landscape", color: "#5e6f42" }
   },
   {
     id: "figure-standard-release",
+    addedDaysAgo: 30,
     goodsTypeId: "figures",
     name: "Standard School Uniform Figure",
     customValues: {
@@ -386,59 +443,60 @@ export const OTHER_ITEM_CATALOG = Object.freeze([
       "figures-scale": "one_eighth",
       "figures-edition": false
     },
-    createdAt: "2026-01-08T09:00:00.000Z",
-    updatedAt: "2026-02-07T12:00:00.000Z",
     image: { label: "STANDARD", orientation: "portrait", color: "#486a82" }
   },
   {
     id: "figure-retired-prototype",
+    purchasedDaysAgo: 500,
+    addedDaysAgo: 400,
     goodsTypeId: "figures",
     name: "Retired Prototype Figure",
     customValues: {
+      "figures-cost": 12000,
       "figures-manufacturer": "Archive Models",
       "figures-scale": "non_scale",
       "figures-edition": true
     },
-    createdAt: "2026-01-11T09:00:00.000Z",
-    updatedAt: "2026-02-10T12:00:00.000Z",
     isDeleted: true,
-    deletedAt: "2026-02-10T12:00:00.000Z",
     image: { label: "RETIRED", orientation: "landscape", color: "#7b5e58" }
   },
   {
     id: "acrylic-anniversary-stand",
+    purchasedDaysAgo: 45,
+    addedDaysAgo: 4,
     goodsTypeId: "acrylic-goods",
     name: "Anniversary Acrylic Stand",
     customValues: {
+      "acrylic-goods-purchase_price": 1800,
       "acrylic-goods-format": "stand",
       "acrylic-goods-event": "10th Anniversary Exhibition"
     },
-    createdAt: "2026-01-04T09:00:00.000Z",
-    updatedAt: "2026-02-07T12:00:00.000Z",
     image: { label: "ACRYLIC", orientation: "portrait", color: "#3d7085" }
   },
   {
     id: "acrylic-summer-keychain",
+    purchasedDaysAgo: 400,
+    addedDaysAgo: 12,
     goodsTypeId: "acrylic-goods",
     name: "Summer Event Acrylic Keychain",
     customValues: {
+      "acrylic-goods-purchase_price": 900,
       "acrylic-goods-format": "keychain",
       "acrylic-goods-event": "Summer Market 2025"
     },
-    createdAt: "2026-01-09T09:00:00.000Z",
-    updatedAt: "2026-02-06T12:00:00.000Z",
     image: { label: "KEYCHAIN", orientation: "landscape", color: "#3f8580" }
   },
   {
     id: "acrylic-gallery-panel",
+    purchasedDaysAgo: 0,
+    addedDaysAgo: 0,
     goodsTypeId: "acrylic-goods",
     name: "Gallery Collaboration Acrylic Panel",
     customValues: {
+      "acrylic-goods-purchase_price": 2900,
       "acrylic-goods-format": "panel",
       "acrylic-goods-event": "City Gallery Collaboration"
     },
-    createdAt: "2026-01-10T09:00:00.000Z",
-    updatedAt: "2026-02-05T12:00:00.000Z",
     image: { label: "PANEL", orientation: "portrait", color: "#6c5b88" }
   }
 ]);

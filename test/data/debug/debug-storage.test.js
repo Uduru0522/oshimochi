@@ -124,6 +124,7 @@ test("DebugStorage reset clears all temporary domain records", async () => {
   assert.deepEqual(await storage.listGoodsTypes(), []);
   assert.deepEqual(await storage.listFieldDefinitions("figures"), []);
   assert.deepEqual(await storage.listItems("figures"), []);
+  assert.deepEqual(await storage.listDashboardCards(), []);
 });
 
 test("DebugStorage reads an isolated complete data catalog", async () => {

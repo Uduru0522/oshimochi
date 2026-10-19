@@ -1,4 +1,4 @@
-const CACHE_NAME = "oshimochi-v188";
+const CACHE_NAME = "oshimochi-v189";
 
 const ASSET_GROUPS = {
   app: [
@@ -50,6 +50,7 @@ const ASSET_GROUPS = {
     "./src/data/contracts/storage-contract.js",
     "./src/data/debug/debug-catalog.js",
     "./src/data/debug/debug-dashboard-card-repository.js",
+    "./src/data/debug/debug-dashboard-fixtures.js",
     "./src/data/debug/debug-field-definition-repository.js",
     "./src/data/debug/debug-fixture-data.js",
     "./src/data/debug/debug-fixtures.js",

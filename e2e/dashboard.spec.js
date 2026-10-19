@@ -215,9 +215,26 @@ test("unavailable fields have named repair actions and accept a replacement fiel
 
 test("debug dashboard edits remain temporary and never create a user database", async ({ page }) => {
   await page.goto("./?debug=1"); await expect(summary(page, "Recent items").locator(".recent-item-row")).toHaveCount(5);
+  await expect(page.locator('.dashboard-cards > article')).toHaveCount(7);
+  await expect(summary(page, 'Total spent').locator('.value-number')).toHaveText('144,401');
+  await expect(summary(page, 'Average figure price').locator('.value-number')).toHaveText('9,250.5');
+  await expect(summary(page, 'Collection mix').locator('.ring-segment')).toHaveCount(3);
+  await expect(summary(page, 'Tapestry condition').locator('.ring-segment')).toHaveCount(4);
+  await expect(summary(page, 'Recent items').locator('.recent-item-name')).toHaveText([
+    'Gallery Collaboration Acrylic Panel', 'Limited Edition Scale Figure', 'Midnight Blue Limited Edition',
+    'Anniversary Acrylic Stand', 'Summer Festival B2 Tapestry'
+  ]);
+  await editSummary(page, 'Total spent');
+  await expect(page.getByRole('combobox', { name: 'Number field in Figures', exact: true })).toHaveValue('figures-cost');
+  await page.getByRole('textbox', { name: 'Card name', exact: true }).fill('My spending');
+  await saveSummary(page, 'Save changes');
+  await expect(summary(page, 'My spending').locator('.value-number')).toHaveText('144,401');
   await addSummary(page, "Debug count"); await page.getByRole("checkbox", { name: "Tapestries", exact: true }).check(); await saveSummary(page);
   expect(await page.evaluate(async () => (await indexedDB.databases()).map(({ name }) => name))).not.toContain("oshimochi");
   await page.reload(); await expect(summary(page, "Debug count")).toHaveCount(0);
+  await expect(summary(page, 'My spending')).toHaveCount(0);
+  await expect(summary(page, 'Total spent').locator('.value-number')).toHaveText('144,401');
+  await expect(page.locator('.dashboard-cards > article')).toHaveCount(7);
   await page.goto("./"); await expect(page.locator("#dashboard-item-count")).toHaveText("0"); await expect(summary(page, "Debug count")).toHaveCount(0);
 });
 

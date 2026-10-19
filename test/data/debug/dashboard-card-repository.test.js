@@ -18,7 +18,7 @@ test("debug dashboard cards save, reorder, and remove independently of collectio
 });
 
 test("debug dashboard saves reject stale and invalid changes without altering current cards", async () => {
-  const storage = createDebugStorage(); await storage.initialize();
+  const storage = createDebugStorage({ dashboardCards: [] }); await storage.initialize();
   const card = createDashboardCardFixture();
   await storage.replaceDashboardCards({ cards: [card], expectedCards: [] });
   await assert.rejects(storage.replaceDashboardCards({ cards: [], expectedCards: [] }), { code: "conflict" });
@@ -27,7 +27,7 @@ test("debug dashboard saves reject stale and invalid changes without altering cu
 });
 
 test("concurrent debug dashboard saves cannot overwrite each other", async () => {
-  const storage = createDebugStorage(); await storage.initialize();
+  const storage = createDebugStorage({ dashboardCards: [] }); await storage.initialize();
   const outcomes = await Promise.allSettled([
     storage.replaceDashboardCards({ cards: [createDashboardCardFixture()], expectedCards: [] }),
     storage.replaceDashboardCards({ cards: [], expectedCards: [] })
@@ -38,7 +38,7 @@ test("concurrent debug dashboard saves cannot overwrite each other", async () =>
 });
 
 test("debug dashboard cards remain isolated across instances and require initialization", async () => {
-  const first = createDebugStorage(); const second = createDebugStorage();
+  const first = createDebugStorage({ dashboardCards: [] }); const second = createDebugStorage({ dashboardCards: [] });
   await assert.rejects(first.listDashboardCards(), { code: "not-initialized" });
   await first.initialize(); await second.initialize();
   await first.replaceDashboardCards({ cards: [createDashboardCardFixture()], expectedCards: [] });

@@ -39,7 +39,7 @@ function createAsset(id, contents = "image", timestamp = FIXED_TIME) {
 }
 
 test("DebugStorage creates isolated item records", async () => {
-  const storage = createDebugStorage();
+  const storage = createDebugStorage({ now: () => FIXED_TIME });
   const item = createFigureItem();
 
   await storage.initialize();
@@ -51,7 +51,7 @@ test("DebugStorage creates isolated item records", async () => {
 });
 
 test("DebugStorage rejects duplicate item identity", async () => {
-  const storage = createDebugStorage();
+  const storage = createDebugStorage({ now: () => FIXED_TIME });
   const item = createFigureItem();
 
   await storage.initialize();
@@ -61,7 +61,7 @@ test("DebugStorage rejects duplicate item identity", async () => {
 });
 
 test("DebugStorage rejects items for missing goods types", async () => {
-  const storage = createDebugStorage();
+  const storage = createDebugStorage({ now: () => FIXED_TIME });
   const item = createFigureItem({ id: "wrong-type", goodsTypeId: "missing" });
 
   await storage.initialize();
@@ -73,7 +73,7 @@ test("DebugStorage rejects items for missing goods types", async () => {
 });
 
 test("DebugStorage keeps image assets linked to their item", async () => {
-  const storage = createDebugStorage();
+  const storage = createDebugStorage({ now: () => FIXED_TIME });
   const asset = createAsset("asset-1");
   const item = createFigureItem({ id: "figure-with-image", imageAssetId: asset.id });
 
@@ -85,7 +85,7 @@ test("DebugStorage keeps image assets linked to their item", async () => {
 });
 
 test("DebugStorage rejects a new item linked to a different image asset", async () => {
-  const storage = createDebugStorage();
+  const storage = createDebugStorage({ now: () => FIXED_TIME });
   const asset = createAsset("unlinked-asset");
   const item = createFigureItem({
     id: "figure-with-wrong-image",
@@ -105,7 +105,7 @@ test("DebugStorage rejects a new item linked to a different image asset", async 
 });
 
 test("DebugStorage replaces an edited item and image atomically", async () => {
-  const storage = createDebugStorage();
+  const storage = createDebugStorage({ now: () => FIXED_TIME });
   await storage.initialize();
   const [existingItem] = await storage.listItems("tapestries");
   const replacementTime = "2026-07-21T00:00:00.000Z";
@@ -132,7 +132,7 @@ test("DebugStorage replaces an edited item and image atomically", async () => {
 });
 
 test("DebugStorage rejects content updates for missing items", async () => {
-  const storage = createDebugStorage();
+  const storage = createDebugStorage({ now: () => FIXED_TIME });
   const missingItem = createFigureItem({ id: "missing-item", name: "Updated name" });
 
   await storage.initialize();
@@ -154,7 +154,7 @@ test("DebugStorage rejects content updates for missing items", async () => {
 });
 
 test("DebugStorage rejects replacement images with mismatched identity", async () => {
-  const storage = createDebugStorage();
+  const storage = createDebugStorage({ now: () => FIXED_TIME });
   const replacementTime = "2026-07-21T00:00:00.000Z";
   const replacementAsset = createAsset(
     "mismatched-replacement",
@@ -187,7 +187,7 @@ test("DebugStorage rejects replacement images with mismatched identity", async (
 });
 
 test("DebugStorage rejects duplicate replacement asset identity atomically", async () => {
-  const storage = createDebugStorage();
+  const storage = createDebugStorage({ now: () => FIXED_TIME });
   const replacementTime = "2026-07-21T00:00:00.000Z";
 
   await storage.initialize();
@@ -222,7 +222,7 @@ test("DebugStorage rejects duplicate replacement asset identity atomically", asy
 });
 
 test("DebugStorage soft deletion retains item data and its image", async () => {
-  const storage = createDebugStorage();
+  const storage = createDebugStorage({ now: () => FIXED_TIME });
   await storage.initialize();
   const [existingItem] = await storage.listItems("tapestries");
   const deletedItem = createDeletionTransition(existingItem, true, {
@@ -245,7 +245,7 @@ test("DebugStorage soft deletion retains item data and its image", async () => {
 });
 
 test("DebugStorage restores an item without changing its retained image", async () => {
-  const storage = createDebugStorage();
+  const storage = createDebugStorage({ now: () => FIXED_TIME });
   await storage.initialize();
   const [existingItem] = await storage.listItems("tapestries");
   const deletedItem = createDeletionTransition(existingItem, true, {
@@ -266,7 +266,7 @@ test("DebugStorage restores an item without changing its retained image", async 
 });
 
 test("DebugStorage permanently deletes a soft-deleted item and its image", async () => {
-  const storage = createDebugStorage();
+  const storage = createDebugStorage({ now: () => FIXED_TIME });
   await storage.initialize();
   const [existingItem] = await storage.listItems("tapestries");
   const deletedItem = createDeletionTransition(existingItem, true, {
@@ -286,7 +286,7 @@ test("DebugStorage permanently deletes a soft-deleted item and its image", async
 });
 
 test("DebugStorage rejects permanent deletion of active items without changing data", async () => {
-  const storage = createDebugStorage();
+  const storage = createDebugStorage({ now: () => FIXED_TIME });
   await storage.initialize();
   const before = await storage.listItems("tapestries", { scope: RECORD_SCOPES.all });
 
