@@ -5,7 +5,7 @@ dates. See [Workflows](workflows.md) for implemented behavior.
 
 ## Recommended Next Steps
 
-### 1. Prepare The My Collection Pull Request
+### 1. Review The My Collection Pull Request
 
 My collection, the card editor, and Recent items are feature-complete on the
 feature branch. The owner has approved the final diff and local testing,
@@ -13,8 +13,9 @@ including the refactor and embedded-browser scroll/focus fix. See
 [My collection workflows](workflows.md#my-collection) for the completed scope.
 
 The refactor addresses card packing and scroll stability, rendering and preview
-lifecycle ownership, and shared calculation work. Organize the approved changes
-into small, focused commits and prepare one feature pull request. Follow
+lifecycle ownership, and shared calculation work. The approved changes are
+committed and pushed in [PR #11](https://github.com/Uduru0522/oshimochi/pull/11).
+Review its CI results and final branch diff. Follow
 [AGENTS.md](../AGENTS.md#local-review-before-commits); merging still requires
 explicit owner approval.
 
@@ -35,6 +36,13 @@ explicit owner approval.
   guarantee. Use a dedicated test folder.
 
 ## Later Milestones
+
+### Visual Consistency Across Views
+
+Use [Design Philosophy](design.md) to adapt collection browsing, Administration,
+and Options to the style established by My collection. Preserve each view's
+workflow and choose the layout that suits its content. Discuss each view's
+scope before implementation.
 
 ### Wide Navigation Scroll Hints
 

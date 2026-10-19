@@ -17,6 +17,7 @@ behavior and unfinished work have separate owners.
 | [Workflows](workflows.md) | User actions available in the app |
 | [Google Drive Setup](google-drive-backup.md) | Cloud setup, sharing, round-trip checks, and troubleshooting |
 | [Development](development.md) | Local setup and coding conventions |
+| [Design Philosophy](design.md) | Visual principles and reusable patterns established by My collection |
 | [Testing](testing.md) | Automated checks, test design, and manual browser checklists |
 | [Deployment](deployment.md) | GitHub Pages configuration and release procedure |
 | [Architecture](architecture.md) | Runtime flow, code ownership, and dependency rules |

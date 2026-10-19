@@ -127,7 +127,9 @@ controls. `card-readout.js`, `readout-motion.js`, and `card-layout.js` own resul
 presentation, animation, and independent packing. `card-packing.js` calculates
 positions; the layout owns card widths and container height without temporarily
 collapsing the scroll range. `number-format.js` keeps notation and decimal
-precision stable throughout a count reveal. Loading status is removed before card layout
+precision stable throughout a count reveal. `number-layout.js` fits the final
+number to the available width and reserves its footprint through the reveal,
+including with wider system fonts. Loading status is removed before card layout
 is measured, so the first reveal starts at its final page position.
 Initial dashboard content uses a fade without per-card tilt or slide; later
 card additions, removals, resizing, and arrangement retain layout motion.
@@ -149,6 +151,10 @@ Interface text passes through `translate()`. User-entered names and values are
 data and are never translated.
 
 ### Styles
+
+The [Design Philosophy](design.md) records the visual direction and reusable
+interaction patterns established by My collection. Use it when adapting other
+views; this section defines stylesheet ownership and shared timing.
 
 `src/styles/app.css` is an import-only entrypoint. Its import order defines the
 cascade.
