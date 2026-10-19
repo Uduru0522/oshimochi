@@ -15,8 +15,9 @@ domain and storage code, and browser views.
 6. The runtime creates views, navigation, and the router.
 7. A storage failure shows a retryable error instead of an empty collection.
 
-After a successful data change, the startup coordinator reloads goods types and
-rebuilds data-based navigation. It does not reopen the database.
+Changes that affect navigation, such as collection creation or catalog restore,
+ask the startup coordinator to reload goods types and rebuild the runtime. It
+reuses the open database. Item and card changes refresh their own views.
 
 ## Code Ownership
 
@@ -58,11 +59,9 @@ Application operations are grouped by feature:
 - **Fields:** validate and apply one staged field change set.
 - **Items:** validate values, filter, sort, save content, and change lifecycle.
 - **Dashboard:** read selected collection records and calculate filtered card
-  results, coverage, and named unavailable-reference states without loading
-  images; select matching items once for both the total and its collection or
-  category breakdown, using one calendar instant; read the newest active item
-  metadata across active collections by creation time; read and replace validated saved cards with
-  conflict detection, including built-in card visibility and position.
+  results, coverage, and unavailable references without loading images. Reuse
+  one selection and calendar instant for totals and breakdowns. Read recent item
+  metadata and save card configuration with conflict detection.
 - **Backups:** encode, validate, summarize, and restore complete snapshots.
 - **Local data:** reset all user collection stores atomically.
 
@@ -117,38 +116,50 @@ Dialogs share `dialog-close-controller.js` for close timing and cancellation.
 Stateful content uses `content-transition.js`. Scroll surfaces use
 `drag-scroll.js`.
 
-Dashboard routing starts `dashboard-controller.js`, which coordinates loading,
-mutations, and dialogs. `card-board.js` reads a complete generation before
-committing it, retains unchanged nodes, and owns each card's readout, interaction
-state, and cleanup. Superseded reads cannot mutate the mounted cards.
-`card-editor.js` owns drafts; `card-preview.js` owns async preview validity and
-readout cleanup across editor sessions. `card-filters.js` reuses item-filter
-controls. `card-readout.js`, `readout-motion.js`, and `card-layout.js` own result
-presentation, animation, and independent packing. `card-packing.js` calculates
-positions; the layout owns card widths and container height without temporarily
-collapsing the scroll range. `number-format.js` keeps notation and decimal
-precision stable throughout a count reveal. `number-layout.js` fits the final
-number to the available width and reserves its footprint through the reveal,
-including with wider system fonts. Loading status is removed before card layout
-is measured, so the first reveal starts at its final page position.
-Initial dashboard content uses a fade without per-card tilt or slide; later
-card additions, removals, resizing, and arrangement retain layout motion.
-The ring reveal clips the filled segments with a sector rather than a dashed
-stroke mask, keeping the unrevealed region clear.
-Unchanged card nodes and readouts are retained across
-updates. `card-layout-motion.js` tracks visible bounds across interrupted
-resizes, entry, exit, and tilt; `card-arrangement.js` owns drag/keyboard drafts
-and explicit save/cancel, using the same packing as the saved view. Drag previews
-use a viewport overlay outside the scrolling panel. Both motion and dragging
-use `card-geometry.js` for current scroll offsets and unrotated card bounds.
-Window-focus refreshes keep
-existing content visible without inserting a loading row.
-`recent-items.js` reuses the item thumbnail loader and
-disposes image URLs on view or dialog teardown. Views use application operations
-and never open storage adapters directly.
-
 Interface text passes through `translate()`. User-entered names and values are
 data and are never translated.
+
+### My Collection
+
+The visible view is My collection; its route and source directory retain the
+technical name `dashboard`. Modules under `src/views/dashboard/` have these
+boundaries:
+
+| Concern | Owner |
+| --- | --- |
+| Loading, mutations, and dialogs | `dashboard-controller.js` |
+| Complete card reads, retained nodes, interaction state, and disposal | `card-board.js` |
+| Editor drafts, async preview validity, and filters | `card-editor.js`, `card-preview.js`, `card-filters.js` |
+| Readouts, decimal precision, and measured number widths | `card-readout.js`, `number-format.js`, `number-layout.js` |
+| Count reveals, ring selection, and sector geometry | `readout-motion.js`, `ring-interaction.js`, `ring-shape.js` |
+| Card sizing, positions, and movement | `card-layout.js`, `card-packing.js`, `card-layout-motion.js` |
+| Drag and keyboard arrangement drafts | `card-arrangement.js` |
+| Current scroll offsets and unrotated bounds | `card-geometry.js` |
+| Recent item thumbnails and entry actions | `recent-items.js` |
+
+Card reads commit a complete generation. Superseded reads cannot update mounted
+cards, and unchanged nodes retain their readouts and interaction state. Preview
+validity and cleanup belong to the editor session. Window-focus refreshes keep
+existing content visible without inserting a loading row.
+
+Layout measures intrinsic card heights at the target width, then commits
+positions and container height together. It never clears the scroll range while
+measuring. Loading status leaves the flow before the first layout. Motion tracks
+visible bounds through interrupted resizing; arrangement uses the same packing
+for draft and saved order. Drag previews use a viewport overlay. Motion and
+dragging resolve the current scrollport when needed because controllers are
+created before mounting.
+
+Number layout reserves the final formatted text's measured width, fitting wider
+system fonts onto one line before counting. Reveals prepare their initial state
+before paint; ring reveals clip filled segments with a sector. Initial content
+fades in, while later card changes use layout motion. Timing lives in
+[Styles](#styles).
+
+Recent items reuse the thumbnail loader and the read-only
+`src/views/items/item-detail-dialog.js`. Each owner releases its image URLs on
+replacement or teardown. See [Workflows](workflows.md#my-collection) for controls
+and [Persistence](persistence.md#dashboard-card-writes) for the save boundary.
 
 ### Styles
 
@@ -180,10 +191,10 @@ Dashboard chart/count reveals take 600 ms, separate from
 interaction timing, and start when visible. Reduced motion shows the final value
 immediately.
 
-The UI uses local Noto Sans and platform CJK font stacks. No font is fetched from
-a third-party host. The language-independent `オシもち。` wordmark uses a local
-outlined SVG; see [branding](development.md#change-the-branding) for its source
-and license.
+The UI uses system fonts, including installed Noto Sans and platform CJK fonts.
+No font is fetched from a third-party host. The language-independent
+`オシもち。` wordmark uses a local outlined SVG; see
+[branding](development.md#change-the-branding) for its source and license.
 
 ## Dependency Direction
 
@@ -292,11 +303,8 @@ asynchronous work.
 Static verification follows JavaScript imports and CSS imports from
 `index.html`. Every reachable runtime asset must appear in the cache.
 
-When a cached runtime file changes or moves:
-
-1. update the service-worker asset list
-2. bump `CACHE_NAME`
-3. run `npm run check`
+Follow [offline asset updates](development.md#update-offline-assets) whenever a
+cached runtime file changes. New or moved files also need asset-list changes.
 
 The worker checks for updates without the HTTP cache. It does not reload an open
 page because that could discard a draft.

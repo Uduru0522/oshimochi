@@ -31,6 +31,13 @@ http://localhost:4173/oshimochi/
 http://localhost:4173/oshimochi/?debug=1
 ```
 
+The root and `/oshimochi/` paths on the same host and port share browser data
+and settings. A path change does not create a separate test catalog; see
+[browser settings](persistence.md#browser-settings).
+
+The server serves updated files but does not reload an open page automatically.
+Refresh the preview after edits.
+
 If PowerShell blocks `npm.ps1`, use `npm.cmd` in place of `npm`.
 
 ## Verification And Review
@@ -174,42 +181,20 @@ Both branding SVGs belong to the service-worker asset list. Follow
 ### Change Styles Or Motion
 
 Follow [Design Philosophy](design.md) when adapting another view to the
-collection-desk style. The implementation conventions below describe ownership,
-layout stability, and motion timing.
+collection-desk style.
 
-`src/styles/app.css` only imports owned style files:
+1. Find the owning stylesheet and shared timing token in
+   [Architecture](architecture.md#styles). Preserve the import order in
+   `src/styles/app.css`.
+2. Reuse semantic tokens and existing motion helpers. New runtime stylesheets
+   must be included in the [offline asset list](#update-offline-assets).
+3. Check the affected view in both themes, all languages, narrow layouts, and
+   reduced motion using [Testing](testing.md#manual-browser-checks).
 
-| File | Use |
-| --- | --- |
-| `foundation.css` | Tokens, shell, navigation, and shared UI |
-| `items.css` | Item browsing and item dialogs |
-| `administration.css` | Administration and Options |
-| `dashboard.css` | My collection cards, editor, and rings |
-| `responsive.css` | Narrow layout and reduced motion |
-
-Preserve this import order. Add every new runtime stylesheet to
-`service-worker.js`.
-
-Prefer tokens over hardcoded values. Keep interaction motion at or below 200 ms
-and use the shared timing tokens. Dashboard chart/count reveals use a separate
-600 ms duration so the circumference sweep remains legible; they start when
-visible and respect reduced motion.
-Prepare chart geometry at zero before waiting for visibility so the completed
-ring never paints ahead of its reveal. Card editor dialogs keep a fixed
-responsive outer height and scroll changing content inside that frame.
-
-`number-layout.js` measures the final formatted value, fits it onto one line,
-and reserves its width while the digits animate. Keep number and unit placement
-steady across system fonts and viewport changes.
-
-Dashboard card packing owns explicit card positions and the container height.
-Measure intrinsic heights at the target column width without clearing previous
-positions or collapsing the container. Commit positions and height together so
-measurement cannot temporarily clamp a scrolled page back to the top.
-
-The dashboard controller is created before its view is mounted.
-`card-geometry.js` resolves the current scrollport for both card motion and
-dragging, so scrolling is not mistaken for card movement.
+For dashboard changes, preserve the measurement and cleanup boundaries in
+[My collection architecture](architecture.md#my-collection). Verify long values
+with different system fonts, stable unit placement, and scrolled layouts during
+window resizing and focus changes.
 
 Use `content-transition.js` for stateful workflow replacement. Use
 `motion.js` when JavaScript needs a CSS timing value.
@@ -269,9 +254,10 @@ wrapper, observers, and cleanup.
 
 ### Update Offline Assets
 
-When a runtime file moves or is added:
+Whenever a cached runtime file changes:
 
-1. update `service-worker.js`
+1. update the asset list in `service-worker.js` if files were added, moved,
+   or removed
 2. bump `CACHE_NAME`
 3. run `npm run check`
 4. load the changed path through the local server
