@@ -5,18 +5,7 @@ dates. See [Workflows](workflows.md) for implemented behavior.
 
 ## Recommended Next Steps
 
-### 1. Review The My Collection Pull Request
-
-My collection, the card editor, and Recent items are feature-complete on the
-feature branch in [PR #11](https://github.com/Uduru0522/oshimochi/pull/11). See
-[My collection workflows](workflows.md#my-collection) for the scope.
-
-Review CI and the final diff before the owner approves a merge. After deployment,
-complete the [production checks](deployment.md#after-deployment), including saved
-card configuration, backup/restore, and offline behavior. Release tagging waits
-for the owner's version and release approval.
-
-### 2. Define Automatic Backup Policy
+### Define Automatic Backup Policy
 
 - Decide which successful mutations request a backup and how requests combine.
 - Define disconnected, offline, retry, and failure behavior.
